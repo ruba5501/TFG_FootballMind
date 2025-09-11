@@ -1,0 +1,25 @@
+{
+  "name": "footballmind",
+  "version": "1.0.0",
+  "description": "FootballMind, simulador deportivo de gestión de equipos de fútbol en entorno web.",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ruba5501/TFG_FootballMind.git"
+  },
+  "author": "ruben gomez-escalonilla dueñas",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ruba5501/TFG_FootballMind/issues"
+  },
+  "homepage": "https://github.com/ruba5501/TFG_FootballMind#readme",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "mongoose": "^8.18.1",
+    "path": "^0.12.7"
+  }
+}
