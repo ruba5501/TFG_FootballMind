@@ -64,7 +64,8 @@ const jugadorSchema = new mongoose.Schema({
     forma: { type: Number, default: 100 },
     moral: { type: Number, default: 100 },
     lesion: { type: String, default: null }
-  }
+  },
+  foto: { type: String } // URL a la imagen
 });
 
 module.exports = mongoose.model('Jugador', jugadorSchema);

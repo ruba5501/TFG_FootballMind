@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const Jugador = require('../models/Jugador');
+const Jugador = require('../models/jugador');
 const jugadoresData = require('../../base_datos/jugadores.json');
 const connectDB = require('../db');
 

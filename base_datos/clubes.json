@@ -1,0 +1,25 @@
+[
+  {
+    "nombre": "Real Madrid",
+    "ciudad": "Madrid",
+    "estadio": "Santiago Bernabéu",
+    "presupuesto": {
+      "traspasos": 200000000,
+      "salarios": 500000000
+    },
+    "ingresos": {
+      "entradas": 150000000,
+      "television": 250000000,
+      "merchandising": 300000000
+    },
+    "jugadores": [],
+    "empleados": ["Florentino Pérez (Presidente)", "Xabi Alonso (Entrenador)"],
+    "popularidad": 95,
+    "reputacion": 100,
+    "infraestructuras": {
+      "entrenamiento": 5,
+      "cantera": 5
+    },
+    "historialTitulos": ["15 Champions League", "36 Ligas", "20 Copas del Rey"]
+  }
+]

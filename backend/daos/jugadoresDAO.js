@@ -1,26 +1,24 @@
-//comprobalo mas
-
 const Jugador = require('../models/jugador');
 
 class JugadoresDAO {
-  async crear(data) {
+  async crearJugador(data) {
     const jugador = new Jugador(data);
     return await jugador.save();
   }
 
-  async listar() {
+  async listarJugadores() {
     return await Jugador.find();
   }
 
-  async buscarPorId(id) {
+  async buscarJugadorPorId(id) {
     return await Jugador.findById(id);
   }
 
-  async actualizar(id, data) {
+  async actualizarJugador(id, data) {
     return await Jugador.findByIdAndUpdate(id, data, { new: true });
   }
 
-  async eliminar(id) {
+  async eliminarJugador(id) {
     return await Jugador.findByIdAndDelete(id);
   }
 }
