@@ -1,0 +1,122 @@
+[
+    {
+        "nombre": "Kylian Mbappé",
+        "edad": 25,
+        "nacionalidad": "Francia",
+        "altura": 178,
+        "peso": 73,
+        "posicion": "delantero",
+        "piernaBuena": "derecha",
+        "piernaMala": 3,
+        "valorMercado": 120000000,
+        "salario": 20000000,
+        "atributos": {
+            "ataque": {
+            "regate": 94,
+            "pase": 82,
+            "disparo": 93,
+            "vision": 85,
+            "centros": 70,
+            "desmarques": 88
+            },
+            "defensa": {
+            "marcaje": 50,
+            "entradas": 45,
+            "intercepciones": 40,
+            "despejes": 35,
+            "duelosAereos": 50,
+            "colocacion": 55
+            },
+            "fisico": {
+            "velocidad": 96,
+            "aceleracion": 95,
+            "fuerza": 78,
+            "resistencia": 85,
+            "salto": 80
+            },
+            "mental": {
+            "concentracion": 88,
+            "anticipacion": 90,
+            "valentia": 75,
+            "liderazgo": 70,
+            "decisiones": 85
+            },
+            "portero": {
+            "reflejos": 0,
+            "paradas": 0,
+            "estirada": 0,
+            "juegoAereo": 0,
+            "unoContraUno": 0,
+            "blocaje": 0,
+            "saqueMano": 0,
+            "comunicacion": 0,
+            "penales": 0
+            }
+        },
+        "estado": {
+            "forma": 100,
+            "moral": 100,
+            "lesion": null
+        }
+    },
+    {
+        "nombre": "Thibaut Courtois",
+        "edad": 32,
+        "nacionalidad": "Bélgica",
+        "altura": 199,
+        "peso": 96,
+        "posicion": "portero",
+        "piernaBuena": "derecha",
+        "piernaMala": 2,
+        "valorMercado": 60000000,
+        "salario": 12000000,
+        "atributos": {
+            "ataque": {
+            "regate": 0,
+            "pase": 65,
+            "disparo": 0,
+            "vision": 70,
+            "centros": 0,
+            "desmarques": 0
+            },
+            "defensa": {
+            "marcaje": 0,
+            "entradas": 0,
+            "intercepciones": 0,
+            "despejes": 85,
+            "duelosAereos": 90,
+            "colocacion": 95
+            },
+            "fisico": {
+            "velocidad": 50,
+            "aceleracion": 45,
+            "fuerza": 80,
+            "resistencia": 60,
+            "salto": 88
+            },
+            "mental": {
+            "concentracion": 95,
+            "anticipacion": 92,
+            "valentia": 80,
+            "liderazgo": 85,
+            "decisiones": 90
+            },
+            "portero": {
+            "reflejos": 95,
+            "paradas": 92,
+            "estirada": 90,
+            "juegoAereo": 88,
+            "unoContraUno": 94,
+            "blocaje": 90,
+            "saqueMano": 85,
+            "comunicacion": 87,
+            "penales": 80
+            }
+        },
+        "estado": {
+            "forma": 100,
+            "moral": 100,
+            "lesion": null
+        }
+    }
+]

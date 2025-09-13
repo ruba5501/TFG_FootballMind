@@ -16,14 +16,12 @@ app.use(express.json());        // Parsear JSON
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public'))); // Archivos estáticos
 
-/* TO DO Rutas ejemplo
-const equiposRouter = require('./routes/equipos');
+//Routes
 const jugadoresRouter = require('./routes/jugadores');
 
-app.use('/api/equipos', equiposRouter);
-app.use('/api/jugadores', jugadoresRouter);
-*/
-// Ruta de prueba
+app.use('/jugadores', jugadoresRouter); //se puede poner solo '/' pero en el routes habria que añadir el /jugadores para cada llamada
+
+// Ruta de prueba (mirar si esta bien)
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
