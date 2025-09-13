@@ -1,22 +1,24 @@
-const mongoose = require('mongoose');
-const Jugador = require('../models/jugador');
-const jugadoresData = require('../../base_datos/jugadores.json');
+const fs = require('fs');
+const path = require('path');
 const connectDB = require('../db');
+const Jugador = require('../models/jugador');
 
-const cargarJugadores = async () => {
+async function cargarJugadores() {
   try {
-    // Conectar a MongoDB
     await connectDB();
-    // Limpiar la colección antes de cargar los datos
-    await Jugador.deleteMany();
-    // Insertar todos los jugadores del JSON
-    await Jugador.insertMany(jugadoresData);
 
-    console.log(`Se han cargado ${jugadoresData.length} jugadores en la base de datos`);
+    const dataPath = path.join(__dirname, '../../base_datos/jugadores.json');
+    const jugadores = JSON.parse(fs.readFileSync(dataPath, 'utf8'));
+
+    await Jugador.deleteMany({});
+    const jugadorAniadidos = await Jugador.insertMany(jugadores);
+
+    console.log(`Se han cargado ${jugadorAniadidos.length} jugadores`);
     process.exit();
   } catch (err) {
     console.error('Error cargando los jugadores:', err);
     process.exit(1);
   }
-};
+}
+
 cargarJugadores();

@@ -19,9 +19,11 @@ app.use(express.static(path.join(__dirname, 'public'))); // Archivos estáticos
 //Routes
 const jugadoresRouter = require('./routes/jugadores');
 const clubesRouter = require('./routes/clubes');
+const estadiosRouter = require('./routes/estadios');
 
 app.use('/jugadores', jugadoresRouter); //se puede poner solo '/' pero en el routes habria que añadir el /jugadores para cada llamada
 app.use('/clubes', clubesRouter);
+app.use('/estadios', estadiosRouter);
 
 // Ruta de prueba (mirar si esta bien)
 app.get('/', (req, res) => {
