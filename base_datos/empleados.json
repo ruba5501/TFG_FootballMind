@@ -1,0 +1,24 @@
+[
+  {
+    "nombre": "Juan Pérez",
+    "tipo": "preparadorFisico",
+    "atributos": {
+      "nivelRecuperacion": 85,
+      "nivelPrevencionLesiones": 80
+    }
+  },
+  {
+    "nombre": "Luis García",
+    "tipo": "preparadorTecnico",
+    "atributos": {
+      "nivelTecnico": 90
+    }
+  },
+  {
+    "nombre": "Carlos Martínez",
+    "tipo": "psicologo",
+    "atributos": {
+      "nivelPsicologico": 88
+    }
+  }
+]

@@ -12,55 +12,72 @@ const jugadorSchema = new mongoose.Schema({
     required: true
   },
   piernaBuena: { type: String, enum: ['izquierda', 'derecha'], required: true },
-  piernaMala: { type: Number, min: 1, max: 5, default: 2 },
+  piernaMala: { type: Number, min: 0, max: 5, default: 0 },
+  versatilidad: { type: Number, min: 0, max: 5, default: 0 },
   valorMercado: Number,
   salario: Number,
-
+  valoracion: { type: Number, min: 0, max: 100, default: 0 },
+  potencial: { type: Number, min: 0, max: 100, default: 0 },
+  
   atributos: {
-    ataque: {
-      regate: { type: Number, default: 0 },
-      pase: { type: Number, default: 0 },
-      disparo: { type: Number, default: 0 },
-      vision: { type: Number, default: 0 },
-      centros: { type: Number, default: 0 },
-      desmarques: { type: Number, default: 0 }
+    habilidad: {
+      regate: { type: Number, min: 0, max: 100, default: 0 },
+      controlBalon: { type: Number, min: 0, max: 100, default: 0 },
+      desmarques: { type: Number, min: 0, max: 100, default: 0 }
+    },
+    tiro:{
+      definicion: { type: Number, min: 0, max: 100, default: 0 },
+      potenciaTiro:{ type: Number, min: 0, max: 100, default: 0 },
+      tiroLejano: { type: Number, min: 0, max: 100, default: 0 },
+      lanzamientoFaltas: { type: Number, min: 0, max: 100, default: 0 },
+      lanzamientoPenaltis: { type: Number, min: 0, max: 100, default: 0 },
+      remateCabeza: { type: Number, min: 0, max: 100, default: 0 }
+    },
+    pase:{
+      paseCorto: { type: Number, min: 0, max: 100, default: 0 },
+      paseLargo: { type: Number, min: 0, max: 100, default: 0 },
+      vision: { type: Number, min: 0, max: 100, default: 0 },
+      centros: { type: Number, min: 0, max: 100, default: 0 }
     },
     defensa: {
-      marcaje: { type: Number, default: 0 },
-      entradas: { type: Number, default: 0 },
-      intercepciones: { type: Number, default: 0 },
-      despejes: { type: Number, default: 0 },
-      duelosAereos: { type: Number, default: 0 },
-      colocacion: { type: Number, default: 0 }
+      marcaje: { type: Number, min: 0, max: 100, default: 0 },
+      entradas: { type: Number, min: 0, max: 100, default: 0 },
+      intercepciones: { type: Number, min: 0, max: 100, default: 0 },
+      despejes: { type: Number, min: 0, max: 100, default: 0 },
+      duelosAereos: { type: Number, min: 0, max: 100, default: 0 },
+      colocacion: { type: Number, min: 0, max: 100, default: 0 }
     },
     fisico: {
-      velocidad: { type: Number, default: 0 },
-      aceleracion: { type: Number, default: 0 },
-      fuerza: { type: Number, default: 0 },
-      resistencia: { type: Number, default: 0 },
-      salto: { type: Number, default: 0 }
+      velocidad: { type: Number, min: 0, max: 100, default: 0 },
+      aceleracion: { type: Number, min: 0, max: 100, default: 0 },
+      agilidad: { type: Number, min: 0, max: 100, default: 0 },
+      fuerza: { type: Number, min: 0, max: 100, default: 0 },
+      resistencia: { type: Number, min: 0, max: 100, default: 0 },
+      equilibrio: { type: Number, min: 0, max: 100, default: 0 },
+      salto: { type: Number, min: 0, max: 100, default: 0 }
     },
     mental: {
-      concentracion: { type: Number, default: 0 },
-      anticipacion: { type: Number, default: 0 },
-      valentia: { type: Number, default: 0 },
-      liderazgo: { type: Number, default: 0 },
-      decisiones: { type: Number, default: 0 }
+      concentracion: { type: Number, min: 0, max: 10, default: 0 },
+      liderazgo: { type: Number, min: 0, max: 100, default: 0 },
+      agresividad: { type: Number, min: 0, max: 100, default: 0 },
+      motivacion: { type: Number, min: 0, max: 10, default: 0 },
+      composturaBajoPresion: { type: Number, min: 0, max: 10, default: 0 }
+      //tomaDecisiones: { type: Number, default: 0 }
     },
     portero: {
-      reflejos: { type: Number, default: 0 },
-      paradas: { type: Number, default: 0 },
-      estirada: { type: Number, default: 0 },
-      juegoAereo: { type: Number, default: 0 },
-      unoContraUno: { type: Number, default: 0 },
-      blocaje: { type: Number, default: 0 },
-      saqueMano: { type: Number, default: 0 },
-      comunicacion: { type: Number, default: 0 },
-      penales: { type: Number, default: 0 }
+      reflejos: { type: Number, min: 0, max: 100, default: 0 },
+      paradas: { type: Number, min: 0, max: 100, default: 0 },
+      estirada: { type: Number, min: 0, max: 100, default: 0 },
+      juegoAereo: { type: Number, min: 0, max: 100, default: 0 },
+      unoContraUno: { type: Number, min: 0, max: 100, default: 0 },
+      blocaje: { type: Number, min: 0, max: 100, default: 0 },
+      saque: { type: Number, min: 0, max: 100, default: 0 },
+      comunicacion: { type: Number, min: 0, max: 100, default: 0 },
+      penales: { type: Number, min: 0, max: 100, default: 0 }
     }
   },
 
-  estado: {
+  estado: {//tanto forma como moral no se si ponerlo hasta 100 o menos
     forma: { type: Number, default: 100 },
     moral: { type: Number, default: 100 },
     lesion: { type: String, default: null }

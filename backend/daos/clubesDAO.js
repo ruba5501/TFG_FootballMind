@@ -1,8 +1,8 @@
 const Club = require('../models/club');
 
 class ClubsDAO {
-  async crearClub(datos) {
-    const club = new Club(datos);
+  async crearClub(data) {
+    const club = new Club(data);
     return await club.save();
   }
 
