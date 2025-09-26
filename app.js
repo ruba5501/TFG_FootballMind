@@ -15,13 +15,19 @@ app.use(cors());                // Permite peticiones desde frontend
 app.use(express.json());        // Parsear JSON
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public'))); // Archivos estáticos
+app.set('view engine', 'ejs');      //configuracion para EJS
+app.set('views', path.join(__dirname, 'views'));
 
 //Routes
+const indexRouter = require('./backend/routes/index');
+const usersRouter = require('./backend/routes/user_sesion');
 const jugadoresRouter = require('./backend/routes/jugadores');
 const clubesRouter = require('./backend/routes/clubes');
 const estadiosRouter = require('./backend/routes/estadios');
 const empleadosRouter = require('./backend/routes/empleados');
 
+app.use('/', indexRouter);
+app.use('/', usersRouter);
 app.use('/', jugadoresRouter);
 app.use('/', clubesRouter);
 app.use('/', estadiosRouter);

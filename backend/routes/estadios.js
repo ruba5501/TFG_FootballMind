@@ -1,8 +1,8 @@
 const express = require('express');
-const router = express.Router();
+const estadioRouter = express.Router();
 const estadiosDAO = require('../daos/estadiosDAO');
 
-router.post('/estadios', async (req, res) => {
+estadioRouter.post('/estadios', async (req, res) => {
   try {
     const estadio = await estadiosDAO.crearEstadio(req.body);
     res.json(estadio);
@@ -11,24 +11,24 @@ router.post('/estadios', async (req, res) => {
   }
 });
 
-router.get('/estadios', async (req, res) => {
+estadioRouter.get('/estadios', async (req, res) => {
   const estadios = await estadiosDAO.listarEstadios();
   res.json(estadios);
 });
 
-router.get('/buscarEstadio/:id', async (req, res) => {
+estadioRouter.get('/buscarEstadio/:id', async (req, res) => {
   const estadio = await estadiosDAO.buscarEstadioPorId(req.params.id);
   res.json(estadio);
 });
 
-router.put('/editarEstadio/:id', async (req, res) => {
+estadioRouter.put('/editarEstadio/:id', async (req, res) => {
   const estadio = await estadiosDAO.actualizarEstadio(req.params.id, req.body);
   res.json(estadio);
 });
 
-router.delete('/eliminarEstadio/:id', async (req, res) => {
+estadioRouter.delete('/eliminarEstadio/:id', async (req, res) => {
   await estadiosDAO.eliminarEstadio(req.params.id);
   res.json({ mensaje: 'Estadio eliminado' });
 });
 
-module.exports = router;
+module.exports = estadioRouter;
