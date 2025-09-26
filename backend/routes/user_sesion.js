@@ -3,7 +3,7 @@ const sesionRouter = express.Router();
 const bcrypt = require('bcrypt');
 const usersDAO = require('../daos/usersDAO');
 
-sesionRouter.post('/register', async (req, res) => {
+sesionRouter.post('/registro', async (req, res) => {
   try {
     const { username, email, password } = req.body;
 
@@ -27,7 +27,7 @@ sesionRouter.post('/register', async (req, res) => {
 
     await usersDAO.crearUsuario({ username, email, password: hashedPassword });
 
-    res.redirect('/');
+    res.redirect('/'); //TO DO:por ahora redirige a la primera pantalla porque la pantalla de inicio no esta hecha
   } catch (err) {
     console.error(err);
     res.status(500).send('Error en el registro');
@@ -54,7 +54,7 @@ sesionRouter.post('/login', async (req, res) => {
     req.session.userId = user._id;
     req.session.username = user.username;
 
-    res.redirect('/'); // por ahora redirige a la primera pantalla porque la pantalla de inicio no esta hecha
+    res.redirect('/'); //TO DO:por ahora redirige a la primera pantalla porque la pantalla de inicio no esta hecha
   } catch (err) {
     console.error(err);
     res.status(500).send('Error en el login');

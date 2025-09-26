@@ -8,7 +8,8 @@ const bodyParser = require('body-parser');
 const PORT = 3000;
 
 // Conexión a MongoDB desde db.js
-require('./backend/db');
+const connectDB = require('./backend/db');
+connectDB();
 
 // Middlewares
 app.use(cors());                // Permite peticiones desde frontend

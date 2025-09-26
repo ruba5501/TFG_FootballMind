@@ -1,33 +1,75 @@
 <!DOCTYPE html>
 <html lang="es">
-    <head>
-        <meta charset="UTF-8">
-        <META NAME="viewport" contente="width=device-width, initial-scale=1.0">
-            <title>FootballMind, bienvenido</title>
-    </head>
-    <body>
-        <div class="container">
-            <h1>FootballMind</h1>
-            <p>Para poder continuar es necesario estar registrado</p>
-            
-            <form action="/login" method="POST">
-                <div>
-                    <label for="username">Usuario:</label><br>
-                    <input type="text" id="username" name="username" required>
-                </div>
-                <div>
-                    <label for="password">Contraseña:</label><br>
-                    <input type="password" id="password" name="password" required>
-                </div>
-                <button type="submit">Iniciar Sesión</button>
-            </form>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FootballMind, bienvenido</title>
 
-            <hr>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">FootballMind</h1>
+        <p class="text-center">Para poder continuar es necesario estar registrado</p>
 
-            <p>¿No tienes cuenta?</p>
-            <a href="/register" target ="_blank">
-                <button>Registrarse</button>
-            </a>
+        <form action="/login" method="POST" class="mx-auto" style="max-width: 400px;">
+            <div class="mb-3">
+                <label for="username" class="form-label">Usuario:</label>
+                <input type="text" id="username" name="username" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label for="password" class="form-label">Contraseña:</label>
+                <input type="password" id="password" name="password" class="form-control" required>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Iniciar Sesión</button>
+        </form>
+
+        <hr class="my-4">
+
+        <p class="text-center">¿No tienes cuenta?</p>
+        <div class="text-center">
+            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#registroModal">
+                Registrarse
+            </button>
         </div>
-    </body>
+    </div>
+
+    <!-- Modal de registro -->
+    <div class="modal fade" id="registroModal" tabindex="-1" aria-labelledby="registroModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+
+          <div class="modal-header">
+            <h5 class="modal-title" id="registroModalLabel">Registro de usuario</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+          </div>
+
+          <div class="modal-body">
+            <form id="registroForm" action="/registro" method="POST">
+              <div class="mb-3">
+                <label for="usernameModal" class="form-label">Nombre de usuario</label>
+                <input type="text" class="form-control" id="usernameModal" name="username" required>
+              </div>
+
+              <div class="mb-3">
+                <label for="emailModal" class="form-label">Correo electrónico</label>
+                <input type="email" class="form-control" id="emailModal" name="email" required>
+              </div>
+
+              <div class="mb-3">
+                <label for="passwordModal" class="form-label">Contraseña</label>
+                <input type="password" class="form-control" id="passwordModal" name="password" required>
+              </div>
+
+              <button type="submit" class="btn btn-success w-100">Guardar</button>
+            </form>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
 </html>
