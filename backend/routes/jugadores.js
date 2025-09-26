@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const jugadoresDAO = require('../daos/jugadoresDAO');
 
-router.post('/', async (req, res) => {
+router.post('/jugadores', async (req, res) => {
   try {
     const jugador = await jugadoresDAO.crearJugador(req.body);
     res.json(jugador);
@@ -11,22 +11,22 @@ router.post('/', async (req, res) => {
   }
 });
 
-router.get('/', async (req, res) => {
+router.get('/jugadores', async (req, res) => {
   const jugadores = await jugadoresDAO.listarJugadores();
   res.json(jugadores);
 });
 
-router.get('/:id', async (req, res) => {
+router.get('/buscarJugador/:id', async (req, res) => {
   const jugador = await jugadoresDAO.buscarJugadorPorId(req.params.id);
   res.json(jugador);
 });
 
-router.put('/:id', async (req, res) => {
+router.put('/editarJugador/:id', async (req, res) => {
   const jugador = await jugadoresDAO.actualizarJugador(req.params.id, req.body);
   res.json(jugador);
 });
 
-router.delete('/:id', async (req, res) => {
+router.delete('/eliminarJugador/:id', async (req, res) => {
   await jugadoresDAO.eliminarJugador(req.params.id);
   res.json({ mensaje: "Jugador eliminado" });
 });

@@ -5,10 +5,10 @@ const app = express();
 const path = require('path');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const PORT = 3001;
+const PORT = 3000;
 
 // Conexión a MongoDB desde db.js
-require('./db');
+require('./backend/db');
 
 // Middlewares
 app.use(cors());                // Permite peticiones desde frontend
@@ -17,18 +17,16 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public'))); // Archivos estáticos
 
 //Routes
-const jugadoresRouter = require('./routes/jugadores');
-const clubesRouter = require('./routes/clubes');
-const estadiosRouter = require('./routes/estadios');
+const jugadoresRouter = require('./backend/routes/jugadores');
+const clubesRouter = require('./backend/routes/clubes');
+const estadiosRouter = require('./backend/routes/estadios');
+const empleadosRouter = require('./backend/routes/empleados');
 
-app.use('/jugadores', jugadoresRouter); //se puede poner solo '/' pero en el routes habria que añadir el /jugadores para cada llamada
-app.use('/clubes', clubesRouter);
-app.use('/estadios', estadiosRouter);
+app.use('/', jugadoresRouter);
+app.use('/', clubesRouter);
+app.use('/', estadiosRouter);
+app.use('/', empleadosRouter);
 
-// Ruta de prueba (mirar si esta bien)
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
 
 // Middleware Error 404
 app.use((req, res, next) => {

@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Empleado = require('../models/empleado');
 
-router.post('/', async (req, res) => {
+router.post('/empleados', async (req, res) => {
   try {
     const empleado = new Empleado(req.body);
     const guardado = await empleado.save();
@@ -12,7 +12,7 @@ router.post('/', async (req, res) => {
   }
 });
 
-router.get('/', async (req, res) => {
+router.get('/empleados', async (req, res) => {
   try {
     const empleados = await Empleado.find();
     res.json(empleados);
@@ -21,7 +21,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-router.get('/:id', async (req, res) => {
+router.get('/buscarEmpleado/:id', async (req, res) => {
   try {
     const empleado = await Empleado.findById(req.params.id);
     if (!empleado) return res.status(404).json({ error: 'Empleado no encontrado' });
@@ -31,7 +31,7 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-router.put('/:id', async (req, res) => {
+router.put('/editarEmplado/:id', async (req, res) => {
   try {
     const empleado = await Empleado.findByIdAndUpdate(req.params.id, req.body, { new: true });
     res.json(empleado);
@@ -40,7 +40,7 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-router.delete('/:id', async (req, res) => {
+router.delete('/eliminarEmpleado/:id', async (req, res) => {
   try {
     await Empleado.findByIdAndDelete(req.params.id);
     res.json({ mensaje: 'Empleado eliminado' });
