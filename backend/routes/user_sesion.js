@@ -27,7 +27,11 @@ sesionRouter.post('/registro', async (req, res) => {
 
     await usersDAO.crearUsuario({ username, email, password: hashedPassword });
 
-    res.redirect('/'); //TO DO:por ahora redirige a la primera pantalla porque la pantalla de inicio no esta hecha
+    const user = await usersDAO.buscarPorUsername(username);
+    req.session.userId = user._id;
+    req.session.username = user.username;
+
+    res.redirect('/seleccionPartida');
   } catch (err) {
     console.error(err);
     res.status(500).send('Error en el registro');
@@ -41,20 +45,20 @@ sesionRouter.post('/login', async (req, res) => {
     // Buscar usuario
     const user =  await usersDAO.buscarPorUsername(username);
     if (!user) {
-      return res.status(400).send('Usuario no encontrado');
+      return res.render('index', { errorUsername: 'El usuario no existe', errorPassword: null });
     }
 
     // Comparar contraseña
     const isCorrecta = await bcrypt.compare(password, user.password);
     if (!isCorrecta) {
-      return res.status(400).send('Contraseña incorrecta');
+      return res.render('index', { errorUsername: null, errorPassword: 'Contraseña incorrecta' });
     }
 
     // Guardar sesión
     req.session.userId = user._id;
     req.session.username = user.username;
 
-    res.redirect('/'); //TO DO:por ahora redirige a la primera pantalla porque la pantalla de inicio no esta hecha
+    res.redirect('/seleccionPartida');
   } catch (err) {
     console.error(err);
     res.status(500).send('Error en el login');

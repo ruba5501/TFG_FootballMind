@@ -15,11 +15,21 @@
         <form action="/login" method="POST" class="mx-auto" style="max-width: 400px;">
             <div class="mb-3">
                 <label for="username" class="form-label">Usuario:</label>
-                <input type="text" id="username" name="username" class="form-control" required>
+                <input type="text" id="username" name="username"
+                      class="form-control <%= errorUsername ? 'is-invalid' : '' %>"
+                      required>
+                <% if (errorUsername) { %>
+                  <div class="invalid-feedback"><%= errorUsername %></div>
+                <% } %>
             </div>
             <div class="mb-3">
                 <label for="password" class="form-label">Contraseña:</label>
-                <input type="password" id="password" name="password" class="form-control" required>
+                <input type="password" id="password" name="password"
+                      class="form-control <%= errorPassword ? 'is-invalid' : '' %>"
+                      required>
+                <% if (errorPassword) { %>
+                  <div class="invalid-feedback"><%= errorPassword %></div>
+                <% } %>
             </div>
             <button type="submit" class="btn btn-primary w-100">Iniciar Sesión</button>
         </form>
@@ -60,10 +70,11 @@
                 <label for="passwordModal" class="form-label">Contraseña:</label>
                 <input type="password" class="form-control" id="passwordModal" name="password" required>
               </div>
-            </form>
-          </div>
-          <div class="modal-footer d-flex justify-content-center">
-            <button type="submit" class="btn btn-success w-50">Guardar</button>
+
+              <div class="modal-footer d-flex justify-content-center">
+                <button type="submit" class="btn btn-success w-50">Guardar</button>
+              </div>
+            </form>          
           </div>
         </div>
       </div>
