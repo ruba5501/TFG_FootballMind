@@ -1,8 +1,8 @@
 const mongoose = require('mongoose');
 
 const estadioSchema = new mongoose.Schema({
-  nombre: { type: String, required: true },
-  ciudad: { type: String, required: true },
+  nombre: { type: String, required: true, trim: true },
+  ciudad: { type: String, required: true, trim: true },
   capacidad: { type: Number, required: true },
   anioConstruccion: { type: Number, required: true },
   estadoActual: { type: String, enum: ['excelente', 'bueno', 'regular', 'malo'], default: 'bueno' }

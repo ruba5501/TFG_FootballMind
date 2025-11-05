@@ -1,0 +1,14 @@
+body {
+  background-color: #f8f9fa;
+}
+
+.step {
+  border: 1px solid #ddd;
+  padding: 20px;
+  border-radius: 10px;
+  background: white;
+}
+
+.is-invalid {
+  border-color: red;
+}

@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const jugadorSchema = new mongoose.Schema({
-  nombre: { type: String, required: true },
+  nombre: { type: String, required: true, trim: true },
   edad: { type: Number, required: true },
   nacionalidad: String,
   altura: Number,

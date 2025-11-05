@@ -1,10 +1,15 @@
 const express = require('express');
 const partidaRouter = express.Router();
 const partidaDAO = require('../daos/partidasDAO');
+const Liga = require('../models/liga');
+const Club = require('../models/club');
+const Empleado = require('../models/empleado');
+const Partida = require('../models/partida');
 
+// Middleware de sesión
 function requireLogin(req, res, next) {
-  if (!req.session.userId) {
-    return res.redirect('/login');
+  if (!req.session || !req.session.userId) {
+    return res.redirect('/');
   }
   next();
 }
@@ -13,50 +18,42 @@ partidaRouter.get('/seleccionPartida', requireLogin, async (req, res) =>{
   res.render('seleccionPartida');
 });
 
+partidaRouter.get('/crearPartida', requireLogin, async (req, res) => {
+  try {
+    const ligas = await Liga.find();
+    const clubes = await Club.find().populate('liga');
+    res.render('crearPartida', { ligas, clubes });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error al cargar datos');
+  }
+});
+
 partidaRouter.post('/crearPartida', requireLogin, async (req, res) => {
-  const { nombrePartida, clubSeleccionado } = req.body;
   try {
-    const partida = await partidaDAO.crearPartida(req.session.userId, nombrePartida, clubSeleccionado);
-    res.redirect('/partidas/listar'); //TO DO te manda a la ventana de crear partida
+    const { nombreEntrenador, edad, nacionalidad, atributos, clubSeleccionado, nombrePartida } = req.body;
+
+    const entrenador = new Empleado({
+      nombre: nombreEntrenador,
+      edad,
+      nacionalidad,
+      tipo: 'entrenadorPrincipal',
+      atributos
+    });
+    await entrenador.save();
+
+    const partida = new Partida({
+      usuarioId: req.session.userId,
+      nombre: nombrePartida,
+      entrenador: entrenador._id,
+      club: clubSeleccionado
+    });
+
+    await partida.save();
+    res.redirect('/seleccionPartida');
   } catch (err) {
     console.error(err);
-    res.status(500).send("Error al crear la partida");
-  }
-});
-
-partidaRouter.get('/listarPartidas', requireLogin, async (req, res) => {
-  try {
-    const partidas = await partidaDAO.listarPartidasPorUsuario(req.session.userId);
-    res.render('partidas', { partidas });
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Error al listar partidas");
-  }
-});
-
-partidaRouter.get('/cargarPartida/:id', requireLogin, async (req, res) => {
-  try {
-    const partida = await partidaDAO.obtenerPartidaPorId(req.params.id);
-    if (!partida || partida.usuarioId.toString() !== req.session.userId) {
-      return res.status(403).send("No tienes acceso a esta partida");
-    }
-
-    // Guardamos partida activa en la sesión
-    req.session.partidaId = partida._id;
-    res.redirect('/juego'); // aquí llevarías al menú principal del juego
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Error al cargar partida");
-  }
-});
-
-partidaRouter.post('/eliminarPartida/:id', requireLogin, async (req, res) => {
-  try {
-    await partidaDAO.eliminarPartida(req.params.id);
-    res.redirect('/partidas/listar');
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Error al eliminar partida");
+    res.status(500).send('Error al crear la partida');
   }
 });
 
