@@ -28,6 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   next2.addEventListener('click', () => {
+
     const liga = document.getElementById('ligaSelect').value;
     const club = document.getElementById('clubSelect').value;
     if (!liga || !club) return alert('Debes seleccionar una liga y un club');
@@ -50,13 +51,34 @@ document.addEventListener('DOMContentLoaded', () => {
   // Sistema de puntos
   const atributos = document.querySelectorAll('.atributo');
   const puntosRestantes = document.getElementById('puntosRestantes');
-  let total = 200;
+  const TOTAL_PUNTOS = 450;
+
+  function sumaAtributos() {
+    return Array.from(atributos).reduce((acc, inp) => acc + (parseInt(inp.value, 10) || 0), 0);
+  }
 
   atributos.forEach(input => {
-    input.addEventListener('input', () => {
-      const suma = Array.from(atributos).reduce((acc, inp) => acc + Number(inp.value || 0), 0);
-      const restantes = 200 - suma;
+    input.dataset.prev = input.value || '0';
+    input.addEventListener('input', (e) => {
+      let val = parseInt(input.value, 10);
+
+      if (isNaN(val) || val < 0) val = 0;
+
+      input.value = val;
+      const suma = sumaAtributos();
+
+      if (suma > TOTAL_PUNTOS) {
+        const exceso = suma - TOTAL_PUNTOS;
+        let nuevoVal = val - exceso;
+
+        if (nuevoVal < 0) nuevoVal = 0;
+
+        input.value = nuevoVal;
+      }
+      input.dataset.prev = input.value;
+      const restantes = TOTAL_PUNTOS - sumaAtributos();
       puntosRestantes.textContent = `Puntos restantes: ${restantes}`;
+
       if (restantes < 0) puntosRestantes.classList.add('text-danger');
       else puntosRestantes.classList.remove('text-danger');
     });

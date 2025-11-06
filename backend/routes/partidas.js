@@ -3,8 +3,6 @@ const partidaRouter = express.Router();
 const partidaDAO = require('../daos/partidasDAO');
 const Liga = require('../models/liga');
 const Club = require('../models/club');
-const Empleado = require('../models/empleado');
-const Partida = require('../models/partida');
 
 // Middleware de sesión
 function requireLogin(req, res, next) {

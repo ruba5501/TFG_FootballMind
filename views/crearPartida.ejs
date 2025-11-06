@@ -25,12 +25,44 @@
           <input type="number" name="edad" class="form-control" min="18" max="80" required>
         </div>
         <div class="mb-3">
-          <label>Nacionalidad:</label>
-          <input type="text" name="nacionalidad" class="form-control" required>
+          <label for="nacionalidad" class="form-label">Nacionalidad:</label>
+          <select name="nacionalidad" id="nacionalidad" class="form-select" required>
+            <option value="">Selecciona una nacionalidad</option>
+            <option value="Alemania">Alemania</option>
+            <option value="Argentina">Argentina</option>
+            <option value="Australia">Australia</option>
+            <option value="Bélgica">Bélgica</option>
+            <option value="Brasil">Brasil</option>
+            <option value="Canadá">Canadá</option>
+            <option value="Chile">Chile</option>
+            <option value="China">China</option>
+            <option value="Colombia">Colombia</option>
+            <option value="Corea del Sur">Corea del Sur</option>
+            <option value="Croacia">Croacia</option>
+            <option value="Dinamarca">Dinamarca</option>
+            <option value="Egipto">Egipto</option>
+            <option value="España">España</option>
+            <option value="Estados Unidos">Estados Unidos</option>
+            <option value="Francia">Francia</option>
+            <option value="Inglaterra">Inglaterra</option>
+            <option value="Italia">Italia</option>
+            <option value="Japón">Japón</option>
+            <option value="México">México</option>
+            <option value="Marruecos">Marruecos</option>
+            <option value="Nigeria">Nigeria</option>
+            <option value="Noruega">Noruega</option>
+            <option value="Países Bajos">Países Bajos</option>
+            <option value="Paraguay">Paraguay</option>
+            <option value="Perú">Perú</option>
+            <option value="Polonia">Polonia</option>
+            <option value="Portugal">Portugal</option>
+            <option value="Suecia">Suecia</option>
+            <option value="Uruguay">Uruguay</option>
+          </select>
         </div>
-
-        <h5>Atributos (200 puntos disponibles)</h5>
-        <div id="puntosRestantes" class="text-danger mb-2">Puntos restantes: 200</div>
+        
+        <h5>Atributos (450 puntos disponibles)</h5>
+        <div id="puntosRestantes" class="text-danger mb-2">Puntos restantes: 450</div>
 
         <div class="row">
           <% const atributos = ['nivelFisico','nivelTecnico','nivelTactico','nivelPortero','nivelCantera','motivacion','desarrolloJovenes','reputacion','experiencia']; %>
@@ -60,10 +92,10 @@
 
         <div class="mb-3">
           <label>Club:</label>
-          <select id="clubSelect" name="clubSeleccionado" class="form-select">
+          <select id="club" class="form-select" required>
             <option value="">Selecciona un club</option>
             <% clubes.forEach(c => { %>
-              <option data-liga="<%= c.liga._id %>" value="<%= c._id %>"><%= c.nombre %></option>
+              <option data-liga="<%= c.liga ? c.liga._id : '' %>" value="<%= c._id %>"> <%= c.nombre %></option>
             <% }) %>
           </select>
         </div>
