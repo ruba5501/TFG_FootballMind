@@ -1,16 +1,9 @@
 const express = require('express');
 const partidaRouter = express.Router();
 const partidaDAO = require('../daos/partidasDAO');
-const Liga = require('../models/liga');
+const Competicion = require('../models/competicion');
 const Club = require('../models/club');
-
-// Middleware de sesión
-function requireLogin(req, res, next) {
-  if (!req.session || !req.session.userId) {
-    return res.redirect('/');
-  }
-  next();
-}
+const { requireLogin } = require('../middleware/autenticacion');
 
 partidaRouter.get('/seleccionPartida', requireLogin, async (req, res) =>{
   res.render('seleccionPartida');
@@ -18,8 +11,8 @@ partidaRouter.get('/seleccionPartida', requireLogin, async (req, res) =>{
 
 partidaRouter.get('/crearPartida', requireLogin, async (req, res) => {
   try {
-    const ligas = await Liga.find();
-    const clubes = await Club.find().populate('liga');
+    const ligas = await Competicion.find({ tipo: 'liga' });
+    const clubes = await Club.find().populate('competiciones');
     res.render('crearPartida', { ligas, clubes });
   } catch (err) {
     console.error(err);

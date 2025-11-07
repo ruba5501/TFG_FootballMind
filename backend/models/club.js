@@ -4,7 +4,7 @@ const clubSchema = new mongoose.Schema({
   nombre: { type: String, required: true, unique: true, trim: true },
   ciudad: { type: String, required: true, trim: true },
   estadio: { type: mongoose.Schema.Types.ObjectId, ref: 'Estadio', required: true },
-  liga: { type: mongoose.Schema.Types.ObjectId, ref: 'Liga', required: true },
+  competiciones: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Competicion', required: true }],
 
   presupuestoTraspasos: { type: Number, default: 0 },
   presupuestoSalarios: { type: Number, default: 0 },

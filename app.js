@@ -45,7 +45,6 @@ app.use('/', estadiosRouter);
 app.use('/', empleadosRouter);
 app.use('/', partidasRouter);
 
-
 // Middleware Error 404
 app.use((req, res, next) => {
   res.status(404).send('Página no encontrada');

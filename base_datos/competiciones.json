@@ -1,0 +1,34 @@
+[
+  { "nombre": "LaLiga EA Sports", "pais": "España", "tipo": "liga", "clubes": ["Athletic Club"] },
+  { "nombre": "Copa del Rey", "pais": "España", "tipo": "copa", "clubes": ["Athletic Club"] },
+  
+  { "nombre": "Premier League", "pais": "Inglaterra", "tipo": "liga", "clubes": [] },
+  { "nombre": "FA Cup", "pais": "Inglaterra", "tipo": "copa", "clubes": [] },
+
+  { "nombre": "Serie A", "pais": "Italia", "tipo": "liga", "clubes": [] },
+  { "nombre": "Coppa Italia", "pais": "Italia", "tipo": "copa", "clubes": [] },
+
+  { "nombre": "Bundesliga", "pais": "Alemania", "tipo": "liga", "clubes": [] },
+  { "nombre": "DFB-Pokal", "pais": "Alemania", "tipo": "copa", "clubes": [] },
+
+  { "nombre": "Ligue 1", "pais": "Francia", "tipo": "liga", "clubes": [] },
+  { "nombre": "Coupe de France", "pais": "Francia", "tipo": "copa", "clubes": [] },
+
+  { "nombre": "Eredivisie", "pais": "Países Bajos", "tipo": "liga", "clubes": [] },
+  { "nombre": "KNVB Beker", "pais": "Países Bajos", "tipo": "copa", "clubes": [] },
+
+  { "nombre": "Primeira Liga", "pais": "Portugal", "tipo": "liga", "clubes": [] },
+  { "nombre": "Taça de Portugal", "pais": "Portugal", "tipo": "copa", "clubes": [] },
+
+  { "nombre": "Liga Profesional Argentina", "pais": "Argentina", "tipo": "liga", "clubes": [] },
+  { "nombre": "Copa Argentina", "pais": "Argentina", "tipo": "copa", "clubes": [] },
+
+  { "nombre": "Brasileirão Serie A", "pais": "Brasil", "tipo": "liga", "clubes": [] },
+  { "nombre": "Copa do Brasil", "pais": "Brasil", "tipo": "copa", "clubes": [] },
+
+  { "nombre": "UEFA Champions League", "pais": null, "tipo": "internacional", "clubes": ["Athletic Club"] },
+  { "nombre": "UEFA Europa League", "pais": null, "tipo": "internacional", "clubes": [] },
+  { "nombre": "UEFA Conference League", "pais": null, "tipo": "internacional", "clubes": [] },
+  { "nombre": "Copa Libertadores", "pais": null, "tipo": "internacional", "clubes": [] },
+  { "nombre": "Copa Sudamericana", "pais": null, "tipo": "internacional", "clubes": [] }
+]

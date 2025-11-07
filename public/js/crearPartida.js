@@ -28,9 +28,8 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   next2.addEventListener('click', () => {
-
     const liga = document.getElementById('ligaSelect').value;
-    const club = document.getElementById('clubSelect').value;
+    const club = document.getElementById('club').value;
     if (!liga || !club) return alert('Debes seleccionar una liga y un club');
     showStep(2);
   });
@@ -38,14 +37,21 @@ document.addEventListener('DOMContentLoaded', () => {
   back2.addEventListener('click', () => showStep(0));
   back3.addEventListener('click', () => showStep(1));
 
-  // Filtrar clubes por liga
-  document.getElementById('ligaSelect').addEventListener('change', function() {
-    const ligaId = this.value;
-    const options = document.querySelectorAll('#clubSelect option');
-    options.forEach(opt => {
-      opt.hidden = opt.getAttribute('data-liga') !== ligaId && opt.value !== "";
+  // 👉 Filtrar clubes por liga seleccionada
+  const ligaSelect = document.getElementById('ligaSelect');
+  const clubSelect = document.getElementById('club');
+
+  ligaSelect.addEventListener('change', () => {
+    const ligaSeleccionada = ligaSelect.value;
+
+    Array.from(clubSelect.options).forEach(option => {
+      if (!option.value) return; // dejar opción "Selecciona un club"
+      const ligaClub = option.getAttribute('data-liga');
+      option.style.display = ligaSeleccionada === ligaClub ? 'block' : 'none';
     });
-    document.getElementById('clubSelect').value = "";
+
+    // Resetear selección de club al cambiar de liga
+    clubSelect.value = '';
   });
 
   // Sistema de puntos
@@ -59,9 +65,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   atributos.forEach(input => {
     input.dataset.prev = input.value || '0';
-    input.addEventListener('input', (e) => {
+    input.addEventListener('input', () => {
       let val = parseInt(input.value, 10);
-
       if (isNaN(val) || val < 0) val = 0;
 
       input.value = val;
@@ -70,17 +75,15 @@ document.addEventListener('DOMContentLoaded', () => {
       if (suma > TOTAL_PUNTOS) {
         const exceso = suma - TOTAL_PUNTOS;
         let nuevoVal = val - exceso;
-
         if (nuevoVal < 0) nuevoVal = 0;
-
         input.value = nuevoVal;
       }
+
       input.dataset.prev = input.value;
       const restantes = TOTAL_PUNTOS - sumaAtributos();
       puntosRestantes.textContent = `Puntos restantes: ${restantes}`;
 
-      if (restantes < 0) puntosRestantes.classList.add('text-danger');
-      else puntosRestantes.classList.remove('text-danger');
+      puntosRestantes.classList.toggle('text-danger', restantes < 0);
     });
   });
 });
