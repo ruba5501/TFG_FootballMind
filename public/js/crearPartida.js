@@ -7,7 +7,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const back2 = document.getElementById('back2');
   const back3 = document.getElementById('back3');
 
-  // Control de pasos
+  // ==============================
+  // 🔹 Control de pasos
+  // ==============================
   function showStep(i) {
     steps.forEach((s, idx) => s.classList.toggle('d-none', idx !== i));
     currentStep = i;
@@ -16,6 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
   next1.addEventListener('click', () => {
     const inputs = steps[0].querySelectorAll('input[required]');
     let valid = true;
+
     inputs.forEach(inp => {
       if (!inp.value.trim()) {
         inp.classList.add('is-invalid');
@@ -24,37 +27,73 @@ document.addEventListener('DOMContentLoaded', () => {
         inp.classList.remove('is-invalid');
       }
     });
+
     if (valid) showStep(1);
   });
 
   next2.addEventListener('click', () => {
     const liga = document.getElementById('ligaSelect').value;
     const club = document.getElementById('club').value;
-    if (!liga || !club) return alert('Debes seleccionar una liga y un club');
+
+    if (!liga || !club) {
+      alert('Debes seleccionar una liga y un club');
+      return;
+    }
+
     showStep(2);
   });
 
   back2.addEventListener('click', () => showStep(0));
   back3.addEventListener('click', () => showStep(1));
 
-  // 👉 Filtrar clubes por liga seleccionada
+  // ==============================
+  // 🔹 Sincronización Liga ↔ Club
+  // ==============================
   const ligaSelect = document.getElementById('ligaSelect');
   const clubSelect = document.getElementById('club');
 
+  // Al inicio mostrar todos los clubes
+  Array.from(clubSelect.options).forEach(opt => {
+    if (opt.value) opt.style.display = 'block';
+  });
+
+  // --- Cuando seleccionas una liga ---
   ligaSelect.addEventListener('change', () => {
     const ligaSeleccionada = ligaSelect.value;
 
     Array.from(clubSelect.options).forEach(option => {
-      if (!option.value) return; // dejar opción "Selecciona un club"
-      const ligaClub = option.getAttribute('data-liga');
-      option.style.display = ligaSeleccionada === ligaClub ? 'block' : 'none';
+      if (!option.value) return; // Saltar "Selecciona un club"
+      const ligasClub = option.getAttribute('data-ligas')
+        ? option.getAttribute('data-ligas').split(',')
+        : [];
+
+      // Mostrar solo si pertenece a la liga seleccionada
+      const visible = ligaSeleccionada === '' || ligasClub.includes(ligaSeleccionada);
+      option.style.display = visible ? 'block' : 'none';
     });
 
-    // Resetear selección de club al cambiar de liga
+    // Resetear selección al cambiar de liga
     clubSelect.value = '';
   });
 
-  // Sistema de puntos
+  // --- Cuando seleccionas un club ---
+  clubSelect.addEventListener('change', () => {
+    const selectedClub = clubSelect.options[clubSelect.selectedIndex];
+    if (!selectedClub) return;
+
+    const ligasClub = selectedClub.getAttribute('data-ligas')
+      ? selectedClub.getAttribute('data-ligas').split(',')
+      : [];
+
+    // Si el club pertenece a una liga, se selecciona automáticamente
+    if (ligasClub.length > 0 && ligasClub[0] !== '') {
+      ligaSelect.value = ligasClub[0];
+    }
+  });
+
+  // ==============================
+  // 🔹 Sistema de puntos (450 máx)
+  // ==============================
   const atributos = document.querySelectorAll('.atributo');
   const puntosRestantes = document.getElementById('puntosRestantes');
   const TOTAL_PUNTOS = 450;

@@ -92,10 +92,14 @@
 
         <div class="mb-3">
           <label>Club:</label>
-          <select id="club" class="form-select" required>
+          <select id="club" name="clubSeleccionado" class="form-select" required>
             <option value="">Selecciona un club</option>
             <% clubes.forEach(c => { %>
-              <option data-liga="<%= c.liga ? c.liga._id : '' %>" value="<%= c._id %>"> <%= c.nombre %></option>
+              <option 
+                data-ligas="<%= c.competiciones.map(co => co._id).join(',') %>" 
+                value="<%= c._id %>">
+                <%= c.nombre %>
+              </option>
             <% }) %>
           </select>
         </div>

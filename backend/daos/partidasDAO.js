@@ -1,14 +1,15 @@
 const Partida = require('../models/partida');
 
 class PartidaDAO {
-  async crearPartida(usuarioId, nombrePartida, clubSeleccionado) {
-    const nuevaPartida = new Partida({
+  async crearPartida(usuarioId, nombrePartida, clubSeleccionado, entrenadorId) {
+    const partida = new Partida({
       usuarioId,
-      nombrePartida,
-      clubSeleccionado,
-      estadoJuego: {} // al empezar está vacío
+      nombre: nombrePartida,
+      entrenador: entrenadorId,
+      club: clubSeleccionado,
+      estadoJuego: {}
     });
-    return await nuevaPartida.save();
+    return await partida.save();
   }
 
   async listarPartidasPorUsuario(usuarioId) {

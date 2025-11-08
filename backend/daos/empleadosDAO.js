@@ -5,7 +5,7 @@ class EmpleadosDAO {
     const empleado = new Empleado(data);
     return await empleado.save();
   }
-
+  
   async listarEmpleados() {
     return await Empleado.find();
   }
