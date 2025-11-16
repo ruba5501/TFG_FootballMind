@@ -13,7 +13,7 @@ const connectDB = require('./backend/db');
 connectDB();
 
 // Middleware session
-const middlewareSession = require('./middlewares/sessions');
+const middlewareSession = require('./backend/middleware/sessions');
 
 // Middlewares globales
 app.use(cors());                // Permite peticiones desde frontend
