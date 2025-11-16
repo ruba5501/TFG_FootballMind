@@ -1,18 +1,21 @@
 "use strict";
 
+require('dotenv').config();
 const express = require('express');
-const session = require('express-session');
 const app = express();
 const path = require('path');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const PORT = 3000;
+const port = process.env.PORT || 3000;
 
 // Conexión a MongoDB desde db.js
 const connectDB = require('./backend/db');
 connectDB();
 
-// Middlewares
+// Middleware session
+const middlewareSession = require('./middlewares/sessions');
+
+// Middlewares globales
 app.use(cors());                // Permite peticiones desde frontend
 app.use(express.json());        // Parsear JSON
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -20,13 +23,14 @@ app.use(express.static(path.join(__dirname, 'public'))); // Archivos estáticos
 app.set('view engine', 'ejs');      //configuracion para EJS
 app.set('views', path.join(__dirname, 'views'));
 
-// Configurar sesiones
-app.use(session({
-  secret: 'mi_clave_secreta', // cambiar por algo seguro
-  resave: false,
-  saveUninitialized: false,
-  cookie: { maxAge: 1000 * 60 * 60 * 24 } // 1 día
-}));
+
+app.use(middlewareSession);
+
+// Middleware para exponer el usuario logueado a todas las vistas
+app.use((req, res, next) => {
+  res.locals.user = req.session.user || null;
+  next();
+});
 
 //Routes
 const indexRouter = require('./backend/routes/index');
@@ -46,17 +50,24 @@ app.use('/', empleadosRouter);
 app.use('/', partidasRouter);
 
 // Middleware Error 404
-app.use((req, res, next) => {
-  res.status(404).send('Página no encontrada');
+app.use((request, response, next) => {
+    response.status(404);
+    response.render("error404", {url: request.url});
 });
 
-// Middleware Error 500
+// Middleware Error 500: Internal Server Error
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).send('Error interno del servidor');
+    res.status(500);
+    res.render('error500', {
+        message: err.message,
+        stack: err.stack
+    });
 });
 
 // Iniciar servidor
-app.listen(PORT, () => {
-  console.log(`Servidor FootballMind escuchando en http://localhost:${PORT}`);
+app.listen(port, (err) => {
+    if (err)
+        console.error(`No se pudo inicializar el servidor: ${err.message}`);
+    else
+      console.log(`Servidor FootballMind escuchando en http://localhost:${port}`);
 });

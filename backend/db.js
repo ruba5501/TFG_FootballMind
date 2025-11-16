@@ -1,10 +1,11 @@
 const mongoose = require('mongoose');
+require('dotenv').config(); 
 
 const connectDB = async () => {
   try {
-    await mongoose.connect('mongodb+srv://rubgom05:Rubaesc5501@cluster0.9zmet4b.mongodb.net/FootballMind');
+    await mongoose.connect(process.env.MONGO_URI);
 
-    console.log('MongoDB conectado');
+    console.log('MongoDB conectado correctamente');
   } catch (err) {
     console.error('Error conectando a MongoDB:', err);
     process.exit(1);
