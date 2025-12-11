@@ -1,0 +1,61 @@
+<%- include('partials/head', {title: 'Crear Partida - selección club'}) %>
+
+<div class="container mt-5">
+  <h1 class="mb-4">Selecciona liga y club</h1>
+
+  <% if(error) { %>
+    <div class="alert alert-danger"><%= error %></div>
+  <% } %>
+
+  <form method="POST" action="/crearPartida/step2">
+    <!-- Carrusel de Ligas -->
+    <div class="mb-3">
+      <label class="form-label">Selecciona liga</label>
+      <div class="d-flex overflow-auto">
+        <% ligas.forEach(l => { %>
+          <div class="text-center m-2">
+            <img src="/img/logos/<%= l.logo %>" class="img-thumbnail" style="width:80px; cursor:pointer;" onclick="selectLiga('<%= l._id %>')">
+            <div><%= l.nombre %></div>
+          </div>
+        <% }) %>
+      </div>
+      <input type="hidden" name="ligaSelect" id="ligaSelectInput" required>
+    </div>
+
+    <!-- Carrusel de Clubes -->
+    <div class="mb-3">
+      <label class="form-label">Selecciona club</label>
+      <div class="d-flex overflow-auto" id="clubCarousel">
+        <% clubes.forEach(c => { %>
+          <div class="text-center m-2 club-item" data-liga="<%= c.liga %>">
+            <img src="/img/escudos/<%= c.escudo %>" class="img-thumbnail" style="width:80px; cursor:pointer;" onclick="selectClub('<%= c._id %>')">
+            <div><%= c.nombre %></div>
+          </div>
+        <% }) %>
+      </div>
+      <input type="hidden" name="club" id="clubInput" required>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Continuar</button>
+  </form>
+</div>
+
+<script>
+  function selectLiga(id){
+    $('#ligaSelectInput').val(id);
+    // Mostrar solo clubes de la liga seleccionada
+    $('.club-item').hide();
+    $('.club-item[data-liga="'+id+'"]').show();
+  }
+
+  function selectClub(id){
+    $('#clubInput').val(id);
+    // Marcar visualmente el club seleccionado
+    $('.club-item img').removeClass('border border-primary');
+    $('[onclick="selectClub(\''+id+'\')"]').addClass('border border-primary');
+  }
+
+  $(document).ready(function(){
+    $('.club-item').hide(); // Ocultar todos los clubes al inicio
+  });
+</script>

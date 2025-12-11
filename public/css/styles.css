@@ -1,0 +1,10 @@
+.form-container {
+    max-width: 600px;
+    margin: 40px auto;
+}
+
+.step-title {
+    text-align: center;
+    margin-bottom: 25px;
+    font-weight: 700;
+}

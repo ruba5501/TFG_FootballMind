@@ -1,0 +1,40 @@
+<%- include('partials/head', {title: 'Crear Partida - atributos'}) %>
+
+<div class="container mt-5">
+  <h1 class="mb-4">Atributos</h1>
+
+  <% if(error) { %>
+    <div class="alert alert-danger"><%= error %></div>
+  <% } %>
+
+  <p class="text-muted">Distribuye los atributos de tu entrenador. Dispones de <strong>450 puntos</strong>.</p>
+  <p><strong>Puntos restantes: <span id="puntosRestantes">450</span></strong></p>
+
+  <form method="POST" action="/crearPartida/step3">
+    <% Object.keys(atributosDefault).forEach(a => { %>
+      <div class="mb-3">
+        <label class="form-label"><%= a %></label>
+        <input type="number" class="form-control atributo" name="<%= a %>" min="0" max="100" value="<%= atributosDefault[a] %>">
+      </div>
+    <% }) %>
+
+    <button type="submit" class="btn btn-success">Finalizar</button>
+  </form>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const total = 450;
+    const inputs = document.querySelectorAll("input.atributo");
+    const restante = document.getElementById("puntosRestantes");
+
+    function actualizar() {
+        let suma = 0;
+        inputs.forEach(i => suma += parseInt(i.value || 0));
+        restante.textContent = total - suma;
+    }
+
+    inputs.forEach(i => i.addEventListener("input", actualizar));
+    actualizar();
+});
+</script>

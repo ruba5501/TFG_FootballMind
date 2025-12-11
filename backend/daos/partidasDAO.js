@@ -4,9 +4,9 @@ class PartidaDAO {
   async crearPartida(usuarioId, nombrePartida, clubSeleccionado, entrenadorId) {
     const partida = new Partida({
       usuarioId,
-      nombre: nombrePartida,
-      entrenador: entrenadorId,
-      club: clubSeleccionado,
+      nombrePartida,
+      clubSeleccionado,
+      entrenadorId,
       estadoJuego: {}
     });
     return await partida.save();

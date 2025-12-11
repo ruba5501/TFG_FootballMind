@@ -31,7 +31,7 @@ sesionRouter.post('/registro', async (req, res) => {
     req.session.userId = user._id;
     req.session.username = user.username;
 
-    res.redirect('/seleccionPartida');
+    res.redirect('/opcionPartida');
   } catch (err) {
     console.error(err);
     res.status(500).send('Error en el registro');
@@ -58,7 +58,7 @@ sesionRouter.post('/login', async (req, res) => {
     req.session.userId = user._id;
     req.session.username = user.username;
 
-    res.redirect('/seleccionPartida');
+    res.redirect('/opcionPartida');
   } catch (err) {
     console.error(err);
     res.status(500).send('Error en el login');

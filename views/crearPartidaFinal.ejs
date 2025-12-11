@@ -1,0 +1,11 @@
+<%- include('partials/head', {title: 'Partida creada - guardado'}) %>
+
+<div class="container mt-5">
+  <h1 class="mb-4">Partida creada correctamente</h1>
+
+  <p><strong>Nombre partida:</strong> <%= datos.nombrePartida %></p>
+  <p><strong>Entrenador:</strong> <%= datos.nombreEntrenador %></p>
+  <p><strong>Club:</strong> <%= datos.clubNombre %></p>
+
+  <a href="/dashboard" class="btn btn-primary mt-3">Volver</a>
+</div>
