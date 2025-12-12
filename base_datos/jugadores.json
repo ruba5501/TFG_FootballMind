@@ -10,7 +10,6 @@
         "piernaMala": 3,
         "valorMercado": 120000000,
         "salario": 20000000,
-        "foto": "Kylian_Mbappé.png",
         "atributos": {
             "ataque": {
                 "regate": 94,
@@ -71,7 +70,6 @@
         "piernaMala": 2,
         "valorMercado": 60000000,
         "salario": 12000000,
-        "foto": "Thibaut_Courtois.png",
         "atributos": {
             "ataque": {
                 "regate": 0,
