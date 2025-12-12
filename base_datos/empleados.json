@@ -1,6 +1,9 @@
 [
   {
     "nombre": "Juan Pérez",
+    "edad": 45,
+    "nacionalidad": "España",
+    "bandera": "España.png",
     "tipo": "preparadorFisico",
     "atributos": {
       "nivelRecuperacion": 85,
@@ -9,6 +12,9 @@
   },
   {
     "nombre": "Luis García",
+    "edad": 50,
+    "nacionalidad": "España",
+    "bandera": "España.png",
     "tipo": "preparadorTecnico",
     "atributos": {
       "nivelTecnico": 90
@@ -16,6 +22,9 @@
   },
   {
     "nombre": "Carlos Martínez",
+    "edad": 48,
+    "nacionalidad": "Argentina",
+    "bandera": "Argentina.png",
     "tipo": "psicologo",
     "atributos": {
       "nivelPsicologico": 88

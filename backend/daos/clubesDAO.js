@@ -7,11 +7,11 @@ class ClubsDAO {
   }
 
   async listarClubes() {
-    return await Club.find().populate('jugadores'); //populate sirve para meter toda la info del jugador y no solo el id
+    return await Club.find().populate('plantilla'); //populate sirve para meter toda la info del jugador y no solo el id
   }
 
   async buscarClubPorId(id) {
-    return await Club.findById(id).populate('jugadores');
+    return await Club.findById(id).populate('plantilla');
   }
 
   async actualizarClub(id, datos) {

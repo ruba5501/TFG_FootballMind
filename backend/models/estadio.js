@@ -5,7 +5,8 @@ const estadioSchema = new mongoose.Schema({
   ciudad: { type: String, required: true, trim: true },
   capacidad: { type: Number, required: true },
   anioConstruccion: { type: Number, required: true },
-  estadoActual: { type: String, enum: ['excelente', 'bueno', 'regular', 'malo'], default: 'bueno' }
+  estadoActual: { type: String, enum: ['excelente', 'bueno', 'regular', 'malo'], default: 'bueno' },
+  foto: { type: String, trim: true, default: null }
 });
 
 module.exports = mongoose.model('Estadio', estadioSchema);

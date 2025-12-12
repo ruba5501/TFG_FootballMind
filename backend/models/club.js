@@ -22,14 +22,14 @@ const clubSchema = new mongoose.Schema({
     cantera: { type: Number, min: 1, max: 5, default: 1 }
   },
 
-  escudo: { type: String, default: null }, // URL
+  escudo: { type: String, trim: true, default: null }, // URL
   popularidad: { type: Number, min: 0, max: 100, default: 0 },
   reputacion: { type: Number, min: 0, max: 100, default: 0 },
   historialTitulos: [
     {
       competicion: { type: String, required: true },
       cantidad: { type: Number, default: 0 },
-      trofeo: { type: String, default: null } // URL
+      trofeo: { type: String, trim: true, default: null } // URL
     }
   ]
 });

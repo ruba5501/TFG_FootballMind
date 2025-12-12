@@ -51,6 +51,7 @@ async function cargarClubes() {
         ...club,
         estadio: estadio._id,
         competiciones: comps.map(c => c._id),
+        escudo: club.escudo || null
         //plantilla: jugadoresIds,
         //empleados: empleadosIds
       });

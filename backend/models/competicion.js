@@ -8,7 +8,7 @@ const competicionSchema = new mongoose.Schema({
     enum: ['liga', 'copa', 'internacional'],
     required: true
   },
-  logo: { type: String, default: null },
+  logo: { type: String, trim: true, default: null },
   clubes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Club' }]
 });
 

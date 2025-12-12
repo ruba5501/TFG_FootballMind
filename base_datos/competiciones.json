@@ -1,34 +1,34 @@
 [
-  { "nombre": "LaLiga EA Sports", "pais": "España", "tipo": "liga", "clubes": ["Athletic Club"] },
-  { "nombre": "Copa del Rey", "pais": "España", "tipo": "copa", "clubes": ["Athletic Club"] },
-  
-  { "nombre": "Premier League", "pais": "Inglaterra", "tipo": "liga", "clubes": [] },
-  { "nombre": "FA Cup", "pais": "Inglaterra", "tipo": "copa", "clubes": [] },
+  { "nombre": "LaLiga EA Sports", "pais": "España", "tipo": "liga", "logo": "LaLiga_EA_Sports.png", "clubes": ["Athletic Club"] },
+  { "nombre": "Copa del Rey", "pais": "España", "tipo": "copa", "logo": "Copa_del_Rey.png", "clubes": ["Athletic Club"] },
 
-  { "nombre": "Serie A", "pais": "Italia", "tipo": "liga", "clubes": [] },
-  { "nombre": "Coppa Italia", "pais": "Italia", "tipo": "copa", "clubes": [] },
+  { "nombre": "Premier League", "pais": "Inglaterra", "tipo": "liga", "logo": "Premier_League.png", "clubes": [] },
+  { "nombre": "FA Cup", "pais": "Inglaterra", "tipo": "copa", "logo": "FA_Cup.png", "clubes": [] },
 
-  { "nombre": "Bundesliga", "pais": "Alemania", "tipo": "liga", "clubes": [] },
-  { "nombre": "DFB-Pokal", "pais": "Alemania", "tipo": "copa", "clubes": [] },
+  { "nombre": "Serie A", "pais": "Italia", "tipo": "liga", "logo": "Serie_A.png", "clubes": [] },
+  { "nombre": "Coppa Italia", "pais": "Italia", "tipo": "copa", "logo": "Coppa_Italia.png", "clubes": [] },
 
-  { "nombre": "Ligue 1", "pais": "Francia", "tipo": "liga", "clubes": [] },
-  { "nombre": "Coupe de France", "pais": "Francia", "tipo": "copa", "clubes": [] },
+  { "nombre": "Bundesliga", "pais": "Alemania", "tipo": "liga", "logo": "Bundesliga.png", "clubes": [] },
+  { "nombre": "DFB-Pokal", "pais": "Alemania", "tipo": "copa", "logo": "DFB_Pokal.png", "clubes": [] },
 
-  { "nombre": "Eredivisie", "pais": "Países Bajos", "tipo": "liga", "clubes": [] },
-  { "nombre": "KNVB Beker", "pais": "Países Bajos", "tipo": "copa", "clubes": [] },
+  { "nombre": "Ligue 1", "pais": "Francia", "tipo": "liga", "logo": "Ligue1.png", "clubes": [] },
+  { "nombre": "Coupe de France", "pais": "Francia", "tipo": "copa", "logo": "Coupe_de_France.png", "clubes": [] },
 
-  { "nombre": "Primeira Liga", "pais": "Portugal", "tipo": "liga", "clubes": [] },
-  { "nombre": "Taça de Portugal", "pais": "Portugal", "tipo": "copa", "clubes": [] },
+  { "nombre": "Eredivisie", "pais": "Países Bajos", "tipo": "liga", "logo": "Eredivisie.png", "clubes": [] },
+  { "nombre": "KNVB Beker", "pais": "Países Bajos", "tipo": "copa", "logo": "KNVB_Beker.png", "clubes": [] },
 
-  { "nombre": "Liga Profesional Argentina", "pais": "Argentina", "tipo": "liga", "clubes": [] },
-  { "nombre": "Copa Argentina", "pais": "Argentina", "tipo": "copa", "clubes": [] },
+  { "nombre": "Primeira Liga", "pais": "Portugal", "tipo": "liga", "logo": "Primeira_Liga.png", "clubes": [] },
+  { "nombre": "Taça de Portugal", "pais": "Portugal", "tipo": "copa", "logo": "Taca_de_Portugal.png", "clubes": [] },
 
-  { "nombre": "Brasileirão Serie A", "pais": "Brasil", "tipo": "liga", "clubes": [] },
-  { "nombre": "Copa do Brasil", "pais": "Brasil", "tipo": "copa", "clubes": [] },
+  { "nombre": "Liga Profesional Argentina", "pais": "Argentina", "tipo": "liga", "logo": "Liga_Profesional_Argentina.png", "clubes": [] },
+  { "nombre": "Copa Argentina", "pais": "Argentina", "tipo": "copa", "logo": "Copa_Argentina.png", "clubes": [] },
 
-  { "nombre": "UEFA Champions League", "pais": null, "tipo": "internacional", "clubes": ["Athletic Club"] },
-  { "nombre": "UEFA Europa League", "pais": null, "tipo": "internacional", "clubes": [] },
-  { "nombre": "UEFA Conference League", "pais": null, "tipo": "internacional", "clubes": [] },
-  { "nombre": "Copa Libertadores", "pais": null, "tipo": "internacional", "clubes": [] },
-  { "nombre": "Copa Sudamericana", "pais": null, "tipo": "internacional", "clubes": [] }
+  { "nombre": "Brasileirão Serie A", "pais": "Brasil", "tipo": "liga", "logo": "Brasileirao_Serie_A.png", "clubes": [] },
+  { "nombre": "Copa do Brasil", "pais": "Brasil", "tipo": "copa", "logo": "Copa_do_Brasil.png", "clubes": [] },
+
+  { "nombre": "UEFA Champions League", "pais": null, "tipo": "internacional", "logo": "UEFA_Champions_League.png", "clubes": ["Athletic Club"] },
+  { "nombre": "UEFA Europa League", "pais": null, "tipo": "internacional", "logo": "UEFA_Europa_League.png", "clubes": [] },
+  { "nombre": "UEFA Conference League", "pais": null, "tipo": "internacional", "logo": "UEFA_Conference_League.png", "clubes": [] },
+  { "nombre": "Copa Libertadores", "pais": null, "tipo": "internacional", "logo": "Copa_Libertadores.png", "clubes": [] },
+  { "nombre": "Copa Sudamericana", "pais": null, "tipo": "internacional", "logo": "Copa_Sudamericana.png", "clubes": [] }
 ]
