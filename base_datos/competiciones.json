@@ -1,24 +1,31 @@
 [
-  { "nombre": "LaLiga EA Sports", "pais": "España", "tipo": "liga", "logo": "LaLiga_EA_Sports.png", "clubes": ["Athletic Club"] },
-  { "nombre": "Copa del Rey", "pais": "España", "tipo": "copa", "logo": "Copa_del_Rey.png", "clubes": ["Athletic Club"] },
+  { "nombre": "LaLiga EA Sports", "pais": "España", "tipo": "liga", "logo": "LaLiga_EA_Sports.png", "clubes": ["Real Madrid","FC Barcelona","Atlético de Madrid","Sevilla FC","Real Betis","Real Sociedad","Villarreal CF","Athletic Club","Valencia CF","CA Osasuna","Celta de Vigo","Rayo Vallecano","Deportivo Alavés","RCD Espanyol","Elche CF","Getafe CF","RCD Mallorca","Levante UD","Real Oviedo","Girona FC"] },
+  { "nombre": "Copa del Rey", "pais": "España", "tipo": "copa", "logo": "Copa_del_Rey.png", "clubes": ["Real Madrid","FC Barcelona","Atlético de Madrid","Sevilla FC","Real Betis","Real Sociedad","Villarreal CF","Athletic Club","Valencia CF","CA Osasuna","Celta de Vigo","Rayo Vallecano","Deportivo Alavés","RCD Espanyol","Elche CF","Getafe CF","RCD Mallorca","Levante UD","Real Oviedo","Girona FC"] },
+  { "nombre": "LaLiga Hypermotion", "pais": "España", "tipo": "liga", "logo": "LaLiga_Hypermotion.png", "clubes": [] },
 
   { "nombre": "Premier League", "pais": "Inglaterra", "tipo": "liga", "logo": "Premier_League.png", "clubes": [] },
   { "nombre": "FA Cup", "pais": "Inglaterra", "tipo": "copa", "logo": "FA_Cup.png", "clubes": [] },
+  { "nombre": "EFL Championship", "pais": "Inglaterra", "tipo": "liga", "logo": "EFL_Championship.png", "clubes": [] },
 
   { "nombre": "Serie A", "pais": "Italia", "tipo": "liga", "logo": "Serie_A.png", "clubes": [] },
   { "nombre": "Coppa Italia", "pais": "Italia", "tipo": "copa", "logo": "Coppa_Italia.png", "clubes": [] },
+  { "nombre": "Serie B", "pais": "Italia", "tipo": "liga", "logo": "Serie_B.png", "clubes": [] },
 
   { "nombre": "Bundesliga", "pais": "Alemania", "tipo": "liga", "logo": "Bundesliga.png", "clubes": [] },
   { "nombre": "DFB-Pokal", "pais": "Alemania", "tipo": "copa", "logo": "DFB_Pokal.png", "clubes": [] },
+  { "nombre": "2. Bundesliga", "pais": "Alemania", "tipo": "liga", "logo": "2_Bundesliga.png", "clubes": [] },
 
   { "nombre": "Ligue 1", "pais": "Francia", "tipo": "liga", "logo": "Ligue1.png", "clubes": [] },
   { "nombre": "Coupe de France", "pais": "Francia", "tipo": "copa", "logo": "Coupe_de_France.png", "clubes": [] },
+  { "nombre": "Ligue 2", "pais": "Francia", "tipo": "liga", "logo": "Ligue2.png", "clubes": [] },
 
   { "nombre": "Eredivisie", "pais": "Países Bajos", "tipo": "liga", "logo": "Eredivisie.png", "clubes": [] },
   { "nombre": "KNVB Beker", "pais": "Países Bajos", "tipo": "copa", "logo": "KNVB_Beker.png", "clubes": [] },
+  { "nombre": "Keuken Kampioen Divisie", "pais": "Países Bajos", "tipo": "liga", "logo": "Keuken_Kampioen_Divisie.png", "clubes": [] },
 
   { "nombre": "Primeira Liga", "pais": "Portugal", "tipo": "liga", "logo": "Primeira_Liga.png", "clubes": [] },
   { "nombre": "Taça de Portugal", "pais": "Portugal", "tipo": "copa", "logo": "Taca_de_Portugal.png", "clubes": [] },
+  { "nombre": "Liga Portugal 2", "pais": "Portugal", "tipo": "liga", "logo": "Liga_Portugal_2.png", "clubes": [] },
 
   { "nombre": "Liga Profesional Argentina", "pais": "Argentina", "tipo": "liga", "logo": "Liga_Profesional_Argentina.png", "clubes": [] },
   { "nombre": "Copa Argentina", "pais": "Argentina", "tipo": "copa", "logo": "Copa_Argentina.png", "clubes": [] },

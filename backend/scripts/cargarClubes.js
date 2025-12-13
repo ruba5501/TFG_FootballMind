@@ -49,6 +49,7 @@ async function cargarClubes() {
 
       clubesFinal.push({
         ...club,
+        pais: club.pais,
         estadio: estadio._id,
         competiciones: comps.map(c => c._id),
         escudo: club.escudo || null

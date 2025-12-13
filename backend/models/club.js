@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const clubSchema = new mongoose.Schema({
   nombre: { type: String, required: true, unique: true, trim: true },
   ciudad: { type: String, required: true, trim: true },
+  pais: { type: String, required: true, trim: true },
   estadio: { type: mongoose.Schema.Types.ObjectId, ref: 'Estadio', required: true },
   competiciones: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Competicion', required: true }],
 
