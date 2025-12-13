@@ -4,6 +4,9 @@ const clubesDAO = require('../daos/clubesDAO');
 
 clubRouter.post('/clubes', async (req, res) => {
   try {
+    if (req.body.esFilial && !req.body.clubMatriz) {
+      return res.status(400).json({ error: 'Club filial sin club matriz' });
+    }
     const nuevoClub = await clubesDAO.crearClub(req.body);
     res.json(nuevoClub);
   } catch (err) {

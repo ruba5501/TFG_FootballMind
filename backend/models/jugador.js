@@ -6,18 +6,28 @@ const jugadorSchema = new mongoose.Schema({
   nacionalidad: String,
   altura: Number,
   peso: Number,
+
   posicion: {
     type: String,
     enum: ['portero', 'defensa', 'medio', 'delantero'],
     required: true
   },
+
   piernaBuena: { type: String, enum: ['izquierda', 'derecha'], required: true },
   piernaMala: { type: Number, min: 0, max: 5, default: 0 },
   versatilidad: { type: Number, min: 0, max: 5, default: 0 },
+
   valorMercado: Number,
   salario: Number,
   valoracion: { type: Number, min: 0, max: 100, default: 0 },
   potencial: { type: Number, min: 0, max: 100, default: 0 },
+
+  clubActual: { type: mongoose.Schema.Types.ObjectId, ref: 'Club', required: true },
+  estadoClub: {
+    type: String,
+    enum: ['primerEquipo', 'cantera'],
+    required: true
+  },
   
   atributos: {
     habilidad: {
@@ -25,15 +35,15 @@ const jugadorSchema = new mongoose.Schema({
       controlBalon: { type: Number, min: 0, max: 100, default: 0 },
       desmarques: { type: Number, min: 0, max: 100, default: 0 }
     },
-    tiro:{
+    tiro: {
       definicion: { type: Number, min: 0, max: 100, default: 0 },
-      potenciaTiro:{ type: Number, min: 0, max: 100, default: 0 },
+      potenciaTiro: { type: Number, min: 0, max: 100, default: 0 },
       tiroLejano: { type: Number, min: 0, max: 100, default: 0 },
       lanzamientoFaltas: { type: Number, min: 0, max: 100, default: 0 },
       lanzamientoPenaltis: { type: Number, min: 0, max: 100, default: 0 },
       remateCabeza: { type: Number, min: 0, max: 100, default: 0 }
     },
-    pase:{
+    pase: {
       paseCorto: { type: Number, min: 0, max: 100, default: 0 },
       paseLargo: { type: Number, min: 0, max: 100, default: 0 },
       vision: { type: Number, min: 0, max: 100, default: 0 },
@@ -62,7 +72,6 @@ const jugadorSchema = new mongoose.Schema({
       agresividad: { type: Number, min: 0, max: 100, default: 0 },
       motivacion: { type: Number, min: 0, max: 10, default: 0 },
       composturaBajoPresion: { type: Number, min: 0, max: 10, default: 0 }
-      //tomaDecisiones: { type: Number, default: 0 }
     },
     portero: {
       reflejos: { type: Number, min: 0, max: 100, default: 0 },
@@ -77,11 +86,12 @@ const jugadorSchema = new mongoose.Schema({
     }
   },
 
-  estado: {//tanto forma como moral no se si ponerlo hasta 100 o menos
+  estado: {
     forma: { type: Number, default: 100 },
     moral: { type: Number, default: 100 },
     lesion: { type: String, default: null }
-  },
-});
+  }
+
+}, { timestamps: true });
 
 module.exports = mongoose.model('Jugador', jugadorSchema);

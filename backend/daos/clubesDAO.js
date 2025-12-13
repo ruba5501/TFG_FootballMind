@@ -1,17 +1,31 @@
 const Club = require('../models/club');
 
 class ClubsDAO {
+
   async crearClub(data) {
-    const club = new Club(data);
-    return await club.save();
+    if (data.esFilial && !data.clubMatriz) {
+      throw new Error('Un club filial debe tener clubMatriz');
+    }
+    return await new Club(data).save();
   }
 
   async listarClubes() {
-    return await Club.find().populate('plantilla'); //populate sirve para meter toda la info del jugador y no solo el id
+    return await Club.find()
+      .populate('plantilla')
+      .populate('clubMatriz', 'nombre');
   }
 
   async buscarClubPorId(id) {
-    return await Club.findById(id).populate('plantilla');
+    const club = await Club.findById(id)
+      .populate('plantilla')
+      .populate('clubMatriz', 'nombre');
+
+    if (!club) return null;
+
+    return {
+      ...club.toObject(),
+      tieneCantera: !club.esFilial
+    };
   }
 
   async actualizarClub(id, datos) {

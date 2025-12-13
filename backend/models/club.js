@@ -7,6 +7,9 @@ const clubSchema = new mongoose.Schema({
   estadio: { type: mongoose.Schema.Types.ObjectId, ref: 'Estadio', required: true },
   competiciones: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Competicion', required: true }],
 
+  esFilial: { type: Boolean, default: false },
+  clubMatriz: { type: mongoose.Schema.Types.ObjectId, ref: 'Club', default: null },
+
   presupuestoTraspasos: { type: Number, default: 0 },
   presupuestoSalarios: { type: Number, default: 0 },
   ingresos: {
@@ -26,6 +29,7 @@ const clubSchema = new mongoose.Schema({
   escudo: { type: String, trim: true, default: null }, // URL
   popularidad: { type: Number, min: 0, max: 100, default: 0 },
   reputacion: { type: Number, min: 0, max: 100, default: 0 },
+  
   historialTitulos: [
     {
       competicion: { type: String, required: true },
