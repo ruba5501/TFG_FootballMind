@@ -1,10 +1,2522 @@
 [
   {
+    "nombre": "Santiago Bernabéu",
+    "ciudad": "Madrid",
+    "capacidad": 81044,
+    "anioConstruccion": 1947,
+    "estadoActual": "excelente",
+    "foto": "Santiago_Bernabéu.png"
+  },
+  {
+    "nombre": "Spotify Camp Nou",
+    "ciudad": "Barcelona",
+    "capacidad": 99354,
+    "anioConstruccion": 1957,
+    "estadoActual": "excelente",
+    "foto": "Spotify_Camp_Nou.png"
+  },
+  {
+    "nombre": "Metropolitano",
+    "ciudad": "Madrid",
+    "capacidad": 68000,
+    "anioConstruccion": 2017,
+    "estadoActual": "excelente",
+    "foto": "Metropolitano.png"
+  },
+  {
     "nombre": "San Mamés",
     "ciudad": "Bilbao",
     "capacidad": 53289,
     "anioConstruccion": 2013,
     "estadoActual": "excelente",
     "foto": "San_Mamés.png"
+  },
+  {
+    "nombre": "Ramón Sánchez Pizjuán",
+    "ciudad": "Sevilla",
+    "capacidad": 43182,
+    "anioConstruccion": 1958,
+    "estadoActual": "excelente",
+    "foto": "Ramón_Sánchez_Pizjuán.png"
+  },
+  {
+    "nombre": "Benito Villamarín",
+    "ciudad": "Sevilla",
+    "capacidad": 60500,
+    "anioConstruccion": 1929,
+    "estadoActual": "excelente",
+    "foto": "Benito_Villamarín.png"
+  },
+  {
+    "nombre": "Anoeta",
+    "ciudad": "San Sebastián",
+    "capacidad": 39934,
+    "anioConstruccion": 1993,
+    "estadoActual": "excelente",
+    "foto": "Anoeta.png"
+  },
+  {
+    "nombre": "Estadio de la Cerámica",
+    "ciudad": "Villarreal",
+    "capacidad": 23200,
+    "anioConstruccion": 1923,
+    "estadoActual": "excelente",
+    "foto": "Estadio_de_la_Cerámica.png"
+  },
+  {
+    "nombre": "Mestalla",
+    "ciudad": "Valencia",
+    "capacidad": 49387,
+    "anioConstruccion": 1923,
+    "estadoActual": "excelente",
+    "foto": "Mestalla.png"
+  },
+  {
+    "nombre": "El Sadar",
+    "ciudad": "Pamplona",
+    "capacidad": 23991,
+    "anioConstruccion": 1967,
+    "estadoActual": "excelente",
+    "foto": "El_Sadar.png"
+  },
+  {
+    "nombre": "Balaídos",
+    "ciudad": "Vigo",
+    "capacidad": 29500,
+    "anioConstruccion": 1928,
+    "estadoActual": "excelente",
+    "foto": "Balaídos.png"
+  },
+  {
+    "nombre": "Vallecas",
+    "ciudad": "Madrid",
+    "capacidad": 14200,
+    "anioConstruccion": 1976,
+    "estadoActual": "bueno",
+    "foto": "Vallecas.png"
+  },
+  {
+    "nombre": "Mendizorrotza",
+    "ciudad": "Vitoria-Gasteiz",
+    "capacidad": 19700,
+    "anioConstruccion": 1924,
+    "estadoActual": "bueno",
+    "foto": "Mendizorrotza.png"
+  },
+  {
+    "nombre": "RCDE Stadium",
+    "ciudad": "Cornellà de Llobregat",
+    "capacidad": 40200,
+    "anioConstruccion": 2009,
+    "estadoActual": "excelente",
+    "foto": "RCDE_Stadium.png"
+  },
+  {
+    "nombre": "Manuel Martínez Valero",
+    "ciudad": "Elche",
+    "capacidad": 33000,
+    "anioConstruccion": 1976,
+    "estadoActual": "bueno",
+    "foto": "Manuel_Martínez_Valero.png"
+  },
+  {
+    "nombre": "Coliseum Alfonso Pérez",
+    "ciudad": "Getafe",
+    "capacidad": 18000,
+    "anioConstruccion": 1998,
+    "estadoActual": "bueno",
+    "foto": "Coliseum_Alfonso_Pérez.png"
+  },
+  {
+    "nombre": "Son Moix",
+    "ciudad": "Palma",
+    "capacidad": 23300,
+    "anioConstruccion": 1999,
+    "estadoActual": "bueno",
+    "foto": "Son_Moix.png"
+  },
+  {
+    "nombre": "Estadio Ciudad de Valencia",
+    "ciudad": "Valencia",
+    "capacidad": 26000,
+    "anioConstruccion": 1969,
+    "estadoActual": "regular",
+    "foto": "Estadio_Ciudad_de_Valencia.png"
+  },
+  {
+    "nombre": "Nuevo Carlos Tartiere",
+    "ciudad": "Oviedo",
+    "capacidad": 30000,
+    "anioConstruccion": 2000,
+    "estadoActual": "bueno",
+    "foto": "Nuevo_Carlos_Tartiere.png"
+  },
+  {
+    "nombre": "Estadi Municipal de Montilivi",
+    "ciudad": "Girona",
+    "capacidad": 13000,
+    "anioConstruccion": 1970,
+    "estadoActual": "bueno",
+    "foto": "Estadi_Municipal_de_Montilivi.png"
+  },
+  {
+    "nombre": "Power Horse Stadium",
+    "ciudad": "Almería",
+    "capacidad": 15500,
+    "anioConstruccion": 2004,
+    "estadoActual": "bueno",
+    "foto": "Power_Horse_Stadium.png"
+  },
+  {
+    "nombre": "Riazor",
+    "ciudad": "A Coruña",
+    "capacidad": 32400,
+    "anioConstruccion": 1944,
+    "estadoActual": "bueno",
+    "foto": "Riazor.png"
+  },
+  {
+    "nombre": "Gran Canaria",
+    "ciudad": "Las Palmas de Gran Canaria",
+    "capacidad": 32500,
+    "anioConstruccion": 2003,
+    "estadoActual": "bueno",
+    "foto": "Gran_Canaria.png"
+  },
+  {
+    "nombre": "El Sardinero",
+    "ciudad": "Santander",
+    "capacidad": 23000,
+    "anioConstruccion": 1988,
+    "estadoActual": "bueno",
+    "foto": "El_Sardinero.png"
+  },
+  {
+    "nombre": "José Zorrilla",
+    "ciudad": "Valladolid",
+    "capacidad": 27100,
+    "anioConstruccion": 1982,
+    "estadoActual": "bueno",
+    "foto": "José_Zorrilla.png"
+  },
+  {
+    "nombre": "El Molinón",
+    "ciudad": "Gijón",
+    "capacidad": 29000,
+    "anioConstruccion": 1908,
+    "estadoActual": "regular",
+    "foto": "El_Molinón.png"
+  },
+  {
+    "nombre": "Butarque",
+    "ciudad": "Leganés",
+    "capacidad": 12000,
+    "anioConstruccion": 1998,
+    "estadoActual": "bueno",
+    "foto": "Butarque.png"
+  },
+  {
+    "nombre": "La Romareda",
+    "ciudad": "Zaragoza",
+    "capacidad": 34000,
+    "anioConstruccion": 1957,
+    "estadoActual": "bueno",
+    "foto": "La_Romareda.png"
+  },
+  {
+    "nombre": "Nuevo Los Cármenes",
+    "ciudad": "Granada",
+    "capacidad": 22500,
+    "anioConstruccion": 1995,
+    "estadoActual": "bueno",
+    "foto": "Nuevo_Los_Cármenes.png"
+  },
+  {
+    "nombre": "Anduva",
+    "ciudad": "Miranda de Ebro",
+    "capacidad": 6000,
+    "anioConstruccion": 1925,
+    "estadoActual": "regular",
+    "foto": "Anduva.png"
+  },
+  {
+    "nombre": "Nuevo Mirandilla",
+    "ciudad": "Cádiz",
+    "capacidad": 25000,
+    "anioConstruccion": 1955,
+    "estadoActual": "bueno",
+    "foto": "Nuevo_Mirandilla.png"
+  },
+  {
+    "nombre": "El Plantío",
+    "ciudad": "Burgos",
+    "capacidad": 12300,
+    "anioConstruccion": 1967,
+    "estadoActual": "regular",
+    "foto": "El_Plantío.png"
+  },
+  {
+    "nombre": "Ipurua",
+    "ciudad": "Eibar",
+    "capacidad": 7000,
+    "anioConstruccion": 1947,
+    "estadoActual": "regular",
+    "foto": "Ipurua.png"
+  },
+  {
+    "nombre": "La Rosaleda",
+    "ciudad": "Málaga",
+    "capacidad": 30000,
+    "anioConstruccion": 1941,
+    "estadoActual": "bueno",
+    "foto": "La_Rosaleda.png"
+  },
+  {
+    "nombre": "Reino de León",
+    "ciudad": "León",
+    "capacidad": 13500,
+    "anioConstruccion": 2001,
+    "estadoActual": "bueno",
+    "foto": "Reino_de_León.png"
+  },
+  {
+    "nombre": "SkyFi Castalia",
+    "ciudad": "Castellón",
+    "capacidad": 17500,
+    "anioConstruccion": 1987,
+    "estadoActual": "bueno",
+    "foto": "SkyFi_Castalia.png"
+  },
+  {
+    "nombre": "El Arcángel",
+    "ciudad": "Córdoba",
+    "capacidad": 20000,
+    "anioConstruccion": 1993,
+    "estadoActual": "bueno",
+    "foto": "El_Arcángel.png"
+  },
+  {
+    "nombre": "Carlos Belmonte",
+    "ciudad": "Albacete",
+    "capacidad": 17500,
+    "anioConstruccion": 1960,
+    "estadoActual": "bueno",
+    "foto": "Carlos_Belmonte.png"
+  },
+  {
+    "nombre": "Estadi Nacional",
+    "ciudad": "Andorra la Vella",
+    "capacidad": 3500,
+    "anioConstruccion": 2014,
+    "estadoActual": "excelente",
+    "foto": "Estadi_Nacional.png"
+  },
+  {
+    "nombre": "El Alcoraz",
+    "ciudad": "Huesca",
+    "capacidad": 7500,
+    "anioConstruccion": 1971,
+    "estadoActual": "bueno",
+    "foto": "El_Alcoraz.png"
+  },
+  {
+    "nombre": "Alfonso Murube",
+    "ciudad": "Ceuta",
+    "capacidad": 6000,
+    "anioConstruccion": 1997,
+    "estadoActual": "bueno",
+    "foto": "Alfonso_Murube.png"
+  },
+  {
+    "nombre": "Zubieta",
+    "ciudad": "San Sebastián",
+    "capacidad": 3000,
+    "anioConstruccion": 1981,
+    "estadoActual": "bueno",
+    "foto": "Zubieta.png"
+  },
+  {
+    "nombre": "Emirates Stadium",
+    "ciudad": "Londres",
+    "capacidad": 60704,
+    "anioConstruccion": 2006,
+    "estadoActual": "excelente",
+    "foto": "Emirates_Stadium.png"
+  },
+  {
+    "nombre": "Etihad Stadium",
+    "ciudad": "Manchester",
+    "capacidad": 53400,
+    "anioConstruccion": 2002,
+    "estadoActual": "excelente",
+    "foto": "Etihad_Stadium.png"
+  },
+  {
+    "nombre": "Stamford Bridge",
+    "ciudad": "Londres",
+    "capacidad": 40834,
+    "anioConstruccion": 1877,
+    "estadoActual": "bueno",
+    "foto": "Stamford_Bridge.png"
+  },
+  {
+    "nombre": "Anfield",
+    "ciudad": "Liverpool",
+    "capacidad": 61276,
+    "anioConstruccion": 1884,
+    "estadoActual": "excelente",
+    "foto": "Anfield.png"
+  },
+  {
+    "nombre": "Tottenham Hotspur Stadium",
+    "ciudad": "Londres",
+    "capacidad": 62850,
+    "anioConstruccion": 2019,
+    "estadoActual": "excelente",
+    "foto": "Tottenham_Hotspur_Stadium.png"
+  },
+  {
+    "nombre": "Old Trafford",
+    "ciudad": "Manchester",
+    "capacidad": 74310,
+    "anioConstruccion": 1910,
+    "estadoActual": "bueno",
+    "foto": "Old_Trafford.png"
+  },
+  {
+    "nombre": "St James' Park",
+    "ciudad": "Newcastle upon Tyne",
+    "capacidad": 52305,
+    "anioConstruccion": 1892,
+    "estadoActual": "bueno",
+    "foto": "St_James_Park.png"
+  },
+  {
+    "nombre": "City Ground",
+    "ciudad": "Nottingham",
+    "capacidad": 30602,
+    "anioConstruccion": 1898,
+    "estadoActual": "bueno",
+    "foto": "City_Ground.png"
+  },
+  {
+    "nombre": "Villa Park",
+    "ciudad": "Birmingham",
+    "capacidad": 42682,
+    "anioConstruccion": 1897,
+    "estadoActual": "bueno",
+    "foto": "Villa_Park.png"
+  },
+  {
+    "nombre": "Amex Stadium",
+    "ciudad": "Brighton",
+    "capacidad": 31876,
+    "anioConstruccion": 2011,
+    "estadoActual": "excelente",
+    "foto": "Amex_Stadium.png"
+  },
+  {
+    "nombre": "Selhurst Park",
+    "ciudad": "Londres",
+    "capacidad": 25486,
+    "anioConstruccion": 1924,
+    "estadoActual": "bueno",
+    "foto": "Selhurst_Park.png"
+  },
+  {
+    "nombre": "Vitality Stadium",
+    "ciudad": "Bournemouth",
+    "capacidad": 11364,
+    "anioConstruccion": 1910,
+    "estadoActual": "bueno",
+    "foto": "Vitality_Stadium.png"
+  },
+  {
+    "nombre": "Brentford Community Stadium",
+    "ciudad": "Brentford",
+    "capacidad": 17250,
+    "anioConstruccion": 2020,
+    "estadoActual": "excelente",
+    "foto": "Brentford_Community_Stadium.png"
+  },
+  {
+    "nombre": "Goodison Park",
+    "ciudad": "Liverpool",
+    "capacidad": 39572,
+    "anioConstruccion": 1892,
+    "estadoActual": "regular",
+    "foto": "Goodison_Park.png"
+  },
+  {
+    "nombre": "London Stadium",
+    "ciudad": "Londres",
+    "capacidad": 62500,
+    "anioConstruccion": 2012,
+    "estadoActual": "excelente",
+    "foto": "London_Stadium.png"
+  },
+  {
+    "nombre": "Stadium of Light",
+    "ciudad": "Sunderland",
+    "capacidad": 49000,
+    "anioConstruccion": 1997,
+    "estadoActual": "bueno",
+    "foto": "Stadium_of_Light.png"
+  },
+  {
+    "nombre": "Craven Cottage",
+    "ciudad": "Londres",
+    "capacidad": 25700,
+    "anioConstruccion": 1896,
+    "estadoActual": "bueno",
+    "foto": "Craven_Cottage.png"
+  },
+  {
+    "nombre": "Molineux Stadium",
+    "ciudad": "Wolverhampton",
+    "capacidad": 32050,
+    "anioConstruccion": 1889,
+    "estadoActual": "bueno",
+    "foto": "Molineux_Stadium.png"
+  },
+  {
+    "nombre": "Elland Road",
+    "ciudad": "Leeds",
+    "capacidad": 37890,
+    "anioConstruccion": 1897,
+    "estadoActual": "bueno",
+    "foto": "Elland_Road.png"
+  },
+  {
+    "nombre": "Turf Moor",
+    "ciudad": "Burnley",
+    "capacidad": 21944,
+    "anioConstruccion": 1883,
+    "estadoActual": "bueno",
+    "foto": "Turf_Moor.png"
+  },
+  {
+    "nombre": "Portman Road",
+    "ciudad": "Ipswich",
+    "capacidad": 30311,
+    "anioConstruccion": 1884,
+    "estadoActual": "bueno",
+    "foto": "Portman_Road.png"
+  },
+  {
+    "nombre": "St Mary's Stadium",
+    "ciudad": "Southampton",
+    "capacidad": 32384,
+    "anioConstruccion": 2001,
+    "estadoActual": "excelente",
+    "foto": "St_Marys_Stadium.png"
+  },
+  {
+    "nombre": "King Power Stadium",
+    "ciudad": "Leicester",
+    "capacidad": 32261,
+    "anioConstruccion": 2002,
+    "estadoActual": "excelente",
+    "foto": "King_Power_Stadium.png"
+  },
+  {
+    "nombre": "Ricoh Arena",
+    "ciudad": "Coventry",
+    "capacidad": 32609,
+    "anioConstruccion": 2005,
+    "estadoActual": "bueno",
+    "foto": "Ricoh_Arena.png"
+  },
+  {
+    "nombre": "Bramall Lane",
+    "ciudad": "Sheffield",
+    "capacidad": 32702,
+    "anioConstruccion": 1855,
+    "estadoActual": "bueno",
+    "foto": "Bramall_Lane.png"
+  },
+  {
+    "nombre": "Riverside Stadium",
+    "ciudad": "Middlesbrough",
+    "capacidad": 34988,
+    "anioConstruccion": 1995,
+    "estadoActual": "bueno",
+    "foto": "Riverside_Stadium.png"
+  },
+  {
+    "nombre": "Carrow Road",
+    "ciudad": "Norwich",
+    "capacidad": 27244,
+    "anioConstruccion": 1935,
+    "estadoActual": "bueno",
+    "foto": "Carrow_Road.png"
+  },
+  {
+    "nombre": "St Andrew's",
+    "ciudad": "Birmingham",
+    "capacidad": 30016,
+    "anioConstruccion": 1906,
+    "estadoActual": "regular",
+    "foto": "St_Andrews.png"
+  },
+  {
+    "nombre": "The Hawthorns",
+    "ciudad": "West Bromwich",
+    "capacidad": 26850,
+    "anioConstruccion": 1900,
+    "estadoActual": "bueno",
+    "foto": "The_Hawthorns.png"
+  },
+  {
+    "nombre": "Ashton Gate",
+    "ciudad": "Bristol",
+    "capacidad": 27000,
+    "anioConstruccion": 1887,
+    "estadoActual": "bueno",
+    "foto": "Ashton_Gate.png"
+  },
+  {
+    "nombre": "Liberty Stadium",
+    "ciudad": "Swansea",
+    "capacidad": 21088,
+    "anioConstruccion": 2005,
+    "estadoActual": "bueno",
+    "foto": "Liberty_Stadium.png"
+  },
+  {
+    "nombre": "Bet365 Stadium",
+    "ciudad": "Stoke-on-Trent",
+    "capacidad": 30089,
+    "anioConstruccion": 1997,
+    "estadoActual": "bueno",
+    "foto": "Bet365_Stadium.png"
+  },
+  {
+    "nombre": "Vicarage Road",
+    "ciudad": "Watford",
+    "capacidad": 22200,
+    "anioConstruccion": 1922,
+    "estadoActual": "bueno",
+    "foto": "Vicarage_Road.png"
+  },
+  {
+    "nombre": "KCOM Stadium",
+    "ciudad": "Hull",
+    "capacidad": 25586,
+    "anioConstruccion": 2002,
+    "estadoActual": "bueno",
+    "foto": "KCOM_Stadium.png"
+  },
+  {
+    "nombre": "The Den",
+    "ciudad": "Londres",
+    "capacidad": 20146,
+    "anioConstruccion": 1993,
+    "estadoActual": "bueno",
+    "foto": "The_Den.png"
+  },
+  {
+    "nombre": "Racecourse Ground",
+    "ciudad": "Wrexham",
+    "capacidad": 13200,
+    "anioConstruccion": 1807,
+    "estadoActual": "bueno",
+    "foto": "Racecourse_Ground.png"
+  },
+  {
+    "nombre": "Pride Park Stadium",
+    "ciudad": "Derby",
+    "capacidad": 33597,
+    "anioConstruccion": 1997,
+    "estadoActual": "bueno",
+    "foto": "Pride_Park_Stadium.png"
+  },
+  {
+    "nombre": "Loftus Road",
+    "ciudad": "Londres",
+    "capacidad": 18360,
+    "anioConstruccion": 1904,
+    "estadoActual": "regular",
+    "foto": "Loftus_Road.png"
+  },
+  {
+    "nombre": "Deepdale",
+    "ciudad": "Preston",
+    "capacidad": 23404,
+    "anioConstruccion": 1875,
+    "estadoActual": "bueno",
+    "foto": "Deepdale.png"
+  },
+  {
+    "nombre": "Fratton Park",
+    "ciudad": "Portsmouth",
+    "capacidad": 20899,
+    "anioConstruccion": 1898,
+    "estadoActual": "regular",
+    "foto": "Fratton_Park.png"
+  },
+  {
+    "nombre": "Ewood Park",
+    "ciudad": "Blackburn",
+    "capacidad": 31367,
+    "anioConstruccion": 1890,
+    "estadoActual": "bueno",
+    "foto": "Ewood_Park.png"
+  },
+  {
+    "nombre": "Kassam Stadium",
+    "ciudad": "Oxford",
+    "capacidad": 12500,
+    "anioConstruccion": 2001,
+    "estadoActual": "bueno",
+    "foto": "Kassam_Stadium.png"
+  },
+  {
+    "nombre": "The Valley",
+    "ciudad": "Londres",
+    "capacidad": 27111,
+    "anioConstruccion": 1919,
+    "estadoActual": "bueno",
+    "foto": "The_Valley.png"
+  },
+  {
+    "nombre": "Hillsborough",
+    "ciudad": "Sheffield",
+    "capacidad": 39812,
+    "anioConstruccion": 1899,
+    "estadoActual": "regular",
+    "foto": "Hillsborough.png"
+  },
+  {
+    "nombre": "San Siro",
+    "ciudad": "Milán",
+    "capacidad": 75923,
+    "anioConstruccion": 1926,
+    "estadoActual": "bueno",
+    "foto": "San_Siro.png"
+  },
+  {
+    "nombre": "Allianz Stadium",
+    "ciudad": "Turín",
+    "capacidad": 41507,
+    "anioConstruccion": 2011,
+    "estadoActual": "excelente",
+    "foto": "Allianz_Stadium.png"
+  },
+  {
+    "nombre": "Stadio Diego Armando Maradona",
+    "ciudad": "Nápoles",
+    "capacidad": 54726,
+    "anioConstruccion": 1959,
+    "estadoActual": "bueno",
+    "foto": "Diego_Armando_Maradona.png"
+  },
+  {
+    "nombre": "Gewiss Stadium",
+    "ciudad": "Bérgamo",
+    "capacidad": 24342,
+    "anioConstruccion": 1928,
+    "estadoActual": "excelente",
+    "foto": "Gewiss_Stadium.png"
+  },
+  {
+    "nombre": "Stadio Olimpico",
+    "ciudad": "Roma",
+    "capacidad": 70634,
+    "anioConstruccion": 1953,
+    "estadoActual": "bueno",
+    "foto": "Stadio_Olimpico.png"
+  },
+  {
+    "nombre": "Artemio Franchi",
+    "ciudad": "Florencia",
+    "capacidad": 43147,
+    "anioConstruccion": 1931,
+    "estadoActual": "regular",
+    "foto": "Artemio_Franchi.png"
+  },
+  {
+    "nombre": "Stadio Giuseppe Sinigaglia",
+    "ciudad": "Como",
+    "capacidad": 13602,
+    "anioConstruccion": 1927,
+    "estadoActual": "bueno",
+    "foto": "Giuseppe_Sinigaglia.png"
+  },
+  {
+    "nombre": "Renato Dall'Ara",
+    "ciudad": "Bolonia",
+    "capacidad": 38309,
+    "anioConstruccion": 1927,
+    "estadoActual": "bueno",
+    "foto": "Renato_DallAra.png"
+  },
+  {
+    "nombre": "Ennio Tardini",
+    "ciudad": "Parma",
+    "capacidad": 27906,
+    "anioConstruccion": 1923,
+    "estadoActual": "bueno",
+    "foto": "Ennio_Tardini.png"
+  },
+  {
+    "nombre": "Stadio Olimpico Grande Torino",
+    "ciudad": "Turín",
+    "capacidad": 27958,
+    "anioConstruccion": 1933,
+    "estadoActual": "bueno",
+    "foto": "Olimpico_Grande_Torino.png"
+  },
+  {
+    "nombre": "Bluenergy Stadium",
+    "ciudad": "Udine",
+    "capacidad": 25144,
+    "anioConstruccion": 1976,
+    "estadoActual": "excelente",
+    "foto": "Bluenergy_Stadium.png"
+  },
+  {
+    "nombre": "Mapei Stadium",
+    "ciudad": "Reggio Emilia",
+    "capacidad": 23717,
+    "anioConstruccion": 1995,
+    "estadoActual": "excelente",
+    "foto": "Mapei_Stadium.png"
+  },
+  {
+    "nombre": "Luigi Ferraris",
+    "ciudad": "Génova",
+    "capacidad": 36599,
+    "anioConstruccion": 1911,
+    "estadoActual": "bueno",
+    "foto": "Luigi_Ferraris.png"
+  },
+  {
+    "nombre": "Unipol Domus",
+    "ciudad": "Cagliari",
+    "capacidad": 16416,
+    "anioConstruccion": 2017,
+    "estadoActual": "bueno",
+    "foto": "Unipol_Domus.png"
+  },
+  {
+    "nombre": "Arena Garibaldi",
+    "ciudad": "Pisa",
+    "capacidad": 25000,
+    "anioConstruccion": 1919,
+    "estadoActual": "regular",
+    "foto": "Arena_Garibaldi.png"
+  },
+  {
+    "nombre": "Marcantonio Bentegodi",
+    "ciudad": "Verona",
+    "capacidad": 39211,
+    "anioConstruccion": 1963,
+    "estadoActual": "bueno",
+    "foto": "Bentegodi.png"
+  },
+  {
+    "nombre": "Giovanni Zini",
+    "ciudad": "Cremona",
+    "capacidad": 20041,
+    "anioConstruccion": 1919,
+    "estadoActual": "bueno",
+    "foto": "Giovanni_Zini.png"
+  },
+  {
+    "nombre": "Via del Mare",
+    "ciudad": "Lecce",
+    "capacidad": 31533,
+    "anioConstruccion": 1966,
+    "estadoActual": "bueno",
+    "foto": "Via_del_Mare.png"
+  },
+  {
+    "nombre": "Pier Luigi Penzo",
+    "ciudad": "Venecia",
+    "capacidad": 11271,
+    "anioConstruccion": 1913,
+    "estadoActual": "regular",
+    "foto": "Pier_Luigi_Penzo.png"
+  },
+  {
+    "nombre": "U-Power Stadium",
+    "ciudad": "Monza",
+    "capacidad": 18568,
+    "anioConstruccion": 1988,
+    "estadoActual": "bueno",
+    "foto": "UPower_Stadium.png"
+  },
+  {
+    "nombre": "Carlo Castellani",
+    "ciudad": "Empoli",
+    "capacidad": 16400,
+    "anioConstruccion": 1965,
+    "estadoActual": "bueno",
+    "foto": "Carlo_Castellani.png"
+  },
+  {
+    "nombre": "Renzo Barbera",
+    "ciudad": "Palermo",
+    "capacidad": 36536,
+    "anioConstruccion": 1932,
+    "estadoActual": "bueno",
+    "foto": "Renzo_Barbera.png"
+  },
+  {
+    "nombre": "Alberto Picco",
+    "ciudad": "La Spezia",
+    "capacidad": 11466,
+    "anioConstruccion": 1919,
+    "estadoActual": "regular",
+    "foto": "Alberto_Picco.png"
+  },
+  {
+    "nombre": "Nicola Ceravolo",
+    "ciudad": "Catanzaro",
+    "capacidad": 14650,
+    "anioConstruccion": 1971,
+    "estadoActual": "bueno",
+    "foto": "Nicola_Ceravolo.png"
+  },
+  {
+    "nombre": "Dino Manuzzi",
+    "ciudad": "Cesena",
+    "capacidad": 23860,
+    "anioConstruccion": 1957,
+    "estadoActual": "bueno",
+    "foto": "Dino_Manuzzi.png"
+  },
+  {
+    "nombre": "Benito Stirpe",
+    "ciudad": "Frosinone",
+    "capacidad": 16227,
+    "anioConstruccion": 2017,
+    "estadoActual": "excelente",
+    "foto": "Benito_Stirpe.png"
+  },
+  {
+    "nombre": "Alberto Braglia",
+    "ciudad": "Modena",
+    "capacidad": 21000,
+    "anioConstruccion": 1931,
+    "estadoActual": "bueno",
+    "foto": "Alberto_Braglia.png"
+  },
+  {
+    "nombre": "Romeo Menti",
+    "ciudad": "Castellammare di Stabia",
+    "capacidad": 7600,
+    "anioConstruccion": 1984,
+    "estadoActual": "regular",
+    "foto": "Romeo_Menti.png"
+  },
+  {
+    "nombre": "San Nicola",
+    "ciudad": "Bari",
+    "capacidad": 58270,
+    "anioConstruccion": 1990,
+    "estadoActual": "bueno",
+    "foto": "San_Nicola.png"
+  },
+  {
+    "nombre": "Adriatico",
+    "ciudad": "Pescara",
+    "capacidad": 20515,
+    "anioConstruccion": 1955,
+    "estadoActual": "bueno",
+    "foto": "Adriatico.png"
+  },
+  {
+    "nombre": "Partenio-Lombardi",
+    "ciudad": "Avellino",
+    "capacidad": 26100,
+    "anioConstruccion": 1970,
+    "estadoActual": "bueno",
+    "foto": "Partenio_Lombardi.png"
+  },
+  {
+    "nombre": "Danilo Martelli",
+    "ciudad": "Mantova",
+    "capacidad": 7488,
+    "anioConstruccion": 1973,
+    "estadoActual": "regular",
+    "foto": "Danilo_Martelli.png"
+  },
+  {
+    "nombre": "Druso",
+    "ciudad": "Bolzano",
+    "capacidad": 5500,
+    "anioConstruccion": 1936,
+    "estadoActual": "regular",
+    "foto": "Druso.png"
+  },
+  {
+    "nombre": "Euganeo",
+    "ciudad": "Padua",
+    "capacidad": 32500,
+    "anioConstruccion": 1994,
+    "estadoActual": "bueno",
+    "foto": "Euganeo.png"
+  },
+  {
+    "nombre": "Comunale Chiavari",
+    "ciudad": "Chiavari",
+    "capacidad": 5558,
+    "anioConstruccion": 1933,
+    "estadoActual": "regular",
+    "foto": "Comunale_Chiavari.png"
+  },
+  {
+    "nombre": "Allianz Arena",
+    "ciudad": "Múnich",
+    "capacidad": 75024,
+    "anioConstruccion": 2005,
+    "estadoActual": "excelente",
+    "foto": "Allianz_Arena.png"
+  },
+  {
+    "nombre": "Signal Iduna Park",
+    "ciudad": "Dortmund",
+    "capacidad": 81365,
+    "anioConstruccion": 1974,
+    "estadoActual": "excelente",
+    "foto": "Signal_Iduna_Park.png"
+  },
+  {
+    "nombre": "BayArena",
+    "ciudad": "Leverkusen",
+    "capacidad": 30210,
+    "anioConstruccion": 1958,
+    "estadoActual": "bueno",
+    "foto": "BayArena.png"
+  },
+  {
+    "nombre": "Deutsche Bank Park",
+    "ciudad": "Fráncfort",
+    "capacidad": 51500,
+    "anioConstruccion": 1925,
+    "estadoActual": "bueno",
+    "foto": "Deutsche_Bank_Park.png"
+  },
+  {
+    "nombre": "Red Bull Arena",
+    "ciudad": "Leipzig",
+    "capacidad": 47069,
+    "anioConstruccion": 2004,
+    "estadoActual": "excelente",
+    "foto": "Red_Bull_Arena.png"
+  },
+  {
+    "nombre": "MHPArena",
+    "ciudad": "Stuttgart",
+    "capacidad": 60449,
+    "anioConstruccion": 1933,
+    "estadoActual": "bueno",
+    "foto": "MHPArena.png"
+  },
+  {
+    "nombre": "Volkswagen Arena",
+    "ciudad": "Wolfsburgo",
+    "capacidad": 30000,
+    "anioConstruccion": 2002,
+    "estadoActual": "bueno",
+    "foto": "Volkswagen_Arena.png"
+  },
+  {
+    "nombre": "Weserstadion",
+    "ciudad": "Bremen",
+    "capacidad": 42100,
+    "anioConstruccion": 1924,
+    "estadoActual": "bueno",
+    "foto": "Weserstadion.png"
+  },
+  {
+    "nombre": "PreZero Arena",
+    "ciudad": "Sinsheim",
+    "capacidad": 30150,
+    "anioConstruccion": 2009,
+    "estadoActual": "bueno",
+    "foto": "PreZero_Arena.png"
+  },
+  {
+    "nombre": "Europa-Park Stadion",
+    "ciudad": "Friburgo",
+    "capacidad": 34700,
+    "anioConstruccion": 2021,
+    "estadoActual": "excelente",
+    "foto": "Europa_Park_Stadion.png"
+  },
+  {
+    "nombre": "MEWA Arena",
+    "ciudad": "Maguncia",
+    "capacidad": 34000,
+    "anioConstruccion": 2011,
+    "estadoActual": "bueno",
+    "foto": "MEWA_Arena.png"
+  },
+  {
+    "nombre": "Borussia-Park",
+    "ciudad": "Mönchengladbach",
+    "capacidad": 54057,
+    "anioConstruccion": 2004,
+    "estadoActual": "bueno",
+    "foto": "Borussia_Park.png"
+  },
+  {
+    "nombre": "WWK Arena",
+    "ciudad": "Augsburgo",
+    "capacidad": 30660,
+    "anioConstruccion": 2009,
+    "estadoActual": "bueno",
+    "foto": "WWK_Arena.png"
+  },
+  {
+    "nombre": "An der Alten Försterei",
+    "ciudad": "Berlín",
+    "capacidad": 22012,
+    "anioConstruccion": 1920,
+    "estadoActual": "bueno",
+    "foto": "An_der_Alten_Forsterei.png"
+  },
+  {
+    "nombre": "Volksparkstadion",
+    "ciudad": "Hamburgo",
+    "capacidad": 57000,
+    "anioConstruccion": 1953,
+    "estadoActual": "bueno",
+    "foto": "Volksparkstadion.png"
+  },
+  {
+    "nombre": "RheinEnergieStadion",
+    "ciudad": "Colonia",
+    "capacidad": 50000,
+    "anioConstruccion": 1923,
+    "estadoActual": "bueno",
+    "foto": "RheinEnergie_Stadion.png"
+  },
+  {
+    "nombre": "Millerntor-Stadion",
+    "ciudad": "Hamburgo",
+    "capacidad": 29546,
+    "anioConstruccion": 1963,
+    "estadoActual": "bueno",
+    "foto": "Millerntor_Stadion.png"
+  },
+  {
+    "nombre": "Voith-Arena",
+    "ciudad": "Heidenheim",
+    "capacidad": 15000,
+    "anioConstruccion": 1972,
+    "estadoActual": "bueno",
+    "foto": "Voith_Arena.png"
+  },
+  {
+    "nombre": "Olympiastadion Berlin",
+    "ciudad": "Berlín",
+    "capacidad": 74475,
+    "anioConstruccion": 1936,
+    "estadoActual": "bueno",
+    "foto": "Olympiastadion_Berlin.png"
+  }, 
+  {
+    "nombre": "Holstein-Stadion",
+    "ciudad": "Kiel",
+    "capacidad": 15034,
+    "anioConstruccion": 1911,
+    "estadoActual": "bueno",
+    "foto": "Holstein_Stadion.png"
+  },
+  {
+    "nombre": "Vonovia Ruhrstadion",
+    "ciudad": "Bochum",
+    "capacidad": 26000,
+    "anioConstruccion": 1911,
+    "estadoActual": "bueno",
+    "foto": "Vonovia_Ruhrstadion.png"
+  },
+  {
+    "nombre": "Max-Morlock-Stadion",
+    "ciudad": "Núremberg",
+    "capacidad": 50000,
+    "anioConstruccion": 1928,
+    "estadoActual": "bueno",
+    "foto": "Max_Morlock_Stadion.png"
+  },
+  {
+    "nombre": "Heinz von Heiden Arena",
+    "ciudad": "Hannover",
+    "capacidad": 49000,
+    "anioConstruccion": 1954,
+    "estadoActual": "bueno",
+    "foto": "Heinz_von_Heiden_Arena.png"
+  },
+  {
+    "nombre": "Merkur Spiel-Arena",
+    "ciudad": "Düsseldorf",
+    "capacidad": 54600,
+    "anioConstruccion": 2004,
+    "estadoActual": "excelente",
+    "foto": "Merkur_Spiel_Arena.png"
+  },
+  {
+    "nombre": "Home Deluxe Arena",
+    "ciudad": "Paderborn",
+    "capacidad": 15000,
+    "anioConstruccion": 2008,
+    "estadoActual": "bueno",
+    "foto": "Home_Deluxe_Arena.png"
+  },
+  {
+    "nombre": "Veltins-Arena",
+    "ciudad": "Gelsenkirchen",
+    "capacidad": 62271,
+    "anioConstruccion": 2001,
+    "estadoActual": "bueno",
+    "foto": "Veltins_Arena.png"
+  },
+  {
+    "nombre": "MDCC-Arena",
+    "ciudad": "Magdeburgo",
+    "capacidad": 30098,
+    "anioConstruccion": 2006,
+    "estadoActual": "bueno",
+    "foto": "MDCC_Arena.png"
+  },
+  {
+    "nombre": "Fritz-Walter-Stadion",
+    "ciudad": "Kaiserslautern",
+    "capacidad": 49780,
+    "anioConstruccion": 1920,
+    "estadoActual": "bueno",
+    "foto": "Fritz_Walter_Stadion.png"
+  },
+  {
+    "nombre": "Merck-Stadion am Böllenfalltor",
+    "ciudad": "Darmstadt",
+    "capacidad": 17810,
+    "anioConstruccion": 1921,
+    "estadoActual": "bueno",
+    "foto": "Merck_Stadion_am_Bollenfalltor.png"
+  },
+  {
+    "nombre": "BBBank Wildpark",
+    "ciudad": "Karlsruhe",
+    "capacidad": 34302,
+    "anioConstruccion": 1955,
+    "estadoActual": "bueno",
+    "foto": "BBBank_Wildpark.png"
+  },
+  {
+    "nombre": "Ursapharm-Arena",
+    "ciudad": "Spiesen-Elversberg",
+    "capacidad": 10000,
+    "anioConstruccion": 1994,
+    "estadoActual": "bueno",
+    "foto": "Ursapharm_Arena.png"
+  },
+  {
+    "nombre": "Sportpark Ronhof",
+    "ciudad": "Fürth",
+    "capacidad": 18000,
+    "anioConstruccion": 1910,
+    "estadoActual": "bueno",
+    "foto": "Sportpark_Ronhof.png"
+  },
+  {
+    "nombre": "Eintracht-Stadion",
+    "ciudad": "Braunschweig",
+    "capacidad": 25000,
+    "anioConstruccion": 1923,
+    "estadoActual": "bueno",
+    "foto": "Eintracht_Stadion.png"
+  },
+  {
+    "nombre": "Preußenstadion",
+    "ciudad": "Münster",
+    "capacidad": 14400,
+    "anioConstruccion": 1926,
+    "estadoActual": "bueno",
+    "foto": "Preussenstadion.png"
+  },
+  {
+    "nombre": "SchücoArena",
+    "ciudad": "Bielefeld",
+    "capacidad": 27200,
+    "anioConstruccion": 1926,
+    "estadoActual": "bueno",
+    "foto": "SchucoArena.png"
+  },
+  {
+    "nombre": "Rudolf-Harbig-Stadion",
+    "ciudad": "Dresden",
+    "capacidad": 32066,
+    "anioConstruccion": 1923,
+    "estadoActual": "bueno",
+    "foto": "Rudolf_Harbig_Stadion.png"
+  },
+  {
+    "nombre": "Parc_des_Princes",
+    "ciudad": "París",
+    "capacidad": 47929,
+    "anioConstruccion": 1972,
+    "estadoActual": "excelente",
+    "foto": "Parc_des_Princes.png"
+  },
+  {
+    "nombre": "Stade_Velodrome",
+    "ciudad": "Marsella",
+    "capacidad": 67394,
+    "anioConstruccion": 1937,
+    "estadoActual": "excelente",
+    "foto": "Stade_Velodrome.png"
+  },
+  {
+    "nombre": "Stade_Louis_II",
+    "ciudad": "Mónaco",
+    "capacidad": 18523,
+    "anioConstruccion": 1985,
+    "estadoActual": "bueno",
+    "foto": "Stade_Louis_II.png"
+  },
+  {
+    "nombre": "Stade_de_la_Meinau",
+    "ciudad": "Estrasburgo",
+    "capacidad": 26109,
+    "anioConstruccion": 1906,
+    "estadoActual": "bueno",
+    "foto": "Stade_de_la_Meinau.png"
+  },
+  {
+    "nombre": "Stade_Pierre_Mauroy",
+    "ciudad": "Lille",
+    "capacidad": 50186,
+    "anioConstruccion": 2012,
+    "estadoActual": "excelente",
+    "foto": "Stade_Pierre_Mauroy.png"
+  },
+  {
+    "nombre": "Groupama_Stadium",
+    "ciudad": "Lyon",
+    "capacidad": 59186,
+    "anioConstruccion": 2016,
+    "estadoActual": "excelente",
+    "foto": "Groupama_Stadium.png"
+  },
+  {
+    "nombre": "Allianz_Riviera",
+    "ciudad": "Niza",
+    "capacidad": 35624,
+    "anioConstruccion": 2013,
+    "estadoActual": "excelente",
+    "foto": "Allianz_Riviera.png"
+  },
+  {
+    "nombre": "Roazhon_Park",
+    "ciudad": "Rennes",
+    "capacidad": 29778,
+    "anioConstruccion": 1912,
+    "estadoActual": "bueno",
+    "foto": "Roazhon_Park.png"
+  },
+  {
+    "nombre": "Stade_Charlety",
+    "ciudad": "París",
+    "capacidad": 20000,
+    "anioConstruccion": 1939,
+    "estadoActual": "bueno",
+    "foto": "Stade_Charlety.png"
+  },
+  {
+    "nombre": "Stadium_de_Toulouse",
+    "ciudad": "Toulouse",
+    "capacidad": 33150,
+    "anioConstruccion": 1937,
+    "estadoActual": "bueno",
+    "foto": "Stadium_de_Toulouse.png"
+  },
+  {
+    "nombre": "Stade_Francis_Le_Ble",
+    "ciudad": "Brest",
+    "capacidad": 15931,
+    "anioConstruccion": 1922,
+    "estadoActual": "bueno",
+    "foto": "Stade_Francis_Le_Ble.png"
+  },
+  {
+    "nombre": "Stade_Bollaert_Delelis",
+    "ciudad": "Lens",
+    "capacidad": 38223,
+    "anioConstruccion": 1933,
+    "estadoActual": "bueno",
+    "foto": "Stade_Bollaert_Delelis.png"
+  },
+  {
+    "nombre": "Stade_de_la_Beaujoire",
+    "ciudad": "Nantes",
+    "capacidad": 35322,
+    "anioConstruccion": 1984,
+    "estadoActual": "bueno",
+    "foto": "Stade_de_la_Beaujoire.png"
+  },
+  {
+    "nombre": "Stade_Abbe_Deschamps",
+    "ciudad": "Auxerre",
+    "capacidad": 23467,
+    "anioConstruccion": 1918,
+    "estadoActual": "bueno",
+    "foto": "Stade_Abbe_Deschamps.png"
+  },
+  {
+    "nombre": "Stade_du_Moustoir",
+    "ciudad": "Lorient",
+    "capacidad": 18890,
+    "anioConstruccion": 1959,
+    "estadoActual": "bueno",
+    "foto": "Stade_du_Moustoir.png"
+  },
+  {
+    "nombre": "Stade_Saint_Symphorien",
+    "ciudad": "Metz",
+    "capacidad": 30268,
+    "anioConstruccion": 1923,
+    "estadoActual": "bueno",
+    "foto": "Stade_Saint_Symphorien.png"
+  },
+  {
+    "nombre": "Stade_Oceane",
+    "ciudad": "Le Havre",
+    "capacidad": 25178,
+    "anioConstruccion": 2012,
+    "estadoActual": "bueno",
+    "foto": "Stade_Oceane.png"
+  },
+  {
+    "nombre": "Stade_Raymond_Kopa",
+    "ciudad": "Angers",
+    "capacidad": 18752,
+    "anioConstruccion": 1912,
+    "estadoActual": "bueno",
+    "foto": "Stade_Raymond_Kopa.png"
+  },
+  {
+    "nombre": "Stade_Geoffroy_Guichard",
+    "ciudad": "Saint-Étienne",
+    "capacidad": 41965,
+    "anioConstruccion": 1931,
+    "estadoActual": "bueno",
+    "foto": "Stade_Geoffroy_Guichard.png"
+  },
+  {
+    "nombre": "Stade_Auguste_Delaune",
+    "ciudad": "Reims",
+    "capacidad": 21029,
+    "anioConstruccion": 2008,
+    "estadoActual": "bueno",
+    "foto": "Stade_Auguste_Delaune.png"
+  },
+  {
+    "nombre": "Stade_de_l_Aube",
+    "ciudad": "Troyes",
+    "capacidad": 20500,
+    "anioConstruccion": 1924,
+    "estadoActual": "bueno",
+    "foto": "Stade_de_l_Aube.png"
+  },
+  {
+    "nombre": "Stade_de_la_Mosson",
+    "ciudad": "Montpellier",
+    "capacidad": 32900,
+    "anioConstruccion": 1972,
+    "estadoActual": "bueno",
+    "foto": "Stade_de_la_Mosson.png"
+  },
+  {
+    "nombre": "Stade_Marcel_Tribut",
+    "ciudad": "Dunkerque",
+    "capacidad": 4933,
+    "anioConstruccion": 1933,
+    "estadoActual": "bueno",
+    "foto": "Stade_Marcel_Tribut.png"
+  },
+  {
+    "nombre": "Stade_de_la_Licorne",
+    "ciudad": "Amiens",
+    "capacidad": 12097,
+    "anioConstruccion": 1999,
+    "estadoActual": "bueno",
+    "foto": "Stade_de_la_Licorne.png"
+  },
+  {
+    "nombre": "Stade_du_Roudourou",
+    "ciudad": "Guingamp",
+    "capacidad": 19060,
+    "anioConstruccion": 1990,
+    "estadoActual": "bueno",
+    "foto": "Stade_du_Roudourou.png"
+  },
+  {
+    "nombre": "Stade_Bauer",
+    "ciudad": "Saint-Ouen",
+    "capacidad": 5000,
+    "anioConstruccion": 1909,
+    "estadoActual": "regular",
+    "foto": "Stade_Bauer.png"
+  },
+  {
+    "nombre": "Nouste_Camp",
+    "ciudad": "Pau",
+    "capacidad": 4031,
+    "anioConstruccion": 2018,
+    "estadoActual": "bueno",
+    "foto": "Nouste_Camp.png"
+  },
+  {
+    "nombre": "Stade_des_Alpes",
+    "ciudad": "Grenoble",
+    "capacidad": 20068,
+    "anioConstruccion": 2008,
+    "estadoActual": "bueno",
+    "foto": "Stade_des_Alpes.png"
+  },
+  {
+    "nombre": "Stade_Armand_Cesari",
+    "ciudad": "Bastia",
+    "capacidad": 16480,
+    "anioConstruccion": 1932,
+    "estadoActual": "bueno",
+    "foto": "Stade_Armand_Cesari.png"
+  },
+  {
+    "nombre": "Stade_Paul_Lignon",
+    "ciudad": "Rodez",
+    "capacidad": 5955,
+    "anioConstruccion": 1926,
+    "estadoActual": "bueno",
+    "foto": "Stade_Paul_Lignon.png"
+  },
+  {
+    "nombre": "Stade_Gabriel_Montpied",
+    "ciudad": "Clermont-Ferrand",
+    "capacidad": 10670,
+    "anioConstruccion": 1995,
+    "estadoActual": "bueno",
+    "foto": "Stade_Gabriel_Montpied.png"
+  },
+  {
+    "nombre": "Stade_Marcel_Picot",
+    "ciudad": "Nancy",
+    "capacidad": 20087,
+    "anioConstruccion": 1926,
+    "estadoActual": "bueno",
+    "foto": "Stade_Marcel_Picot.png"
+  },
+  {
+    "nombre": "Parc_des_Sports",
+    "ciudad": "Annecy",
+    "capacidad": 15000,
+    "anioConstruccion": 1964,
+    "estadoActual": "bueno",
+    "foto": "Parc_des_Sports.png"
+  },
+  {
+    "nombre": "Stade_Francis_Le_Basser",
+    "ciudad": "Laval",
+    "capacidad": 18607,
+    "anioConstruccion": 1971,
+    "estadoActual": "bueno",
+    "foto": "Stade_Francis_Le_Basser.png"
+  },
+  {
+    "nombre": "Stade_Marie_Marvingt",
+    "ciudad": "Le Mans",
+    "capacidad": 25064,
+    "anioConstruccion": 2004,
+    "estadoActual": "bueno",
+    "foto": "Stade_Marie_Marvingt.png"
+  },
+  {
+    "nombre": "Stade_de_la_Liberation",
+    "ciudad": "Boulogne-sur-Mer",
+    "capacidad": 8000,
+    "anioConstruccion": 1957,
+    "estadoActual": "bueno",
+    "foto": "Stade_de_la_Liberation.png"
+  },
+  {
+    "nombre": "Philips_Stadion",
+    "ciudad": "Eindhoven",
+    "capacidad": 36500,
+    "anioConstruccion": 1913,
+    "estadoActual": "excelente",
+    "foto": "Philips_Stadion.png"
+  },
+  {
+    "nombre": "De_Kuip",
+    "ciudad": "Rotterdam",
+    "capacidad": 47500,
+    "anioConstruccion": 1937,
+    "estadoActual": "excelente",
+    "foto": "De_Kuip.png"
+  },
+  {
+    "nombre": "Johan_Cruyff_Arena",
+    "ciudad": "Amsterdam",
+    "capacidad": 55865,
+    "anioConstruccion": 1996,
+    "estadoActual": "excelente",
+    "foto": "Johan_Cruyff_Arena.png"
+  },
+  {
+    "nombre": "AFAS_Stadion",
+    "ciudad": "Alkmaar",
+    "capacidad": 19478,
+    "anioConstruccion": 2006,
+    "estadoActual": "bueno",
+    "foto": "AFAS_Stadion.png"
+  },
+  {
+    "nombre": "Stadion_Galgenwaard",
+    "ciudad": "Utrecht",
+    "capacidad": 23750,
+    "anioConstruccion": 1936,
+    "estadoActual": "bueno",
+    "foto": "Stadion_Galgenwaard.png"
+  },
+  {
+    "nombre": "De_Grolsch_Veste",
+    "ciudad": "Enschede",
+    "capacidad": 30205,
+    "anioConstruccion": 1998,
+    "estadoActual": "bueno",
+    "foto": "De_Grolsch_Veste.png"
+  },
+  {
+    "nombre": "Abe_Lenstra_Stadion",
+    "ciudad": "Heerenveen",
+    "capacidad": 27224,
+    "anioConstruccion": 1993,
+    "estadoActual": "bueno",
+    "foto": "Abe_Lenstra_Stadion.png"
+  },
+  {
+    "nombre": "Goffertstadion",
+    "ciudad": "Nijmegen",
+    "capacidad": 12500,
+    "anioConstruccion": 1939,
+    "estadoActual": "regular",
+    "foto": "Goffertstadion.png"
+  },
+  {
+    "nombre": "Euroborg",
+    "ciudad": "Groningen",
+    "capacidad": 22550,
+    "anioConstruccion": 2006,
+    "estadoActual": "bueno",
+    "foto": "Euroborg.png"
+  },
+  {
+    "nombre": "De_Adelaarshorst",
+    "ciudad": "Deventer",
+    "capacidad": 10000,
+    "anioConstruccion": 1920,
+    "estadoActual": "regular",
+    "foto": "De_Adelaarshorst.png"
+  },
+  {
+    "nombre": "Sparta_Stadion_Het_Kasteel",
+    "ciudad": "Rotterdam",
+    "capacidad": 11000,
+    "anioConstruccion": 1916,
+    "estadoActual": "regular",
+    "foto": "Sparta_Stadion_Het_Kasteel.png"
+  },
+  {
+    "nombre": "MAC3PARK_Stadion",
+    "ciudad": "Zwolle",
+    "capacidad": 13250,
+    "anioConstruccion": 2009,
+    "estadoActual": "bueno",
+    "foto": "MAC3PARK_Stadion.png"
+  },
+  {
+    "nombre": "Fortuna_Sittard_Stadion",
+    "ciudad": "Sittard",
+    "capacidad": 10300,
+    "anioConstruccion": 1999,
+    "estadoActual": "bueno",
+    "foto": "Fortuna_Sittard_Stadion.png"
+  },
+  {
+    "nombre": "Van_Donigen_De_Roo_Stadion",
+    "ciudad": "Rotterdam",
+    "capacidad": 4500,
+    "anioConstruccion": 1902,
+    "estadoActual": "regular",
+    "foto": "Van_Donigen_De_Roo_Stadion.png"
+  },
+  {
+    "nombre": "Rat_Verlegh_Stadion",
+    "ciudad": "Breda",
+    "capacidad": 19000,
+    "anioConstruccion": 1996,
+    "estadoActual": "bueno",
+    "foto": "Rat_Verlegh_Stadion.png"
+  },
+  {
+    "nombre": "Erve_Asito",
+    "ciudad": "Almelo",
+    "capacidad": 12080,
+    "anioConstruccion": 1999,
+    "estadoActual": "regular",
+    "foto": "Erve_Asito.png"
+  },
+  {
+    "nombre": "Kras_Stadion",
+    "ciudad": "Volendam",
+    "capacidad": 7384,
+    "anioConstruccion": 1975,
+    "estadoActual": "malo",
+    "foto": "Kras_Stadion.png"
+  },
+  {
+    "nombre": "Buko_Stadion",
+    "ciudad": "Velsen",
+    "capacidad": 7500,
+    "anioConstruccion": 1948,
+    "estadoActual": "regular",
+    "foto": "Buko_Stadion.png"
+  },
+  {
+    "nombre": "Sportcomplex_De_Toekomst",
+    "ciudad": "Amsterdam",
+    "capacidad": 2500,
+    "anioConstruccion": 1996,
+    "estadoActual": "malo",
+    "foto": "Sportcomplex_De_Toekomst.png"
+  },
+  {
+    "nombre": "Koning_Willem_II_Stadion",
+    "ciudad": "Tilburg",
+    "capacidad": 14637,
+    "anioConstruccion": 1995,
+    "estadoActual": "bueno",
+    "foto": "Koning_Willem_II_Stadion.png"
+  },
+  {
+    "nombre": "De_Herdgang",
+    "ciudad": "Eindhoven",
+    "capacidad": 4500,
+    "anioConstruccion": 1934,
+    "estadoActual": "malo",
+    "foto": "De_Herdgang.png"
+  },
+  {
+    "nombre": "M_Score_Stadion",
+    "ciudad": "Dordrecht",
+    "capacidad": 4100,
+    "anioConstruccion": 1996,
+    "estadoActual": "malo",
+    "foto": "M_Score_Stadion.png"
+  },
+  {
+    "nombre": "Yanmar_Stadion",
+    "ciudad": "Almere",
+    "capacidad": 4501,
+    "anioConstruccion": 2005,
+    "estadoActual": "regular",
+    "foto": "Yanmar_Stadion.png"
+  },
+  {
+    "nombre": "Mandemakers_Stadion",
+    "ciudad": "Waalwijk",
+    "capacidad": 7508,
+    "anioConstruccion": 1996,
+    "estadoActual": "regular",
+    "foto": "Mandemakers_Stadion.png"
+  },
+  {
+    "nombre": "Cambuur_Stadion",
+    "ciudad": "Leeuwarden",
+    "capacidad": 10000,
+    "anioConstruccion": 1936,
+    "estadoActual": "regular",
+    "foto": "Cambuur_Stadion.png"
+  },
+  {
+    "nombre": "Bingoal_Stadion",
+    "ciudad": "La_Haya",
+    "capacidad": 15000,
+    "anioConstruccion": 2007,
+    "estadoActual": "bueno",
+    "foto": "Bingoal_Stadion.png"
+  },
+  {
+    "nombre": "Parkstad_Limburg_Stadion",
+    "ciudad": "Kerkrade",
+    "capacidad": 19000,
+    "anioConstruccion": 2000,
+    "estadoActual": "regular",
+    "foto": "Parkstad_Limburg_Stadion.png"
+  },
+  {
+    "nombre": "Zoudenbalch",
+    "ciudad": "Utrecht",
+    "capacidad": 2500,
+    "anioConstruccion": 1920,
+    "estadoActual": "malo",
+    "foto": "Zoudenbalch.png"
+  },
+  {
+    "nombre": "De_Oude_Meerdijk",
+    "ciudad": "Emmen",
+    "capacidad": 8600,
+    "anioConstruccion": 1977,
+    "estadoActual": "regular",
+    "foto": "De_Oude_Meerdijk.png"
+  },
+  {
+    "nombre": "De_Vijverberg",
+    "ciudad": "Doetinchem",
+    "capacidad": 12600,
+    "anioConstruccion": 1954,
+    "estadoActual": "regular",
+    "foto": "De_Vijverberg.png"
+  },
+  {
+    "nombre": "De_Vliert",
+    "ciudad": "Den_Bosch",
+    "capacidad": 8500,
+    "anioConstruccion": 1992,
+    "estadoActual": "regular",
+    "foto": "De_Vliert.png"
+  },
+  {
+    "nombre": "SolarUnie_Stadion",
+    "ciudad": "Helmond",
+    "capacidad": 4200,
+    "anioConstruccion": 1967,
+    "estadoActual": "malo",
+    "foto": "SolarUnie_Stadion.png"
+  },
+  {
+    "nombre": "De_Geusselt",
+    "ciudad": "Maastricht",
+    "capacidad": 10000,
+    "anioConstruccion": 1961,
+    "estadoActual": "regular",
+    "foto": "De_Geusselt.png"
+  },
+  {
+    "nombre": "AFAS_Trainingscomplex",
+    "ciudad": "Alkmaar",
+    "capacidad": 2500,
+    "anioConstruccion": 2000,
+    "estadoActual": "malo",
+    "foto": "AFAS_Trainingscomplex.png"
+  },
+  {
+    "nombre": "Frans_Heesen_Stadion",
+    "ciudad": "Oss",
+    "capacidad": 4560,
+    "anioConstruccion": 1996,
+    "estadoActual": "malo",
+    "foto": "Frans_Heesen_Stadion.png"
+  },
+  {
+    "nombre": "De_Koel",
+    "ciudad": "Venlo",
+    "capacidad": 8000,
+    "anioConstruccion": 1974,
+    "estadoActual": "regular",
+    "foto": "De_Koel.png"
+  },
+  {
+    "nombre": "Estadio_Jose_Alvalade",
+    "ciudad": "Lisboa",
+    "capacidad": 50095,
+    "anioConstruccion": 2003,
+    "estadoActual": "excelente",
+    "foto": "Estadio_Jose_Alvalade.png"
+  },
+  {
+    "nombre": "Estadio_do_Dragao",
+    "ciudad": "Oporto",
+    "capacidad": 50529,
+    "anioConstruccion": 2003,
+    "estadoActual": "excelente",
+    "foto": "Estadio_do_Dragao.png"
+  },
+  {
+    "nombre": "Estadio_da_Luz",
+    "ciudad": "Lisboa",
+    "capacidad": 64500,
+    "anioConstruccion": 2003,
+    "estadoActual": "excelente",
+    "foto": "Estadio_da_Luz.png"
+  },
+  {
+    "nombre": "Estadio_Municipal_de_Braga",
+    "ciudad": "Braga",
+    "capacidad": 30000,
+    "anioConstruccion": 2003,
+    "estadoActual": "excelente",
+    "foto": "Estadio_Municipal_de_Braga.png"
+  },
+  {
+    "nombre": "Estadio_Municipal_de_Famalicao",
+    "ciudad": "Vila_Nova_de_Famalicao",
+    "capacidad": 5000,
+    "anioConstruccion": 1952,
+    "estadoActual": "bueno",
+    "foto": "Estadio_Municipal_de_Famalicao.png"
+  },
+  {
+    "nombre": "Estadio_dos_Arcos",
+    "ciudad": "Vila_do_Conde",
+    "capacidad": 12000,
+    "anioConstruccion": 1984,
+    "estadoActual": "bueno",
+    "foto": "Estadio_dos_Arcos.png"
+  },
+  {
+    "nombre": "Estadio_de_Sao_Miguel",
+    "ciudad": "Ponta_Delgada",
+    "capacidad": 14000,
+    "anioConstruccion": 1930,
+    "estadoActual": "regular",
+    "foto": "Estadio_de_Sao_Miguel.png"
+  },
+  {
+    "nombre": "Estadio_Antonio_Coimbra_da_Mota",
+    "ciudad": "Estoril",
+    "capacidad": 8000,
+    "anioConstruccion": 1935,
+    "estadoActual": "regular",
+    "foto": "Estadio_Antonio_Coimbra_da_Mota.png"
+  },
+  {
+    "nombre": "Estadio_do_Alverca",
+    "ciudad": "Alverca_do_Ribatejo",
+    "capacidad": 7000,
+    "anioConstruccion": 1950,
+    "estadoActual": "regular",
+    "foto": "Estadio_do_Alverca.png"
+  },
+  {
+    "nombre": "Estadio_Cidade_de_Barcelos",
+    "ciudad": "Barcelos",
+    "capacidad": 12000,
+    "anioConstruccion": 2000,
+    "estadoActual": "bueno",
+    "foto": "Estadio_Cidade_de_Barcelos.png"
+  },
+  {
+    "nombre": "Estadio_Pina_Manique",
+    "ciudad": "Lisboa",
+    "capacidad": 4000,
+    "anioConstruccion": 1930,
+    "estadoActual": "malo",
+    "foto": "Estadio_Pina_Manique.png"
+  },
+  {
+    "nombre": "Parque_de_Jogos_Comendador_Joaquim_de_Almeida_Freitas",
+    "ciudad": "Moreira_de_Conegos",
+    "capacidad": 5500,
+    "anioConstruccion": 1950,
+    "estadoActual": "regular",
+    "foto": "Parque_de_Jogos_Comendador_Joaquim_de_Almeida_Freitas.png"
+  },
+  {
+    "nombre": "Estadio_Dom_Afonso_Henriques",
+    "ciudad": "Guimaraes",
+    "capacidad": 30000,
+    "anioConstruccion": 1965,
+    "estadoActual": "bueno",
+    "foto": "Estadio_Dom_Afonso_Henriques.png"
+  },
+  {
+    "nombre": "Estadio_Municipal_de_Arouca",
+    "ciudad": "Arouca",
+    "capacidad": 5000,
+    "anioConstruccion": 2009,
+    "estadoActual": "bueno",
+    "foto": "Estadio_Municipal_de_Arouca.png"
+  },
+  {
+    "nombre": "Estadio_Joao_Cardoso",
+    "ciudad": "Tondela",
+    "capacidad": 5000,
+    "anioConstruccion": 2008,
+    "estadoActual": "bueno",
+    "foto": "Estadio_Joao_Cardoso.png"
+  },
+  {
+    "nombre": "Estadio_da_Madeira",
+    "ciudad": "Funchal",
+    "capacidad": 5000,
+    "anioConstruccion": 1998,
+    "estadoActual": "regular",
+    "foto": "Estadio_da_Madeira.png"
+  },
+  {
+    "nombre": "Estadio_do_CD_Aves",
+    "ciudad": "Vila_das_Aves",
+    "capacidad": 12000,
+    "anioConstruccion": 1981,
+    "estadoActual": "regular",
+    "foto": "Estadio_do_CD_Aves.png"
+  },
+  {
+    "nombre": "Estadio_Jose_Gomes",
+    "ciudad": "Amadora",
+    "capacidad": 9500,
+    "anioConstruccion": 1952,
+    "estadoActual": "regular",
+    "foto": "Estadio_Jose_Gomes.png"
+  },
+  {
+    "nombre": "Estadio_Luis_Filipe_Menezes",
+    "ciudad": "Oporto",
+    "capacidad": 5000,
+    "anioConstruccion": 2005,
+    "estadoActual": "malo",
+    "foto": "Estadio_Luis_Filipe_Menezes.png"
+  },
+  {
+    "nombre": "Academia_Sporting",
+    "ciudad": "Lisboa",
+    "capacidad": 3000,
+    "anioConstruccion": 2000,
+    "estadoActual": "malo",
+    "foto": "Academia_Sporting.png"
+  },
+  {
+    "nombre": "Caixa_Futebol_Campus",
+    "ciudad": "Lisboa",
+    "capacidad": 3000,
+    "anioConstruccion": 2006,
+    "estadoActual": "malo",
+    "foto": "Caixa_Futebol_Campus.png"
+  },
+  {
+    "nombre": "Estadio_Dr_Magalhaes_Pessoa",
+    "ciudad": "Leiria",
+    "capacidad": 24500,
+    "anioConstruccion": 2003,
+    "estadoActual": "bueno",
+    "foto": "Estadio_Dr_Magalhaes_Pessoa.png"
+  },
+  {
+    "nombre": "Estadio_do_Maritimo",
+    "ciudad": "Funchal",
+    "capacidad": 10000,
+    "anioConstruccion": 1920,
+    "estadoActual": "regular",
+    "foto": "Estadio_do_Maritimo.png"
+  },
+  {
+    "nombre": "Estadio_do_Fontelo",
+    "ciudad": "Viseu",
+    "capacidad": 5500,
+    "anioConstruccion": 1928,
+    "estadoActual": "regular",
+    "foto": "Estadio_do_Fontelo.png"
+  },
+  {
+    "nombre": "Estadio_Municipal_Eng_Manuel_Branco_Teixeira",
+    "ciudad": "Chaves",
+    "capacidad": 9000,
+    "anioConstruccion": 1980,
+    "estadoActual": "regular",
+    "foto": "Estadio_Municipal_Eng_Manuel_Branco_Teixeira.png"
+  },
+  {
+    "nombre": "Estadio_Municipal_Manuel_Marques",
+    "ciudad": "Torres_Vedras",
+    "capacidad": 2500,
+    "anioConstruccion": 1950,
+    "estadoActual": "malo",
+    "foto": "Estadio_Municipal_Manuel_Marques.png"
+  },
+  {
+    "nombre": "Estadio_de_Sao_Luis",
+    "ciudad": "Faro",
+    "capacidad": 6500,
+    "anioConstruccion": 1920,
+    "estadoActual": "regular",
+    "foto": "Estadio_de_Sao_Luis.png"
+  },
+  {
+    "nombre": "Estadio_Municipal_25_de_Abril",
+    "ciudad": "Penafiel",
+    "capacidad": 5000,
+    "anioConstruccion": 1930,
+    "estadoActual": "regular",
+    "foto": "Estadio_Municipal_25_de_Abril.png"
+  },
+  {
+    "nombre": "Estadio_do_FC_Vizela",
+    "ciudad": "Vizela",
+    "capacidad": 5000,
+    "anioConstruccion": 1930,
+    "estadoActual": "regular",
+    "foto": "Estadio_do_FC_Vizela.png"
+  },
+  {
+    "nombre": "Estadio_Municipal_de_Portimao",
+    "ciudad": "Portimao",
+    "capacidad": 9500,
+    "anioConstruccion": 1937,
+    "estadoActual": "regular",
+    "foto": "Estadio_Municipal_de_Portimao.png"
+  },
+  {
+    "nombre": "Estadio_Dr_Machado_de_Matos",
+    "ciudad": "Felgueiras",
+    "capacidad": 5000,
+    "anioConstruccion": 1950,
+    "estadoActual": "malo",
+    "foto": "Estadio_Dr_Machado_de_Matos.png"
+  },
+  {
+    "nombre": "Estadio_do_Mar",
+    "ciudad": "Matosinhos",
+    "capacidad": 6800,
+    "anioConstruccion": 1963,
+    "estadoActual": "regular",
+    "foto": "Estadio_do_Mar.png"
+  },
+  {
+    "nombre": "Estadio_da_Capital_do_Movel",
+    "ciudad": "Pacos_de_Ferreira",
+    "capacidad": 9000,
+    "anioConstruccion": 1973,
+    "estadoActual": "regular",
+    "foto": "Estadio_da_Capital_do_Movel.png"
+  },
+  {
+    "nombre": "Estadio_Marcolino_de_Castro",
+    "ciudad": "Santa_Maria_da_Feira",
+    "capacidad": 5000,
+    "anioConstruccion": 1962,
+    "estadoActual": "regular",
+    "foto": "Estadio_Marcolino_de_Castro.png"
+  },
+  {
+    "nombre": "Estadio_Carlos_Osorio",
+    "ciudad": "Oliveira_de_Azeméis",
+    "capacidad": 5000,
+    "anioConstruccion": 1960,
+    "estadoActual": "regular",
+    "foto": "Estadio_Carlos_Osorio.png"
+  },
+  {
+    "nombre": "Estadio_do_Lusitania",
+    "ciudad": "Lourosa",
+    "capacidad": 3000,
+    "anioConstruccion": 1940,
+    "estadoActual": "malo",
+    "foto": "Estadio_do_Lusitania.png"
+  },
+  {
+    "nombre": "Monumental",
+    "ciudad": "Buenos Aires",
+    "capacidad": 84567,
+    "anioConstruccion": 1938,
+    "estadoActual": "excelente",
+    "foto": "Monumental.png"
+  },
+  {
+    "nombre": "La Bombonera",
+    "ciudad": "Buenos Aires",
+    "capacidad": 54000,
+    "anioConstruccion": 1940,
+    "estadoActual": "bueno",
+    "foto": "La_Bombonera.png"
+  },
+  {
+    "nombre": "Presidente Perón",
+    "ciudad": "Avellaneda",
+    "capacidad": 55000,
+    "anioConstruccion": 1950,
+    "estadoActual": "bueno",
+    "foto": "Presidente_Perón.png"
+  },
+  {
+    "nombre": "Estadio Libertadores de América",
+    "ciudad": "Avellaneda",
+    "capacidad": 42069,
+    "anioConstruccion": 2009,
+    "estadoActual": "bueno",
+    "foto": "Estadio_Libertadores_de_América.png"
+  },
+  {
+    "nombre": "José Amalfitani",
+    "ciudad": "Buenos Aires",
+    "capacidad": 49540,
+    "anioConstruccion": 1951,
+    "estadoActual": "bueno",
+    "foto": "José_Amalfitani.png"
+  },
+  {
+    "nombre": "Estadio Jorge Luis Hirschi",
+    "ciudad": "La Plata",
+    "capacidad": 32530,
+    "anioConstruccion": 2019,
+    "estadoActual": "excelente",
+    "foto": "Estadio_Jorge_Luis_Hirschi.png"
+  },
+  {
+    "nombre": "Estadio Mario Alberto Kempes",
+    "ciudad": "Córdoba",
+    "capacidad": 57000,
+    "anioConstruccion": 1978,
+    "estadoActual": "bueno",
+    "foto": "Estadio_Mario_Alberto_Kempes.png"
+  },
+  {
+    "nombre": "Estadio Gigante de Arroyito",
+    "ciudad": "Rosario",
+    "capacidad": 41654,
+    "anioConstruccion": 1926,
+    "estadoActual": "bueno",
+    "foto": "Estadio_Gigante_de_Arroyito.png"
+  },
+  {
+    "nombre": "Estadio Diego Armando Maradona",
+    "ciudad": "Buenos Aires",
+    "capacidad": 24800,
+    "anioConstruccion": 2003,
+    "estadoActual": "regular",
+    "foto": "Estadio_Diego_Armando_Maradona.png"
+  },
+  {
+    "nombre": "Nuevo Gasómetro",
+    "ciudad": "Buenos Aires",
+    "capacidad": 47000,
+    "anioConstruccion": 1993,
+    "estadoActual": "bueno",
+    "foto": "Nuevo_Gasómetro.png"
+  },
+  {
+    "nombre": "Estadio Ciudad de Lanús",
+    "ciudad": "Lanús",
+    "capacidad": 46519,
+    "anioConstruccion": 1929,
+    "estadoActual": "bueno",
+    "foto": "Estadio_Ciudad_de_Lanús.png"
+  },
+  {
+    "nombre": "Estadio Julio César Villagra",
+    "ciudad": "Córdoba",
+    "capacidad": 38500,
+    "anioConstruccion": 1922,
+    "estadoActual": "regular",
+    "foto": "Estadio_Julio_César_Villagra.png"
+  },
+  {
+    "nombre": "Estadio Malvinas Argentinas",
+    "ciudad": "Mendoza",
+    "capacidad": 40268,
+    "anioConstruccion": 1978,
+    "estadoActual": "bueno",
+    "foto": "Estadio_Malvinas_Argentinas.png"
+  },
+  {
+    "nombre": "Estadio Tomás Adolfo Ducó",
+    "ciudad": "Buenos Aires",
+    "capacidad": 34838,
+    "anioConstruccion": 1947,
+    "estadoActual": "regular",
+    "foto": "Estadio_Tomas_Adolfo_Ducó.png"
+  },
+  {
+    "nombre": "Estadio José Dellagiovanna",
+    "ciudad": "Victoria",
+    "capacidad": 26282,
+    "anioConstruccion": 1924,
+    "estadoActual": "regular",
+    "foto": "Estadio_Jose_Dellagiovanna.png"
+  },
+  {
+    "nombre": "Estadio Norberto Tomaghello",
+    "ciudad": "Florencio Varela",
+    "capacidad": 20000,
+    "anioConstruccion": 1969,
+    "estadoActual": "regular",
+    "foto": "Estadio_Norberto_Tomaghello.png"
+  },
+  {
+    "nombre": "Estadio Ciudad de Vicente López",
+    "ciudad": "Buenos Aires",
+    "capacidad": 10000,
+    "anioConstruccion": 1979,
+    "estadoActual": "regular",
+    "foto": "Estadio_Ciudad_de_Vicente_Lopez.png"
+  },
+  {
+    "nombre": "Estadio Juan Domingo Perón",
+    "ciudad": "Córdoba",
+    "capacidad": 35000,
+    "anioConstruccion": 1936,
+    "estadoActual": "bueno",
+    "foto": "Estadio_Juan_Domingo_Peron.png"
+  },
+  {
+    "nombre": "Estadio 15 de Abril",
+    "ciudad": "Santa Fe",
+    "capacidad": 35000,
+    "anioConstruccion": 1946,
+    "estadoActual": "regular",
+    "foto": "Estadio_15_de_Abril.png"
+  },
+  {
+    "nombre": "Estadio Bautista Gargantini",
+    "ciudad": "Mendoza",
+    "capacidad": 25000,
+    "anioConstruccion": 1925,
+    "estadoActual": "regular",
+    "foto": "Estadio_Bautista_Gargantini.png"
+  },
+  {
+    "nombre": "Estadio Claudio Chiqui Tapia",
+    "ciudad": "Buenos Aires",
+    "capacidad": 18000,
+    "anioConstruccion": 1916,
+    "estadoActual": "regular",
+    "foto": "Estadio_Claudio_Chiqui_Tapia.png"
+  },
+  {
+    "nombre": "Estadio Marcelo Bielsa",
+    "ciudad": "Rosario",
+    "capacidad": 42000,
+    "anioConstruccion": 1911,
+    "estadoActual": "bueno",
+    "foto": "Estadio_Marcelo_Bielsa.png"
+  },
+  {
+    "nombre": "Estadio Alfredo Terrera",
+    "ciudad": "Santiago del Estero",
+    "capacidad": 30000,
+    "anioConstruccion": 1940,
+    "estadoActual": "regular",
+    "foto": "Estadio_Alfredo_Terrera.png"
+  },
+  {
+    "nombre": "Estadio Florencio Sola",
+    "ciudad": "Banfield",
+    "capacidad": 34900,
+    "anioConstruccion": 1940,
+    "estadoActual": "bueno",
+    "foto": "Estadio_Florencio_Sola.png"
+  },
+  {
+    "nombre": "Estadio Juan Carmelo Zerillo",
+    "ciudad": "La Plata",
+    "capacidad": 4500,
+    "anioConstruccion": 1924,
+    "estadoActual": "malo",
+    "foto": "Estadio_Juan_Carmelo_Zerillo.png"
+  },
+  {
+    "nombre": "Estadio Monumental José Fierro",
+    "ciudad": "San Miguel de Tucumán",
+    "capacidad": 35000,
+    "anioConstruccion": 1922,
+    "estadoActual": "regular",
+    "foto": "Estadio_Monumental_Jose_Fierro.png"
+  },
+  {
+    "nombre": "Estadio Eva Perón",
+    "ciudad": "Junín",
+    "capacidad": 25000,
+    "anioConstruccion": 1951,
+    "estadoActual": "regular",
+    "foto": "Estadio_Eva_Peron.png"
+  },
+  {
+    "nombre": "Estadio José María Minella",
+    "ciudad": "Mar del Plata",
+    "capacidad": 35180,
+    "anioConstruccion": 1978,
+    "estadoActual": "bueno",
+    "foto": "Estadio_Jose_María_Minella.png"
+  },
+  {
+    "nombre": "Estadio Hilario Sánchez",
+    "ciudad": "San Juan",
+    "capacidad": 18000,
+    "anioConstruccion": 1967,
+    "estadoActual": "regular",
+    "foto": "Estadio_Hilario_Sanchez.png"
+  },
+  {
+    "nombre": "Estadio Guillermo Laza",
+    "ciudad": "Buenos Aires",
+    "capacidad": 3000,
+    "anioConstruccion": 1931,
+    "estadoActual": "malo",
+    "foto": "Estadio_Guillermo_Laza.png"
+  },
+  {
+    "nombre": "Allianz Parque",
+    "ciudad": "São Paulo",
+    "capacidad": 43712,
+    "anioConstruccion": 2014,
+    "estadoActual": "excelente",
+    "foto": "Allianz_Parque.png"
+  },
+  {
+    "nombre": "Maracaná",
+    "ciudad": "Río de Janeiro",
+    "capacidad": 78838,
+    "anioConstruccion": 1950,
+    "estadoActual": "bueno",
+    "foto": "Maracana.png"
+  },
+  {
+    "nombre": "Mineirão",
+    "ciudad": "Belo Horizonte",
+    "capacidad": 62160,
+    "anioConstruccion": 1965,
+    "estadoActual": "bueno",
+    "foto": "Mineirao.png"
+  },
+  {
+    "nombre": "Estádio Olímpico Nilton Santos",
+    "ciudad": "Río de Janeiro",
+    "capacidad": 46931,
+    "anioConstruccion": 2007,
+    "estadoActual": "bueno",
+    "foto": "Estadio_Olimpico_Nilton_Santos.png"
+  },
+  {
+    "nombre": "São Januário",
+    "ciudad": "Río de Janeiro",
+    "capacidad": 24584,
+    "anioConstruccion": 1927,
+    "estadoActual": "regular",
+    "foto": "Sao_Januario.png"
+  },
+  {
+    "nombre": "Neo Química Arena",
+    "ciudad": "São Paulo",
+    "capacidad": 48905,
+    "anioConstruccion": 2014,
+    "estadoActual": "bueno",
+    "foto": "Neo_Quimica_Arena.png"
+  },
+  {
+    "nombre": "Arena Fonte Nova",
+    "ciudad": "Salvador",
+    "capacidad": 47902,
+    "anioConstruccion": 2013,
+    "estadoActual": "bueno",
+    "foto": "Arena_Fonte_Nova.png"
+  },
+  {
+    "nombre": "Estádio Jornalista Mário Filho",
+    "ciudad": "Río de Janeiro",
+    "capacidad": 82238,
+    "anioConstruccion": 1950,
+    "estadoActual": "bueno",
+    "foto": "Maracaná_Fluminense.png"
+  },
+  {
+    "nombre": "Estádio Nabi Abi Chedid",
+    "ciudad": "Bragança Paulista",
+    "capacidad": 17000,
+    "anioConstruccion": 1940,
+    "estadoActual": "regular",
+    "foto": "Estádio_Nabi_Abi_Chedid.png"
+  },
+  {
+    "nombre": "Arena MRV",
+    "ciudad": "Recife",
+    "capacidad": 46000,
+    "anioConstruccion": 2023,
+    "estadoActual": "regular",
+    "foto": "Estádio_Ilha_do_Retiro.png"
+  },
+  {
+    "nombre": "Estádio Vila Belmiro",
+    "ciudad": "Santos",
+    "capacidad": 16798,
+    "anioConstruccion": 1916,
+    "estadoActual": "regular",
+    "foto": "Estadio_Vila_Belmiro.png"
+  },
+  {
+    "nombre": "Arena do Grêmio",
+    "ciudad": "Porto Alegre",
+    "capacidad": 55622,
+    "anioConstruccion": 2012,
+    "estadoActual": "bueno",
+    "foto": "Arena_do_Gremio.png"
+  },
+  {
+    "nombre": "Morumbi",
+    "ciudad": "São Paulo",
+    "capacidad": 67052,
+    "anioConstruccion": 1960,
+    "estadoActual": "bueno",
+    "foto": "Morumbi.png"
+  },
+  {
+    "nombre": "Beira-Rio",
+    "ciudad": "Porto Alegre",
+    "capacidad": 50848,
+    "anioConstruccion": 1969,
+    "estadoActual": "bueno",
+    "foto": "Beira-Rio.png"
+  },
+  {
+    "nombre": "Estádio Governador Plácido Castelo",
+    "ciudad": "Fortaleza",
+    "capacidad": 60326,
+    "anioConstruccion": 1973,
+    "estadoActual": "bueno",
+    "foto": "Estádio_Governador_Placido_Castelo.png"
+  },
+  {
+    "nombre": "Arena Pernambuco",
+    "ciudad": "Recife",
+    "capacidad": 45440,
+    "anioConstruccion": 2013,
+    "estadoActual": "bueno",
+    "foto": "Arena_Pernambuco.png"
+  },
+  {
+    "nombre": "Estádio Plácido Aderaldo Castelo",
+    "ciudad": "Caxias do Sul",
+    "capacidad": 18400,
+    "anioConstruccion": 1972,
+    "estadoActual": "regular",
+    "foto": "Estadio_Placido_Aderaldo_Castelo.png"
+  },
+  {
+    "nombre": "Estádio Barradão",
+    "ciudad": "Salvador",
+    "capacidad": 30618,
+    "anioConstruccion": 1986,
+    "estadoActual": "regular",
+    "foto": "Estádio_Barradão.png"
+  },
+  {
+    "nombre": "Estádio José Maria de Campos Maia",
+    "ciudad": "Mirassol",
+    "capacidad": 15000,
+    "anioConstruccion": 1960,
+    "estadoActual": "regular",
+    "foto": "Estadio_Jose_Maria_de_Campos_Maia.png"
+  },
+  {
+    "nombre": "Estádio Alfredo Jaconi",
+    "ciudad": "Caxias do Sul",
+    "capacidad": 18400,
+    "anioConstruccion": 1972,
+    "estadoActual": "regular",
+    "foto": "Estadio_Alfredo_Jaconi.png"
   }
 ]
