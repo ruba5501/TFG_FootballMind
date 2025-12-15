@@ -2,7 +2,7 @@
   {
     "nombre": "Santiago Bernabéu",
     "ciudad": "Madrid",
-    "capacidad": 81044,
+    "capacidad": 83186,
     "anioConstruccion": 1947,
     "estadoActual": "excelente",
     "foto": "Santiago_Bernabéu.png"
@@ -18,7 +18,7 @@
   {
     "nombre": "Metropolitano",
     "ciudad": "Madrid",
-    "capacidad": 68000,
+    "capacidad": 70460,
     "anioConstruccion": 2017,
     "estadoActual": "excelente",
     "foto": "Metropolitano.png"
@@ -34,39 +34,39 @@
   {
     "nombre": "Ramón Sánchez Pizjuán",
     "ciudad": "Sevilla",
-    "capacidad": 43182,
+    "capacidad": 43883,
     "anioConstruccion": 1958,
     "estadoActual": "excelente",
-    "foto": "Ramón_Sánchez_Pizjuán.png"
+    "foto": "Ramón_Sanchez_Pizjuan.png"
   },
   {
     "nombre": "Benito Villamarín",
     "ciudad": "Sevilla",
-    "capacidad": 60500,
+    "capacidad": 60721,
     "anioConstruccion": 1929,
     "estadoActual": "excelente",
-    "foto": "Benito_Villamarín.png"
+    "foto": "Benito_Villamarin.png"
   },
   {
-    "nombre": "Anoeta",
+    "nombre": "Reale Arena",
     "ciudad": "San Sebastián",
-    "capacidad": 39934,
+    "capacidad": 39313,
     "anioConstruccion": 1993,
     "estadoActual": "excelente",
-    "foto": "Anoeta.png"
+    "foto": "Reale_Arena.png"
   },
   {
     "nombre": "Estadio de la Cerámica",
     "ciudad": "Villarreal",
-    "capacidad": 23200,
+    "capacidad": 23500,
     "anioConstruccion": 1923,
     "estadoActual": "excelente",
-    "foto": "Estadio_de_la_Cerámica.png"
+    "foto": "Estadio_de_la_Ceramica.png"
   },
   {
     "nombre": "Mestalla",
     "ciudad": "Valencia",
-    "capacidad": 49387,
+    "capacidad": 49430,
     "anioConstruccion": 1923,
     "estadoActual": "excelente",
     "foto": "Mestalla.png"
@@ -74,26 +74,26 @@
   {
     "nombre": "El Sadar",
     "ciudad": "Pamplona",
-    "capacidad": 23991,
+    "capacidad": 23576,
     "anioConstruccion": 1967,
     "estadoActual": "excelente",
     "foto": "El_Sadar.png"
   },
   {
-    "nombre": "Balaídos",
+    "nombre": "Abanca Balaídos",
     "ciudad": "Vigo",
-    "capacidad": 29500,
+    "capacidad": 24870,
     "anioConstruccion": 1928,
     "estadoActual": "excelente",
-    "foto": "Balaídos.png"
+    "foto": "Abanca_Balaidos.png"
   },
   {
-    "nombre": "Vallecas",
+    "nombre": "Campo de Fútbol de Vallecas",
     "ciudad": "Madrid",
-    "capacidad": 14200,
+    "capacidad": 14708,
     "anioConstruccion": 1976,
     "estadoActual": "bueno",
-    "foto": "Vallecas.png"
+    "foto": "Campo_de_Fútbol_de_Vallecas.png"
   },
   {
     "nombre": "Mendizorrotza",
@@ -106,18 +106,18 @@
   {
     "nombre": "RCDE Stadium",
     "ciudad": "Cornellà de Llobregat",
-    "capacidad": 40200,
+    "capacidad": 37776,
     "anioConstruccion": 2009,
     "estadoActual": "excelente",
     "foto": "RCDE_Stadium.png"
   },
   {
-    "nombre": "Manuel Martínez Valero",
+    "nombre": "Martínez Valero",
     "ciudad": "Elche",
     "capacidad": 33000,
     "anioConstruccion": 1976,
     "estadoActual": "bueno",
-    "foto": "Manuel_Martínez_Valero.png"
+    "foto": "Martínez_Valero.png"
   },
   {
     "nombre": "Coliseum Alfonso Pérez",
@@ -130,7 +130,7 @@
   {
     "nombre": "Son Moix",
     "ciudad": "Palma",
-    "capacidad": 23300,
+    "capacidad": 26020,
     "anioConstruccion": 1999,
     "estadoActual": "bueno",
     "foto": "Son_Moix.png"
@@ -138,7 +138,7 @@
   {
     "nombre": "Estadio Ciudad de Valencia",
     "ciudad": "Valencia",
-    "capacidad": 26000,
+    "capacidad": 26354,
     "anioConstruccion": 1969,
     "estadoActual": "regular",
     "foto": "Estadio_Ciudad_de_Valencia.png"
@@ -154,7 +154,7 @@
   {
     "nombre": "Estadi Municipal de Montilivi",
     "ciudad": "Girona",
-    "capacidad": 13000,
+    "capacidad": 14624,
     "anioConstruccion": 1970,
     "estadoActual": "bueno",
     "foto": "Estadi_Municipal_de_Montilivi.png"
