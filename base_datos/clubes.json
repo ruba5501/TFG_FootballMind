@@ -70,7 +70,7 @@
     "plantilla": [],
     "empleados": [],
     "infraestructuras": { "entrenamiento": 1, "cantera": 1 },
-    "escudo": null,
+    "escudo": "Athletic_Club.png",
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": []
