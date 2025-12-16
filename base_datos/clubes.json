@@ -412,7 +412,7 @@
     "plantilla": [],
     "empleados": [],
     "infraestructuras": { "entrenamiento": 1, "cantera": 1 },
-    "escudo": "Deportivo.png",
+    "escudo": "Deportivo_de_La_Coruña.png",
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": []
@@ -5371,7 +5371,7 @@
     "plantilla":[],
     "empleados":[],
     "infraestructuras":{"entrenamiento":1,"cantera":1},
-    "escudo":"CA_Lanús.png",
+    "escudo":"CA_Lanus.png",
     "popularidad":0,
     "reputacion":0,
     "historialTitulos":[]
@@ -5428,7 +5428,7 @@
     "plantilla": [],
     "empleados": [],
     "infraestructuras": { "entrenamiento":1,"cantera":1 },
-    "escudo": "CA_Huracán.png",
+    "escudo": "CA_Huracan.png",
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": []
@@ -5656,7 +5656,7 @@
     "plantilla": [],
     "empleados": [],
     "infraestructuras": { "entrenamiento":1,"cantera":1 },
-    "escudo": "Club_Atlético_Tucumán.png",
+    "escudo": "Club_Atletico_Tucuman.png",
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": []
@@ -5713,7 +5713,7 @@
     "plantilla": [],
     "empleados": [],
     "infraestructuras": { "entrenamiento":1,"cantera":1 },
-    "escudo": "CA_San_Martín_San_Juan.png",
+    "escudo": "CA_San_Martin_San_Juan.png",
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": []
@@ -6055,7 +6055,7 @@
     "plantilla": [],
     "empleados": [],
     "infraestructuras": { "entrenamiento": 1, "cantera": 1 },
-    "escudo": "Ceara.png",
+    "escudo": "Ceara_Sporting_Club.png",
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": []
@@ -6074,7 +6074,7 @@
     "plantilla": [],
     "empleados": [],
     "infraestructuras": { "entrenamiento": 1, "cantera": 1 },
-    "escudo": "EC_Vitoria.png",
+    "escudo": "Esporte_Clube_Vitoria.png",
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": []
@@ -6112,7 +6112,7 @@
     "plantilla": [],
     "empleados": [],
     "infraestructuras": { "entrenamiento": 1, "cantera": 1 },
-    "escudo": "Juventude.png",
+    "escudo": "Esporte_Clube_Juventude.png",
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": []
