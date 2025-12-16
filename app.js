@@ -7,7 +7,7 @@ const path = require('path');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const port = process.env.PORT || 3000;
-
+const cargaDB = require('./backend/cargaDB/index');
 // Conexión a MongoDB desde db.js
 const connectDB = require('./backend/db');
 connectDB();
@@ -65,9 +65,22 @@ app.use((err, req, res, next) => {
 });
 
 // Iniciar servidor
-app.listen(port, (err) => {
-    if (err)
-        console.error(`No se pudo inicializar el servidor: ${err.message}`);
-    else
-      console.log(`Servidor FootballMind escuchando en http://localhost:${port}`);
-});
+async function initializeApp() {
+    try {
+        await connectDB(); 
+        console.log("🌐 Conexión a MongoDB exitosa.");
+
+        await cargaDB(); 
+        
+        app.listen(port, (err) => {
+            if (err)
+                console.error(`No se pudo inicializar el servidor: ${err.message}`);
+            else
+                console.log(`🚀 Servidor FootballMind escuchando en http://localhost:${port}`);
+        });
+
+    } catch (error) {
+        console.error("⛔ Error FATAL durante el arranque de la aplicación o el Seeding:", error);
+    }
+}
+initializeApp();
