@@ -920,6 +920,14 @@
     "foto": "San_Nicola.png"
   },
   {
+    "nombre": "Dei Marmi",
+    "ciudad": "Carrara",
+    "capacidad": 	5587,
+    "anioConstruccion": 1955,
+    "estadoActual": "bueno",
+    "foto": "Dei_Marmi.png"
+  },
+  {
     "nombre": "Adriatico",
     "ciudad": "Pescara",
     "capacidad": 20515,
@@ -1232,7 +1240,7 @@
     "foto": "Eintracht_Stadion.png"
   },
   {
-    "nombre": "Preußenstadion",
+    "nombre": "Preussenstadion",
     "ciudad": "Münster",
     "capacidad": 14400,
     "anioConstruccion": 1926,
@@ -1240,7 +1248,7 @@
     "foto": "Preussenstadion.png"
   },
   {
-    "nombre": "SchücoArena",
+    "nombre": "SchucoArena",
     "ciudad": "Bielefeld",
     "capacidad": 27200,
     "anioConstruccion": 1926,
@@ -1624,12 +1632,12 @@
     "foto": "De_Adelaarshorst.png"
   },
   {
-    "nombre": "Sparta_Stadion_Het_Kasteel",
+    "nombre": "Sparta_Stadion",
     "ciudad": "Rotterdam",
     "capacidad": 11000,
     "anioConstruccion": 1916,
     "estadoActual": "regular",
-    "foto": "Sparta_Stadion_Het_Kasteel.png"
+    "foto": "Sparta_Stadion.png"
   },
   {
     "nombre": "MAC3PARK_Stadion",
@@ -1830,6 +1838,22 @@
     "anioConstruccion": 1974,
     "estadoActual": "regular",
     "foto": "De_Koel.png"
+  },
+  {
+    "nombre": "Jan_Louwers_Stadion",
+    "ciudad": "Eindhoven",
+    "capacidad": 4200,
+    "anioConstruccion": 1934,
+    "estadoActual": "regular",
+    "foto": "Jan_Louwers_Stadion.png"
+  },
+  {
+    "nombre": "GelreDome",
+    "ciudad": "Arnhem",
+    "capacidad": 21248,
+    "anioConstruccion": 1998,
+    "estadoActual": "regular",
+    "foto": "GelreDome.png"
   },
   {
     "nombre": "Estadio_Jose_Alvalade",

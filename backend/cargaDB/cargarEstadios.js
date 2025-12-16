@@ -7,7 +7,7 @@ async function cargarEstadios() {
     const count = await Estadio.countDocuments();
     
     if (count > 0) {
-        console.log('Estadios: Colección ya contiene datos. Omitiendo seeding.');
+        console.log('Estadios: Colección ya contiene datos. Omitiendo cargado.');
         return; // Salir si ya hay datos
     }
     
@@ -17,10 +17,10 @@ async function cargarEstadios() {
     // No necesitamos deleteMany si usamos el chequeo de count > 0
     const estadiosAniadidos = await Estadio.insertMany(estadios);
 
-    console.log(`✅ Estadios: Se han cargado ${estadiosAniadidos.length} estadios.`);
+    console.log(`Estadios: Se han cargado ${estadiosAniadidos.length} estadios.`);
   } catch (err) {
     // Es crucial lanzar el error para detener el proceso principal
-    console.error('❌ Error cargando los estadios:', err.message);
+    console.error('Error cargando los estadios:', err.message);
     throw err; 
   }
 }

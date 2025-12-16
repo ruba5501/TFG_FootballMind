@@ -92,6 +92,9 @@ const jugadorSchema = new mongoose.Schema({
     lesion: { type: String, default: null }
   }
 
-}, { timestamps: true });
+}, { 
+  timestamps: true,
+  collection: 'jugadores' 
+});
 
 module.exports = mongoose.model('Jugador', jugadorSchema);

@@ -9,12 +9,10 @@ async function cargarClubes() {
     const count = await Club.countDocuments();
     
     if (count > 0) {
-        console.log('Clubes: Colección ya contiene datos. Omitiendo seeding.');
+        console.log('Clubes: Colección ya contiene datos. Omitiendo cargado.');
         return;
     }
     
-    // ⚠️ ATENCIÓN: La lógica aquí asume que los Estadios y Competiciones ya están en la DB.
-
     const dataPath = path.join(__dirname, '../../base_datos/clubes.json');
     const clubesData = JSON.parse(fs.readFileSync(dataPath, 'utf8'));
 
@@ -62,10 +60,10 @@ async function cargarClubes() {
     // --- 2. PROCESAR CLUBES FILIALES ---
     const clubesFinalFiliales = [];
     for (const club of clubesFiliales) {
-      const clubMatrizId = nombreToId[club.clubMatrizNombre];
+      const clubMatrizId = nombreToId[club.clubMatriz];
       
       if (!clubMatrizId) {
-        console.warn(`Clubes: No se encontró club matriz (${club.clubMatrizNombre}) para ${club.nombre}. Saltando filial.`);
+        console.warn(`Clubes: No se encontró club matriz (${club.clubMatriz}) para ${club.nombre}. Saltando filial.`);
         continue;
       }
 
@@ -90,7 +88,7 @@ async function cargarClubes() {
     const insertadosFiliales = await Club.insertMany(clubesFinalFiliales);
     console.log(`Clubes: ${insertadosFiliales.length} clubes filiales insertados.`);
 
-    // --- 3. SINCRONIZAR COMPETICIONES (Actualizar los arrays 'clubes' en Competicion) ---
+    // --- 3. SINCRONIZAR COMPETICIONES 
     const todosClubes = [...insertadosNormales, ...insertadosFiliales];
     const bulkOps = [];
     
@@ -111,10 +109,10 @@ async function cargarClubes() {
     }
 
 
-    console.log(`✅ Clubes: Se han cargado un total de ${todosClubes.length} clubes correctamente.`);
+    console.log(`Clubes: Se han cargado un total de ${todosClubes.length} clubes correctamente.`);
 
   } catch (err) {
-    console.error('❌ Error cargando clubes:', err.message);
+    console.error('Error cargando clubes:', err.message);
     throw err;
   }
 }

@@ -7,8 +7,8 @@ async function cargarCompeticiones() {
     const count = await Competicion.countDocuments();
     
     if (count > 0) {
-        console.log('Competiciones: Colección ya contiene datos. Omitiendo seeding.');
-        return; // Salir si ya hay datos
+        console.log('Competiciones: Colección ya contiene datos. Omitiendo cargado.');
+        return; 
     }
 
     const dataPath = path.join(__dirname, '../../base_datos/competiciones.json');
@@ -22,12 +22,12 @@ async function cargarCompeticiones() {
     }));
 
     const insertadas = await Competicion.insertMany(nuevasCompeticiones);
-    console.log(`✅ Competiciones: Se cargaron ${insertadas.length} competiciones.`);
+    console.log(`Competiciones: Se cargaron ${insertadas.length} competiciones.`);
     
     // Devolvemos las competiciones insertadas para el módulo de clubes, si es necesario
     return insertadas; 
   } catch (err) {
-    console.error('❌ Error cargando las competiciones:', err.message);
+    console.error('Error cargando las competiciones:', err.message);
     throw err;
   }
 }

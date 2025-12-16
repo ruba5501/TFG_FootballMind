@@ -10,6 +10,9 @@ const competicionSchema = new mongoose.Schema({
   },
   logo: { type: String, trim: true, default: null },
   clubes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Club' }]
-});
+}, { 
+    collection: 'competiciones' 
+}
+);
 
 module.exports = mongoose.model('Competicion', competicionSchema);

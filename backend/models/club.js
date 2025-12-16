@@ -37,6 +37,9 @@ const clubSchema = new mongoose.Schema({
       trofeo: { type: String, trim: true, default: null } // URL
     }
   ]
-});
+}, { 
+    collection: 'clubes' 
+}
+);
 
 module.exports = mongoose.model('Club', clubSchema);

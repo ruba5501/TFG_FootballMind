@@ -1,6 +1,6 @@
 "use strict";
 
-require('dotenv').config();
+require('dotenv').config({ quiet: true });
 const express = require('express');
 const app = express();
 const path = require('path');
@@ -68,7 +68,7 @@ app.use((err, req, res, next) => {
 async function initializeApp() {
     try {
         await connectDB(); 
-        console.log("🌐 Conexión a MongoDB exitosa.");
+        console.log("Conexión a MongoDB exitosa.");
 
         await cargaDB(); 
         
@@ -76,11 +76,11 @@ async function initializeApp() {
             if (err)
                 console.error(`No se pudo inicializar el servidor: ${err.message}`);
             else
-                console.log(`🚀 Servidor FootballMind escuchando en http://localhost:${port}`);
+                console.log(`Servidor FootballMind escuchando en http://localhost:${port}`);
         });
 
     } catch (error) {
-        console.error("⛔ Error FATAL durante el arranque de la aplicación o el Seeding:", error);
+        console.error("Error FATAL durante el arranque de la aplicación o el Seeding:", error);
     }
 }
 initializeApp();
