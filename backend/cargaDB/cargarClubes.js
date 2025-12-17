@@ -49,7 +49,6 @@ async function cargarClubes() {
     }
 
     const insertadosNormales = await Club.insertMany(clubesFinalNormales);
-    console.log(`Clubes: ${insertadosNormales.length} clubes normales insertados.`);
     
     // Creamos un mapa de nombre -> _id para los clubes normales insertados
     const nombreToId = insertadosNormales.reduce((acc, club) => {
@@ -86,7 +85,6 @@ async function cargarClubes() {
     }
 
     const insertadosFiliales = await Club.insertMany(clubesFinalFiliales);
-    console.log(`Clubes: ${insertadosFiliales.length} clubes filiales insertados.`);
 
     // --- 3. SINCRONIZAR COMPETICIONES 
     const todosClubes = [...insertadosNormales, ...insertadosFiliales];
@@ -105,12 +103,10 @@ async function cargarClubes() {
     
     if (bulkOps.length > 0) {
         await Competicion.bulkWrite(bulkOps);
-        console.log('Clubes: Competiciones sincronizadas con clubes.');
     }
 
 
-    console.log(`Clubes: Se han cargado un total de ${todosClubes.length} clubes correctamente.`);
-
+    console.log(`Clubes: Se han cargado ${todosClubes.length} clubes en total con ${insertadosNormales.length} clubes normales y ${insertadosFiliales.length} clubes filiales.`);
   } catch (err) {
     console.error('Error cargando clubes:', err.message);
     throw err;

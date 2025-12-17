@@ -10,7 +10,7 @@ const port = process.env.PORT || 3000;
 const cargaDB = require('./backend/cargaDB/index');
 // Conexión a MongoDB desde db.js
 const connectDB = require('./backend/db');
-connectDB();
+
 
 // Middleware session
 const middlewareSession = require('./backend/middleware/sessions');
@@ -80,7 +80,7 @@ async function initializeApp() {
         });
 
     } catch (error) {
-        console.error("Error FATAL durante el arranque de la aplicación o el Seeding:", error);
+        console.error("Error durante el arranque de la aplicación o al cargar los datos en la base de datos:", error);
     }
 }
 initializeApp();

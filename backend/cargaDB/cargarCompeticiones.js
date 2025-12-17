@@ -22,7 +22,7 @@ async function cargarCompeticiones() {
     }));
 
     const insertadas = await Competicion.insertMany(nuevasCompeticiones);
-    console.log(`Competiciones: Se cargaron ${insertadas.length} competiciones.`);
+    console.log(`Competiciones: Se han cargado ${insertadas.length} competiciones.`);
     
     // Devolvemos las competiciones insertadas para el módulo de clubes, si es necesario
     return insertadas; 

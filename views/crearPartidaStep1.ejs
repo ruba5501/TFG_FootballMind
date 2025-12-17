@@ -1,49 +1,72 @@
-<%- include('partials/head', {title: 'Crear Partida - perfil'}) %>
+<%- include('partials/head', {title: 'Crear Partida - Perfil'}) %>
 
 <div class="container mt-5">
-  <h1 class="mb-4">Perfil del entrenador</h1>
+  <div class="row justify-content-center">
+    <div class="col-12 col-md-8 col-lg-6">
+      
+      <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white text-center py-3">
+          <h1 class="h4 mb-0">Perfil del Entrenador</h1>
+        </div>
+        
+        <div class="card-body p-4">
+          <% if(error) { %>
+            <div class="alert alert-danger text-center"><%= error %></div>
+          <% } %>
 
-  <% if(error) { %>
-    <div class="alert alert-danger"><%= error %></div>
-  <% } %>
+          <form method="POST" action="/crearPartida/step1">
+            
+            <div class="mb-3">
+              <label class="form-label fw-bold">Nombre de la partida</label>
+              <input type="text" class="form-control" name="nombrePartida" placeholder="Ej: Mi Carrera 2025" value="<%= datos.nombrePartida || '' %>" required>
+            </div>
 
-  <form method="POST" action="/crearPartida/step1">
-    <div class="mb-3">
-      <label class="form-label">Nombre de la partida</label>
-      <input type="text" class="form-control" name="nombrePartida" value="<%= datos.nombrePartida || '' %>" required>
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold">Nombre</label>
+                <input type="text" class="form-control" name="nombreEntrenador" placeholder="Tu nombre" value="<%= datos.nombreEntrenador || '' %>" required>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold">Apellido</label>
+                <input type="text" class="form-control" name="apellidoEntrenador" placeholder="Tu apellido" value="<%= datos.apellidoEntrenador || '' %>" required>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-4">
+                <div class="mb-3">
+                  <label class="form-label fw-bold">Edad</label>
+                  <input type="number" class="form-control" name="edad" placeholder="Tu edad" value="<%= datos.edad || '' %>" min="18" max="80" required>
+                </div>
+              </div>
+              
+              <div class="col-8">
+                <div class="mb-3">
+                  <label class="form-label fw-bold">Nacionalidad</label>
+                  <select class="form-select" name="nacionalidad" required>
+                    <option value="" disabled selected>Selecciona...</option>
+                    <% const paises = [{n:"Alemania"}, {n:"Argentina"}, {n:"España"}, {n:"Francia"}, {n:"Inglaterra"}, {n:"Italia"}, {n:"Portugal"}, {n:"Uruguay"}, {n:"Brasil"}, {n:"México"}]; // ... (resto de países) %>
+                    <% paises.forEach(p => { %>
+                      <option value="<%= p.n %>" <%= datos.nacionalidad === p.n ? 'selected' : '' %>>
+                        <%= p.n %>
+                      </option>
+                    <% }) %>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <hr class="my-4">
+
+            <div class="d-grid">
+              <button type="submit" class="btn btn-primary btn-lg">
+                Continuar a elección de equipo
+              </button>
+            </div>
+            
+          </form>
+        </div>
+      </div>
     </div>
-
-    <div class="mb-3">
-      <label class="form-label">Nombre del entrenador</label>
-      <input type="text" class="form-control" name="nombreEntrenador" value="<%= datos.nombreEntrenador || '' %>" required>
-    </div>
-
-    <div class="mb-3">
-      <label class="form-label">Edad</label>
-      <input type="number" class="form-control" name="edad" value="<%= datos.edad || '' %>" min="18" max="80" required>
-    </div>
-
-    <div class="mb-3">
-      <label class="form-label">Nacionalidad</label>
-      <select class="form-select" name="nacionalidad" required>
-        <option value="">Selecciona una nacionalidad</option>
-        <% const paises = [
-          {n:"Alemania"}, {n:"Argentina"}, {n:"Australia"}, {n:"Bélgica"}, {n:"Brasil"},
-          {n:"Canadá"}, {n:"Chile"}, {n:"China"}, {n:"Colombia"}, {n:"Corea del Sur"},
-          {n:"Croacia"}, {n:"Dinamarca"}, {n:"Egipto"}, {n:"España"}, {n:"Estados Unidos"},
-          {n:"Francia"}, {n:"Inglaterra"}, {n:"Italia"}, {n:"Japón"}, {n:"México"},
-          {n:"Marruecos"}, {n:"Nigeria"}, {n:"Noruega"}, {n:"Países Bajos"}, {n:"Paraguay"},
-          {n:"Perú"}, {n:"Polonia"}, {n:"Portugal"}, {n:"Suecia"}, {n:"Uruguay"}
-        ]; %>
-
-        <% paises.forEach(p => { %>
-          <option value="<%= p.n %>" <%= datos.nacionalidad===p.n?'selected':'' %>>
-            <%= p.n %>
-          </option>
-        <% }) %>
-      </select>
-    </div>
-
-    <button type="submit" class="btn btn-primary">Continuar</button>
-  </form>
+  </div>
 </div>

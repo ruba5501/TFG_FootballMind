@@ -36,9 +36,9 @@ partidaRouter.get('/crearPartida/step1', requireLogin, (req, res) => {
 });
 
 partidaRouter.post('/crearPartida/step1', requireLogin, (req, res) => {
-  const { nombrePartida, nombreEntrenador, edad, nacionalidad } = req.body;
+  const { nombrePartida, nombreEntrenador, apellidoEntrenador, edad, nacionalidad } = req.body;
 
-  if (!nombrePartida || !nombreEntrenador) {
+  if (!nombrePartida || !nombreEntrenador || !apellidoEntrenador) {
     return res.render('crearPartidaStep1', {
       datos: req.body,
       error: "Debes rellenar todos los campos obligatorios."
@@ -48,6 +48,7 @@ partidaRouter.post('/crearPartida/step1', requireLogin, (req, res) => {
   req.session.crearPartida = {
     nombrePartida,
     nombreEntrenador,
+    apellidoEntrenador,
     edad,
     nacionalidad
   };
@@ -119,6 +120,7 @@ partidaRouter.get('/crearPartida/final', requireLogin, async (req, res) => {
   try {
     const entrenador = await empleadoDAO.crearEmpleado({
       nombre: datos.nombreEntrenador,
+      apellido: datos.apellidoEntrenador,
       edad: datos.edad,
       nacionalidad: datos.nacionalidad,
       tipo: 'entrenadorPrincipal',
@@ -139,7 +141,7 @@ partidaRouter.get('/crearPartida/final', requireLogin, async (req, res) => {
     res.render('crearPartidaFinal', { 
       datos: {
         nombrePartida: datos.nombrePartida,
-        nombreEntrenador: datos.nombreEntrenador,
+        nombreEntrenador: `${entrenador.nombre} ${entrenador.apellido}`,
         clubNombre: club ? club.nombre : 'Desconocido'
       }
     });

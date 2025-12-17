@@ -1,61 +1,83 @@
-<%- include('partials/head', {title: 'Crear Partida - selección club'}) %>
+<%- include('partials/head', {title: 'Selección de Club'}) %>
+<link rel="stylesheet" href="/css/styles.css">
 
 <div class="container mt-5">
-  <h1 class="mb-4">Selecciona liga y club</h1>
+  <div class="row justify-content-center">
+    <div class="col-12 col-md-10 col-lg-8">
+      
+      <div class="card shadow card-crear-partida">
+        <div class="card-header bg-primary text-white text-center py-3">
+          <h2 class="h4 mb-0">Selecciona Liga y Club</h2>
+        </div>
+        
+        <div class="card-body p-4 text-center">
+          <% if(error) { %>
+            <div class="alert alert-danger"><%= error %></div>
+          <% } %>
 
-  <% if(error) { %>
-    <div class="alert alert-danger"><%= error %></div>
-  <% } %>
+          <form method="POST" action="/crearPartida/step2" id="formStep2">
+            
+            <div class="mb-5">
+              <h5 class="text-muted mb-4 text-uppercase fw-bold small">1. Elige una Competición</h5>
+              <div class="carousel-container">
+                <button type="button" class="arrow-btn" onclick="moveCarousel('liga', -1)">❮</button>
+                
+                <div id="liga-display" class="flex-grow-1">
+                  <% ligas.forEach((l, index) => { %>
+                    <div class="liga-item d-none" id="liga-<%= index %>" data-id="<%= l._id %>">
+                      <img src="/img/logos/<%= l.logo %>" 
+                           class="img-thumbnail selector-img" 
+                           onclick="confirmarLiga('<%= index %>')">
+                      <div class="mt-3 d-flex align-items-center justify-content-center">
+                        <img src="/img/banderas/<%= l.pais %>.png" class="bandera-liga">
+                        <span class="h5 mb-0"><%= l.nombre %></span>
+                      </div>
+                    </div>
+                  <% }) %>
+                </div>
 
-  <form method="POST" action="/crearPartida/step2">
-    <!-- Carrusel de Ligas -->
-    <div class="mb-3">
-      <label class="form-label">Selecciona liga</label>
-      <div class="d-flex overflow-auto">
-        <% ligas.forEach(l => { %>
-          <div class="text-center m-2">
-            <img src="/img/logos/<%= l.logo %>" class="img-thumbnail" style="width:80px; cursor:pointer;" onclick="selectLiga('<%= l._id %>')">
-            <div><%= l.nombre %></div>
-          </div>
-        <% }) %>
+                <button type="button" class="arrow-btn" onclick="moveCarousel('liga', 1)">❯</button>
+              </div>
+              <input type="hidden" name="ligaSelect" id="ligaInput" required>
+            </div>
+
+            <div id="seccion-clubes" class="d-none">
+              <hr class="my-5">
+              <h5 class="text-muted mb-4 text-uppercase fw-bold small">2. Selecciona tu Equipo</h5>
+              <div class="carousel-container">
+                <button type="button" class="arrow-btn" onclick="moveCarousel('club', -1)">❮</button>
+                
+                <div id="club-display" class="flex-grow-1">
+                  <% clubes.forEach((c) => { 
+                      const idL = (c.competiciones && c.competiciones._id) ? c.competiciones._id : c.competiciones;
+                  %>
+                    <div class="club-item d-none" data-liga-id="<%= idL %>">
+                      <img src="/img/escudos/<%= c.escudo %>" 
+                          class="img-thumbnail selector-img" 
+                          onclick="confirmarClub(this, '<%= c._id %>')">
+                      <div class="mt-3 h5 fw-bold"><%= c.nombre %></div>
+                    </div>
+                  <% }) %>
+                </div>
+
+                <button type="button" class="arrow-btn" onclick="moveCarousel('club', 1)">❯</button>
+              </div>
+              <input type="hidden" name="club" id="clubInput" required>
+            </div>
+
+            <div class="d-flex justify-content-between mt-5 pt-3">
+              <a href="/crearPartida/step1" class="btn btn-outline-secondary btn-lg px-4">
+                 Atrás
+              </a>
+              <button type="submit" class="btn btn-primary btn-lg px-5 shadow-sm">
+                Siguiente Paso
+              </button>
+            </div>
+
+          </form>
+        </div>
       </div>
-      <input type="hidden" name="ligaSelect" id="ligaSelectInput" required>
     </div>
-
-    <!-- Carrusel de Clubes -->
-    <div class="mb-3">
-      <label class="form-label">Selecciona club</label>
-      <div class="d-flex overflow-auto" id="clubCarousel">
-        <% clubes.forEach(c => { %>
-          <div class="text-center m-2 club-item" data-liga="<%= c.liga %>">
-            <img src="/img/escudos/<%= c.escudo %>" class="img-thumbnail" style="width:80px; cursor:pointer;" onclick="selectClub('<%= c._id %>')">
-            <div><%= c.nombre %></div>
-          </div>
-        <% }) %>
-      </div>
-      <input type="hidden" name="club" id="clubInput" required>
-    </div>
-
-    <button type="submit" class="btn btn-primary">Continuar</button>
-  </form>
+  </div>
 </div>
-
-<script>
-  function selectLiga(id){
-    $('#ligaSelectInput').val(id);
-    // Mostrar solo clubes de la liga seleccionada
-    $('.club-item').hide();
-    $('.club-item[data-liga="'+id+'"]').show();
-  }
-
-  function selectClub(id){
-    $('#clubInput').val(id);
-    // Marcar visualmente el club seleccionado
-    $('.club-item img').removeClass('border border-primary');
-    $('[onclick="selectClub(\''+id+'\')"]').addClass('border border-primary');
-  }
-
-  $(document).ready(function(){
-    $('.club-item').hide(); // Ocultar todos los clubes al inicio
-  });
-</script>
+<script defer src="/js/seleccionLigasEquipos.js"></script>

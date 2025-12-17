@@ -8,3 +8,85 @@
     margin-bottom: 25px;
     font-weight: 700;
 }
+/*-----------------------------------*/
+/*para seleccion de ligas y equipos*/
+
+/* Contenedor principal de la tarjeta */
+.card-crear-partida {
+    border: none;
+    border-radius: 15px;
+}
+
+/* Estilo para logos y escudos uniformes */
+.selector-img {
+    width: 140px;
+    height: 140px;
+    object-fit: contain;
+    background-color: #ffffff;
+    padding: 10px;
+    border: 2px solid #dee2e6;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.selector-img:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    cursor: pointer;
+}
+
+/* Estado cuando un ítem está seleccionado */
+.selected-item {
+    border: 4px solid #0d6efd !important;
+    background-color: #e7f1ff;
+}
+
+/* Estructura del carrusel con flechas */
+.carousel-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    min-height: 220px;
+}
+
+.arrow-btn {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 50%;
+    width: 45px;
+    height: 45px;
+    font-size: 1.2rem;
+    color: #0d6efd;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.arrow-btn:hover:not(:disabled) {
+    background: #0d6efd;
+    color: white;
+}
+
+.arrow-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+/* Banderas pequeñas al lado del nombre */
+.bandera-liga {
+    width: 25px;
+    height: auto;
+    border-radius: 3px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    margin-right: 8px;
+}
+
+/* Texto de pasos y progreso */
+.step-indicator {
+    font-size: 0.85rem;
+    font-weight: bold;
+    color: #6c757d;
+}
+/*-----------------------------------*/
