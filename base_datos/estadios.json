@@ -5,7 +5,7 @@
     "capacidad": 83186,
     "anioConstruccion": 1947,
     "estadoActual": "excelente",
-    "foto": "Santiago_Bernabéu.png"
+    "foto": "Santiago_Bernabeu.png"
   },
   {
     "nombre": "Spotify Camp Nou",
@@ -29,7 +29,7 @@
     "capacidad": 53289,
     "anioConstruccion": 2013,
     "estadoActual": "excelente",
-    "foto": "San_Mamés.png"
+    "foto": "San_Mames.png"
   },
   {
     "nombre": "Ramón Sánchez Pizjuán",
@@ -37,7 +37,7 @@
     "capacidad": 43883,
     "anioConstruccion": 1958,
     "estadoActual": "excelente",
-    "foto": "Ramón_Sanchez_Pizjuan.png"
+    "foto": "Ramon_Sanchez_Pizjuan.png"
   },
   {
     "nombre": "Benito Villamarín",
@@ -93,7 +93,7 @@
     "capacidad": 14708,
     "anioConstruccion": 1976,
     "estadoActual": "bueno",
-    "foto": "Campo_de_Fútbol_de_Vallecas.png"
+    "foto": "Campo_de_Futbol_de_Vallecas.png"
   },
   {
     "nombre": "Mendizorrotza",
@@ -125,7 +125,7 @@
     "capacidad": 18000,
     "anioConstruccion": 1998,
     "estadoActual": "bueno",
-    "foto": "Coliseum_Alfonso_Pérez.png"
+    "foto": "Coliseum_Alfonso_Perez.png"
   },
   {
     "nombre": "Son Moix",
@@ -197,7 +197,7 @@
     "capacidad": 27100,
     "anioConstruccion": 1982,
     "estadoActual": "bueno",
-    "foto": "José_Zorrilla.png"
+    "foto": "Jose_Zorrilla.png"
   },
   {
     "nombre": "El Molinón",
@@ -205,7 +205,7 @@
     "capacidad": 29000,
     "anioConstruccion": 1908,
     "estadoActual": "regular",
-    "foto": "El_Molinón.png"
+    "foto": "El_Molinon.png"
   },
   {
     "nombre": "Butarque",
@@ -229,7 +229,7 @@
     "capacidad": 22500,
     "anioConstruccion": 1995,
     "estadoActual": "bueno",
-    "foto": "Nuevo_Los_Cármenes.png"
+    "foto": "Nuevo_Los_Carmenes.png"
   },
   {
     "nombre": "Anduva",
@@ -253,7 +253,7 @@
     "capacidad": 12300,
     "anioConstruccion": 1967,
     "estadoActual": "regular",
-    "foto": "El_Plantío.png"
+    "foto": "El_Plantio.png"
   },
   {
     "nombre": "Ipurua",
@@ -277,7 +277,7 @@
     "capacidad": 13500,
     "anioConstruccion": 2001,
     "estadoActual": "bueno",
-    "foto": "Reino_de_León.png"
+    "foto": "Reino_de_Leon.png"
   },
   {
     "nombre": "SkyFi Castalia",
@@ -293,7 +293,7 @@
     "capacidad": 20000,
     "anioConstruccion": 1993,
     "estadoActual": "bueno",
-    "foto": "El_Arcángel.png"
+    "foto": "El_Arcangel.png"
   },
   {
     "nombre": "Carlos Belmonte",
@@ -308,7 +308,7 @@
     "ciudad": "Andorra la Vella",
     "capacidad": 3500,
     "anioConstruccion": 2014,
-    "estadoActual": "excelente",
+    "estadoActual": "bueno",
     "foto": "Estadi_Nacional.png"
   },
   {
