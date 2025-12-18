@@ -1,40 +1,67 @@
-<%- include('partials/head', {title: 'Crear Partida - atributos'}) %>
+<%- include('partials/head', {title: 'Crear Partida - Atributos'}) %>
+<link rel="stylesheet" href="/css/styles.css">
 
 <div class="container mt-5">
-  <h1 class="mb-4">Atributos</h1>
+    <div class="row justify-content-center">
+        <div class="col-12 col-xl-10">
+            
+            <div class="card shadow card-crear-partida">
+                <div class="card-header bg-primary text-white text-center py-3">
+                    <h2 class="h4 mb-0">Perfil del Entrenador</h2>
+                </div>
+                
+                <div class="card-body p-4">
+                    <% if(error) { %>
+                        <div class="alert alert-danger"><%= error %></div>
+                    <% } %>
 
-  <% if(error) { %>
-    <div class="alert alert-danger"><%= error %></div>
-  <% } %>
+                    <div class="text-center mb-4">
+                        <p class="text-muted mb-1">Distribuye tus 450 puntos de habilidad.</p>
+                        <div class="h5">
+                            Puntos restantes: 
+                            <span id="puntosRestantes" class="badge bg-dark p-2">450</span>
+                        </div>
+                    </div>
 
-  <p class="text-muted">Distribuye los atributos de tu entrenador. Dispones de <strong>450 puntos</strong>.</p>
-  <p><strong>Puntos restantes: <span id="puntosRestantes">450</span></strong></p>
+                    <form method="POST" action="/crearPartida/step3" id="formAtributos">
+                        <div class="row g-3">
+                            <% Object.keys(atributosDefault).forEach(a => { %>
+                                <div class="col-12 col-md-6 col-lg-4">
+                                    <div class="p-3 border rounded bg-light h-100 d-flex flex-column justify-content-between">
+                                        <label class="form-label fw-bold d-flex justify-content-between mb-2">
+                                            <span class="small text-uppercase"><%= a %></span>
+                                            <span class="text-primary value-indicator"><%= atributosDefault[a] %></span>
+                                        </label>
+                                        
+                                        <input type="range" class="form-range atributo-slider" 
+                                               min="0" max="100" 
+                                               value="<%= atributosDefault[a] %>">
+                                        
+                                        <div class="input-group input-group-sm mt-2">
+                                            <span class="input-group-text bg-white">Nivel</span>
+                                            <input type="number" class="form-control atributo-input text-center" 
+                                                   name="<%= a %>" 
+                                                   min="0" max="100" 
+                                                   value="<%= atributosDefault[a] %>">
+                                        </div>
+                                    </div>
+                                </div>
+                            <% }) %>
+                        </div>
 
-  <form method="POST" action="/crearPartida/step3">
-    <% Object.keys(atributosDefault).forEach(a => { %>
-      <div class="mb-3">
-        <label class="form-label"><%= a %></label>
-        <input type="number" class="form-control atributo" name="<%= a %>" min="0" max="100" value="<%= atributosDefault[a] %>">
-      </div>
-    <% }) %>
-
-    <button type="submit" class="btn btn-success">Finalizar</button>
-  </form>
+                        <div class="d-flex justify-content-between mt-5 pt-3 border-top">
+                            <a href="/crearPartida/step2" class="btn btn-outline-secondary btn-lg px-4">
+                                Atrás
+                            </a>
+                            <button type="submit" id="btnFinalizar" class="btn btn-success btn-lg px-5 shadow-sm">
+                                Finalizar Partida
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-    const total = 450;
-    const inputs = document.querySelectorAll("input.atributo");
-    const restante = document.getElementById("puntosRestantes");
-
-    function actualizar() {
-        let suma = 0;
-        inputs.forEach(i => suma += parseInt(i.value || 0));
-        restante.textContent = total - suma;
-    }
-
-    inputs.forEach(i => i.addEventListener("input", actualizar));
-    actualizar();
-});
-</script>
+<script defer src="/js/logicaAtributos.js"></script>

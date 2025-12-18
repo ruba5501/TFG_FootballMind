@@ -3,6 +3,7 @@ const partidaRouter = express.Router();
 
 const partidaDAO = require('../daos/partidasDAO');
 const empleadoDAO = require('../daos/empleadosDAO');
+const clubesDAO = require('../daos/clubesDAO');
 const Competicion = require('../models/competicion');
 const Club = require('../models/club');
 const { requireLogin } = require('../middleware/autenticacion');
@@ -134,7 +135,7 @@ partidaRouter.get('/crearPartida/final', requireLogin, async (req, res) => {
       entrenador._id
     );
 
-    const club = await Club.buscarClubPorId(datos.clubSeleccionado);
+    const club = await clubesDAO.buscarClubPorId(datos.clubSeleccionado);
 
     req.session.crearPartida = null;
 

@@ -1,11 +1,46 @@
-<%- include('partials/head', {title: 'Partida creada - guardado'}) %>
+<%- include('partials/head', {title: 'Partida Creada - ¡Éxito!'}) %>
+<link rel="stylesheet" href="/css/styles.css">
 
 <div class="container mt-5">
-  <h1 class="mb-4">Partida creada correctamente</h1>
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-8 col-lg-6">
+            
+            <div class="card shadow border-0 overflow-hidden">
+                <div class="card-header bg-success text-white text-center py-4">
+                    <div class="mb-2">
+                        <i class="fas fa-check-circle fa-3x"></i> </div>
+                    <h2 class="h3 mb-0">¡Partida Creada!</h2>
+                </div>
+                
+                <div class="card-body p-4">
+                    <div class="text-center mb-4">
+                        <p class="text-muted">Tu nueva carrera como mánager ha comenzado.</p>
+                    </div>
 
-  <p><strong>Nombre partida:</strong> <%= datos.nombrePartida %></p>
-  <p><strong>Entrenador:</strong> <%= datos.nombreEntrenador %></p>
-  <p><strong>Club:</strong> <%= datos.clubNombre %></p>
+                    <div class="list-group list-group-flush border rounded">
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <span class="text-muted small fw-bold text-uppercase">Proyecto</span>
+                            <span class="fw-bold text-primary"><%= datos.nombrePartida %></span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <span class="text-muted small fw-bold text-uppercase">Entrenador</span>
+                            <span class="fw-bold"><%= datos.nombreEntrenador %></span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center py-3">
+                            <span class="text-muted small fw-bold text-uppercase">Club</span>
+                            <div class="text-end">
+                                <span class="d-block fw-bold"><%= datos.clubNombre %></span>
+                            </div>
+                        </div>
+                    </div>
 
-  <a href="/dashboard" class="btn btn-primary mt-3">Volver</a>
+                    <div class="mt-4">
+                        <a href="/dashboard" class="btn btn-primary btn-lg w-100 shadow-sm">
+                            Comenzar a Gestionar
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>

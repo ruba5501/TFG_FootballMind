@@ -8,16 +8,14 @@
     margin-bottom: 25px;
     font-weight: 700;
 }
-/*-----------------------------------*/
+/*--------------------------------------*/
 /*para seleccion de ligas y equipos*/
 
-/* Contenedor principal de la tarjeta */
 .card-crear-partida {
     border: none;
     border-radius: 15px;
 }
 
-/* Estilo para logos y escudos uniformes */
 .selector-img {
     width: 140px;
     height: 140px;
@@ -35,13 +33,11 @@
     cursor: pointer;
 }
 
-/* Estado cuando un ítem está seleccionado */
 .selected-item {
     border: 4px solid #0d6efd !important;
     background-color: #e7f1ff;
 }
 
-/* Estructura del carrusel con flechas */
 .carousel-container {
     display: flex;
     align-items: center;
@@ -74,7 +70,6 @@
     cursor: not-allowed;
 }
 
-/* Banderas pequeñas al lado del nombre */
 .bandera-liga {
     width: 25px;
     height: auto;
@@ -83,10 +78,54 @@
     margin-right: 8px;
 }
 
-/* Texto de pasos y progreso */
 .step-indicator {
     font-size: 0.85rem;
     font-weight: bold;
     color: #6c757d;
 }
-/*-----------------------------------*/
+
+/*--------------------------------------*/
+/*para la distribucion de puntos en los atributos*/
+
+.card-crear-partida .row.g-3 > div {
+    display: flex;
+}
+
+.card-crear-partida .border.rounded.bg-light {
+    width: 100%;
+    transition: transform 0.2s, border-color 0.2s, background-color 0.2s, box-shadow 0.2s;
+    border: 1px solid #dee2e6 !important; /* Asegura un borde inicial visible */
+}
+
+.card-crear-partida .border.rounded.bg-light:hover {
+    transform: translateY(-3px);
+    background-color: #ffffff !important;
+    border-color: #0d6efd !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.value-indicator {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #0d6efd;
+}
+
+.atributo-input {
+    text-align: center;
+    font-weight: bold;
+}
+
+.form-range::-webkit-slider-thumb {
+    background: #0d6efd;
+}
+.form-range::-moz-range-thumb {
+    background: #0d6efd;
+}
+
+.input-group-text {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    font-weight: bold;
+    color: #6c757d;
+}
+/*--------------------------------------*/
