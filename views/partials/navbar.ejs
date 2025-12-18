@@ -1,0 +1,47 @@
+<header>
+  <nav class="navbar navbar-expand-md navbar-dark bg-dark shadow-sm">
+    <a class="navbar-brand ms-4 fw-bold" href="<%= (typeof partida !== 'undefined' && partida) ? '/inicio' : '/opcionPartida' %>">
+      <i class="bi bi-trophy-fill me-2"></i>FootballMind
+    </a>
+    
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto me-4">
+        
+        <% if (typeof partida !== 'undefined' && partida) { %>
+          <li class="nav-item">
+            <a class="nav-link" href="/dashboard/<%= partida._id %>"><i class="bi bi-house-door me-1"></i> Inicio</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/plantilla"><i class="bi bi-people me-1"></i> Plantilla</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-warning fw-bold" href="/partida/<%= partida._id %>">
+              <i class="bi bi-door-open me-1"></i> Salir de partida
+            </a>
+          </li>
+
+        <% } else { %>
+          <li class="nav-item">
+            <a class="nav-link" href="/opcionPartida">Inicio</a>
+          </li>
+          
+          <% if (user) { %>
+            <li class="nav-item">
+              <a class="nav-link" href="/perfil">Perfil</a>
+            </li>
+            <li class="nav-item">
+              <form action="/logout" method="POST" class="m-0">
+                <button type="submit" class="nav-link btn btn-link text-danger border-0">Cerrar sesión</button>
+              </form>
+            </li>
+          <% } %>
+        <% } %>
+
+      </ul>
+    </div>
+  </nav>
+</header>

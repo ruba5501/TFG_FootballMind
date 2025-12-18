@@ -12,8 +12,11 @@ class PartidaDAO {
     return await partida.save();
   }
 
-  async listarPartidasPorUsuario(usuarioId) {
-    return await Partida.find({ usuarioId }).sort({ ultimaActualizacion: -1 });
+ async listarPartidasPorUsuario(usuarioId) {
+    return await Partida.find({ usuarioId })
+      .populate('clubSeleccionado')
+      .populate('entrenadorId')
+      .sort({ ultimaActualizacion: -1 });
   }
 
   async obtenerPartidaPorId(id) {

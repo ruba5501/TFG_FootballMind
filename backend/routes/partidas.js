@@ -128,8 +128,8 @@ partidaRouter.get('/crearPartida/final', requireLogin, async (req, res) => {
       atributos: datos.atributos
     });
 
-    await partidaDAO.crearPartida(
-      req.session.userId,
+    const nuevaPartida = await partidaDAO.crearPartida(
+      req.session.user._id,
       datos.nombrePartida,
       datos.clubSeleccionado,
       entrenador._id
@@ -141,6 +141,7 @@ partidaRouter.get('/crearPartida/final', requireLogin, async (req, res) => {
 
     res.render('crearPartidaFinal', { 
       datos: {
+        id: nuevaPartida._id,
         nombrePartida: datos.nombrePartida,
         nombreEntrenador: `${entrenador.nombre} ${entrenador.apellido}`,
         clubNombre: club ? club.nombre : 'Desconocido'
@@ -152,4 +153,65 @@ partidaRouter.get('/crearPartida/final', requireLogin, async (req, res) => {
   }
 });
 
+partidaRouter.get('/listarPartidas', requireLogin, async (req, res) => {
+    try {
+        const partidas = await partidaDAO.listarPartidasPorUsuario(req.session.user._id);
+        
+        res.render('listarPartidas', { partidas });
+    } catch (error) {
+        console.error("Error al cargar partidas:", error);
+        res.status(500).send("Error al cargar tus partidas.");
+    }
+});
+
+partidaRouter.post('/eliminarPartida/:id', requireLogin, async (req, res) => {
+    try {
+        const id = req.params.id;
+        const partida = await partidaDAO.obtenerPartidaPorId(id);
+        
+        if (!partida || partida.usuarioId.toString() !== req.session.user._id.toString()) {
+            return res.status(403).send("No tienes permiso para borrar esta partida.");
+        }
+
+        await partidaDAO.eliminarPartida(id);
+        
+        res.redirect('/listarPartidas');
+    } catch (error) {
+        console.error("Error al borrar la partida:", error);
+        res.status(500).send("Error interno al intentar eliminar.");
+    }
+});
+
+partidaRouter.get('/dashboard/:id', requireLogin, async (req, res) => {
+    const partida = await partidaDAO.obtenerPartidaPorId(req.params.id);
+    res.render('dashboard', { user: req.session.user, partida });
+});
+
+partidaRouter.get('/partida/:id', requireLogin, async (req, res) => {
+    try {
+        const partida = await partidaDAO.obtenerPartidaPorId(req.params.id);
+        res.render('menuSalidaPartida', { partida });
+    } catch (error) {
+        res.redirect('/opcionPartida');
+    }
+});
+// RUTA: SOLO GUARDAR
+partidaRouter.get('/guardar/:id', requireLogin, async (req, res) => {
+    try {
+        await partidaDAO.actualizarPartida(req.params.id, {}); 
+        const partida = await partidaDAO.obtenerPartidaPorId(req.params.id);
+        res.render('menuSalidaPartida', { partida, mensaje: "¡Partida guardada con éxito!" });
+    } catch (error) {
+        res.redirect('/dashboard/' + req.params.id);
+    }
+});
+// RUTA: GUARDAR Y SALIR
+partidaRouter.get('/guardar-y-salir/:id', requireLogin, async (req, res) => {
+    try {
+        await partidaDAO.actualizarPartida(req.params.id, {});
+        res.redirect('/opcionPartida');
+    } catch (error) {
+        res.redirect('/opcionPartida');
+    }
+});
 module.exports = partidaRouter;

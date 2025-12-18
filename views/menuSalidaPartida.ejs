@@ -1,0 +1,41 @@
+<%- include('partials/head', {title: 'Opciones de Partida'}) %>
+<header>
+  <%- include('partials/navbar') %>
+</header>
+<div class="container vh-100 d-flex align-items-center justify-content-center">
+    <div class="card shadow-lg p-5 text-center" style="max-width: 500px; width: 100%; border-radius: 15px;">
+        <i class="bi bi-gear-wide-connected text-primary mb-3" style="font-size: 3rem;"></i>
+        <h2 class="mb-2">Opciones de Carrera</h2>
+        <p class="text-muted mb-4">
+            Manejando a: <strong><%= partida.nombrePartida %></strong>
+        </p>
+        
+        <% if (typeof mensaje !== 'undefined') { %>
+            <div class="alert alert-success small py-2 mb-3">
+                <%= mensaje %>
+            </div>
+        <% } %>
+
+        <div class="d-grid gap-3">
+            <a href="/guardar/<%= partida._id %>" class="btn btn-outline-primary btn-lg d-flex align-items-center justify-content-center gap-2">
+                <i class="bi bi-save"></i> Solo Guardar
+            </a>
+
+            <a href="/guardar-y-salir/<%= partida._id %>" class="btn btn-primary btn-lg d-flex align-items-center justify-content-center gap-2">
+                <i class="bi bi-box-arrow-left"></i> Guardar y Salir
+            </a>
+
+            <a href="/opcionPartida" 
+               onclick="return confirm('¿Seguro que quieres salir? Se perderán los cambios no guardados.')"
+               class="btn btn-outline-danger btn-lg d-flex align-items-center justify-content-center gap-2">
+                <i class="bi bi-x-circle"></i> Salir sin guardar
+            </a>
+            
+            <hr class="my-3">
+            
+            <a href="/dashboard/<%= partida._id %>" class="btn btn-link text-decoration-none">
+                <i class="bi bi-arrow-left"></i> Volver
+            </a>
+        </div>
+    </div>
+</div>

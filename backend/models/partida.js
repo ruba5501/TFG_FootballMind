@@ -10,8 +10,16 @@ const partidaSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  // CAMBIO: Ahora es ObjectId con referencia al modelo Club
   clubSeleccionado: {
-    type: String,
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: 'Club', 
+    required: true
+  },
+  // CAMBIO: Añadimos el campo que faltaba con referencia al modelo Empleado
+  entrenadorId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Empleado',
     required: true
   },
   fechaCreacion: {
@@ -23,7 +31,7 @@ const partidaSchema = new mongoose.Schema({
     default: Date.now
   },
   estadoJuego: {
-    type: Object, // aquí puedes guardar JSON con jugadores, ligas, etc.
+    type: Object,
     default: {}
   }
 });

@@ -129,3 +129,17 @@
     color: #6c757d;
 }
 /*--------------------------------------*/
+/*para el listar partidas*/
+.hover-lift { 
+    transition: transform 0.2s, box-shadow 0.2s; 
+    background: #fdfdfd; 
+}
+.hover-lift:hover { 
+    transform: translateY(-3px); 
+    box-shadow: 0 8px 15px rgba(0,0,0,0.1) !important; 
+    background: white; 
+}
+.border-dashed { 
+    border: 2px dashed #dee2e6; 
+    background: #f8f9fa; 
+}

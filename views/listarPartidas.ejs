@@ -1,0 +1,67 @@
+<%- include('partials/head', {title: 'Mis Partidas'}) %>
+<header>
+  <%- include('partials/navbar') %>
+</header>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-9">
+            
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 fw-bold">Partidas Guardadas</h1>
+                <a href="/opcionPartida" class="btn btn-outline-secondary">Volver</a>
+            </div>
+
+            <% if (partidas.length === 0) { %>
+                <div class="card text-center p-5 border-dashed">
+                    <p class="text-muted">Aún no has creado ninguna carrera.</p>
+                    <a href="/crearPartida/step1" class="btn btn-success mx-auto">Crear mi primera partida</a>
+                </div>
+            <% } else { %>
+                <div class="row g-3">
+                    <% partidas.forEach(p => { %>
+                        <div class="col-12">
+                            <div class="card shadow-sm border-0 hover-lift">
+                                <div class="card-body d-flex align-items-center p-4">
+                                    <div class="flex-shrink-0 me-4">
+                                        <img src="/img/escudos/<%= p.clubSeleccionado.escudo %>" 
+                                             style="width: 60px; height: 60px; object-fit: contain;">
+                                    </div>
+
+                                    <div class="flex-grow-1">
+                                        <div class="small text-primary fw-bold text-uppercase mb-1">
+                                            <%= p.nombrePartida %>
+                                        </div>
+                                        <h4 class="h5 mb-1 fw-bold"><%= p.clubSeleccionado.nombre %></h4>
+                                        <div class="text-muted small">
+                                            Mánager: <strong><%= p.entrenadorId.nombre %> <%= p.entrenadorId.apellido %></strong>
+                                        </div>
+                                    </div>
+
+                                    <div class="text-end">
+                                        <div class="text-muted small mb-2">
+                                            <%= new Date(p.ultimaActualizacion).toLocaleDateString() %>
+                                        </div>
+                                        <div class="card-body d-flex align-items-center p-4">
+                                            <div class="ms-auto d-flex align-items-center gap-3">
+                                                <form action="/eliminarPartida/<%= p._id %>" method="POST" 
+                                                    onsubmit="return confirm('¿Estás seguro de que quieres borrar permanentemente la partida: <%= p.nombrePartida %>?')">
+                                                    <button type="submit" class="btn btn-outline-danger btn-sm border-0">
+                                                        <i class="fas fa-trash-alt"></i> <span>Borrar</span>
+                                                    </button>
+                                                </form>
+
+                                                <a href="/dashboard/<%= p._id %>" class="btn btn-primary px-4 shadow-sm">
+                                                    Cargar
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    <% }) %>
+                </div>
+            <% } %>
+        </div>
+    </div>
+</div>

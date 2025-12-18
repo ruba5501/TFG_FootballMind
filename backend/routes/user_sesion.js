@@ -28,9 +28,7 @@ sesionRouter.post('/registro', async (req, res) => {
     await usersDAO.crearUsuario({ username, email, password: hashedPassword });
 
     const user = await usersDAO.buscarPorUsername(username);
-    req.session.userId = user._id;
-    req.session.username = user.username;
-
+    req.session.user = user;
     res.redirect('/opcionPartida');
   } catch (err) {
     console.error(err);
@@ -54,9 +52,7 @@ sesionRouter.post('/login', async (req, res) => {
       return res.render('index', { errorUsername: null, errorPassword: 'Contraseña incorrecta' });
     }
 
-    // Guardar sesión
-    req.session.userId = user._id;
-    req.session.username = user.username;
+    req.session.user = user;
 
     res.redirect('/opcionPartida');
   } catch (err) {
