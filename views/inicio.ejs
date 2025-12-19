@@ -1,0 +1,50 @@
+<%- include('partials/head', {title: 'FootballMind - Tu Carrera como Mánager'}) %>
+<%- include('partials/navbar') %>
+
+<main>
+    <section class="bg-dark text-white text-center py-5 shadow-lg">
+        <div class="container">
+            <h1 class="display-4 fw-bold">El fútbol no es solo correr, es <span class="text-warning">pensar</span>.</h1>
+            <p class="lead mt-3">Bienvenido a FootballMind, el simulador donde dejas de ser un espectador para tomar el control total de un club.</p>
+            <% if (!user) { %>
+                <a href="/index" class="btn btn-warning btn-lg px-4 mt-3">Empezar mi carrera</a>
+            <% } else { %>
+                <a href="/opcionPartida" class="btn btn-warning btn-lg px-4 mt-3">Ir a mis partidas</a>
+            <% } %>
+        </div>
+    </section>
+
+    <section class="container my-5">
+        <div class="row g-4 text-center">
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm p-3">
+                    <i class="bi bi-strategy text-primary mb-3" style="font-size: 3rem;"></i>
+                    <h3 class="h5 fw-bold">Gestión Realista</h3>
+                    <p class="text-muted">Olvídate de fichar superestrellas por dos euros. Aquí mandan los presupuestos reales, los contratos y la salud financiera del club.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm p-3">
+                    <i class="bi bi-clipboard-data text-success mb-3" style="font-size: 3rem;"></i>
+                    <h3 class="h5 fw-bold">Tácticas a Medida</h3>
+                    <p class="text-muted">¿Eres de los que aparcan el autobús o buscas el juego bonito? Define tu estilo y haz que tus jugadores crean en él.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm p-3">
+                    <i class="bi bi-graph-up-arrow text-danger mb-3" style="font-size: 3rem;"></i>
+                    <h3 class="h5 fw-bold">Evolución Constante</h3>
+                    <p class="text-muted">Desarrolla a los jóvenes de la cantera o busca en el mercado esa pieza que falta. Cada decisión cuenta para el próximo partido.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="bg-light py-5">
+        <div class="container text-center">
+            <blockquote class="blockquote">
+                <p class="mb-0">"FootballMind nace por la pasión de entender qué pasa en los despachos y en los vestuarios, no solo en el césped."</p>
+            </blockquote>
+        </div>
+    </section>
+</main>

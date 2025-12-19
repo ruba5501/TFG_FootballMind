@@ -1,0 +1,22 @@
+<%- include('partials/head', { title: 'Mi perfil'}) %>
+<header>
+  <%- include('partials/navbar') %>
+</header>
+
+<div class="container mt-4">
+    <h2 class="mb-4">Mi perfil</h2>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+
+            <p><strong>Nombre:</strong> <%= user.username %></p>
+            <p><strong>Correo:</strong> <%= user.email %></p>
+
+        </div>
+    </div>
+
+    <a href="/opcionPartida" class="btn btn-secondary mt-3">Volver</a>
+</div>
+
+</body>
+</html>

@@ -2,6 +2,7 @@ const express = require('express');
 const sesionRouter = express.Router();
 const bcrypt = require('bcrypt');
 const usersDAO = require('../daos/usersDAO');
+const { requireLogin } = require('../middleware/autenticacion');
 
 sesionRouter.post('/registro', async (req, res) => {
   try {
@@ -61,14 +62,18 @@ sesionRouter.post('/login', async (req, res) => {
   }
 });
 
-sesionRouter.get('/logout', (req, res) => {
-  req.session.destroy(err => {
-    if (err) {
-      console.error(err);
-      return res.status(500).send('Error al cerrar sesión');
-    }
-    res.redirect('/');
-  });
+sesionRouter.post('/logout', (req, res, next) => {
+    req.session.destroy(err => {
+        if (err) return next(err);
+        res.redirect('/');
+    });
+});
+
+sesionRouter.get('/perfil', requireLogin, (req, res) => {
+    res.render('perfil', {
+        title: 'Mi perfil',
+        user: req.session.user,
+    });
 });
 
 module.exports = sesionRouter;
