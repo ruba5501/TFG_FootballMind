@@ -24,23 +24,18 @@ async function cargarClubes() {
     
     // --- 1. PROCESAR CLUBES NORMALES ---
     for (const club of clubesNormales) {
-      // Búsqueda de referencias (asumiendo que las colecciones ya están cargadas)
       const [comps, estadio] = await Promise.all([
-          Competicion.find({ nombre: { $in: club.competiciones } }).lean(),
+          Competicion.find({ nombre: { $in: club.competiciones || [] } }).lean(),
           Estadio.findOne({ nombre: club.estadio }).lean()
       ]);
 
-      if (!comps.length) {
-        // console.warn(`Clubes: No se encontraron competiciones para ${club.nombre}.`);
-        continue;
-      }
-
+      // Un club normal DEBE tener estadio, pero permitimos que no tenga competición 
+      // por si es un club libre o de ligas bajas no cargadas.
       if (!estadio) {
         console.warn(`Clubes: No se encontró estadio para ${club.nombre}. Saltando club.`);
         continue;
       }
       
-      // Creamos el objeto listo para insertar con las IDs referenciadas
       clubesFinalNormales.push({
         ...club,
         estadio: estadio._id,
@@ -50,7 +45,6 @@ async function cargarClubes() {
 
     const insertadosNormales = await Club.insertMany(clubesFinalNormales);
     
-    // Creamos un mapa de nombre -> _id para los clubes normales insertados
     const nombreToId = insertadosNormales.reduce((acc, club) => {
         acc[club.nombre] = club._id;
         return acc;
@@ -62,42 +56,54 @@ async function cargarClubes() {
       const clubMatrizId = nombreToId[club.clubMatriz];
       
       if (!clubMatrizId) {
-        console.warn(`Clubes: No se encontró club matriz (${club.clubMatriz}) para ${club.nombre}. Saltando filial.`);
+        console.warn(`Clubes Filial: No se encontró club matriz (${club.clubMatriz}) para ${club.nombre}.`);
         continue;
       }
 
       const [comps, estadio] = await Promise.all([
-          Competicion.find({ nombre: { $in: club.competiciones } }).lean(),
+          Competicion.find({ nombre: { $in: club.competiciones || [] } }).lean(),
           Estadio.findOne({ nombre: club.estadio }).lean()
       ]);
 
-      if (!comps.length || !estadio) {
-          // Si faltan comps o estadio, ya se mostró un warning antes, simplemente saltamos
+      // LÓGICA FLEXIBLE PARA FILIALES:
+      // Si no tiene estadio propio, intentamos buscar el estadio del club matriz
+      let estadioFinalId = null;
+      if (estadio) {
+          estadioFinalId = estadio._id;
+      } else {
+          const matrizDoc = await Club.findById(clubMatrizId).lean();
+          estadioFinalId = matrizDoc ? matrizDoc.estadio : null;
+      }
+
+      if (!estadioFinalId) {
+          console.warn(`Clubes Filial: ${club.nombre} no tiene estadio y su matriz tampoco. Saltando.`);
           continue;
       }
 
       clubesFinalFiliales.push({
         ...club,
-        estadio: estadio._id,
-        competiciones: comps.map(c => c._id),
+        estadio: estadioFinalId,
+        competiciones: comps.map(c => c._id), // Ahora puede ser un array vacío []
         clubMatriz: clubMatrizId,
       });
     }
 
     const insertadosFiliales = await Club.insertMany(clubesFinalFiliales);
 
-    // --- 3. SINCRONIZAR COMPETICIONES 
+    // --- 3. SINCRONIZAR COMPETICIONES ---
     const todosClubes = [...insertadosNormales, ...insertadosFiliales];
     const bulkOps = [];
     
     for (const club of todosClubes) {
-      for (const compId of club.competiciones) {
-        bulkOps.push({
-          updateOne: {
-            filter: { _id: compId },
-            update: { $addToSet: { clubes: club._id } }
-          }
-        });
+      if (club.competiciones && club.competiciones.length > 0) {
+        for (const compId of club.competiciones) {
+          bulkOps.push({
+            updateOne: {
+              filter: { _id: compId },
+              update: { $addToSet: { clubes: club._id } }
+            }
+          });
+        }
       }
     }
     
@@ -105,8 +111,7 @@ async function cargarClubes() {
         await Competicion.bulkWrite(bulkOps);
     }
 
-
-    console.log(`Clubes: Se han cargado ${todosClubes.length} clubes en total con ${insertadosNormales.length} clubes normales y ${insertadosFiliales.length} clubes filiales.`);
+    console.log(`Clubes: Cargados ${todosClubes.length} en total (Normales: ${insertadosNormales.length}, Filiales: ${insertadosFiliales.length}).`);
   } catch (err) {
     console.error('Error cargando clubes:', err.message);
     throw err;

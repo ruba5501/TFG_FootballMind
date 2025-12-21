@@ -6,6 +6,7 @@ const empleadoDAO = require('../daos/empleadosDAO');
 const clubesDAO = require('../daos/clubesDAO');
 const Competicion = require('../models/competicion');
 const Club = require('../models/club');
+const generarJugadores = require('../cargaDB/cargarJugadores');
 const { requireLogin } = require('../middleware/autenticacion');
 
 const atributosDefault = {
@@ -134,6 +135,8 @@ partidaRouter.get('/crearPartida/final', requireLogin, async (req, res) => {
       datos.clubSeleccionado,
       entrenador._id
     );
+
+    await generarJugadores(nuevaPartida._id);
 
     const club = await clubesDAO.buscarClubPorId(datos.clubSeleccionado);
 

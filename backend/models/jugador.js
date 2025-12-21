@@ -1,7 +1,13 @@
 const mongoose = require('mongoose');
 
 const jugadorSchema = new mongoose.Schema({
+  partidaId: { 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: 'Partida', 
+    required: true 
+  },
   nombre: { type: String, required: true, trim: true },
+  dorsal: { type: Number, min: 1, max: 99 },
   edad: { type: Number, required: true },
   nacionalidad: String,
   altura: Number,
@@ -26,6 +32,13 @@ const jugadorSchema = new mongoose.Schema({
       'ED', 'EI', 'DC', 'SD'
     ]
   }],
+
+  rolEquipo: {
+    type: String,
+    enum: ['clave', 'importante', 'suplente', 'reserva', 'promesa'],
+    required: true,
+    default: 'suplente'
+  },
 
   piernaBuena: { type: String, enum: ['izquierda', 'derecha'], required: true },
   piernaMala: { type: Number, min: 0, max: 5, default: 0 },
@@ -104,6 +117,7 @@ const jugadorSchema = new mongoose.Schema({
   estado: {
     forma: { type: Number, default: 100 },
     moral: { type: Number, default: 100 },
+    satisfaccion: { type: Number, default: 100 },
     lesion: { type: String, default: null }
   }
 

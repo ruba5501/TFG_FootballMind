@@ -128,6 +128,9 @@ const generarDatosUniversales = (clubes) => {
            const yaTieneFilial = base.some(c => c.clubMatriz === club.nombre && c.esFilial);
 
             if (!yaTieneFilial) {
+                let repFilial = Math.floor(club.reputacion * 0.6); 
+                repFilial = Math.max(35, Math.min(65, repFilial));
+                
                 nuevosFiliales.push({
                     nombre: club.nombre + " B",
                     ciudad: club.ciudad,
@@ -144,7 +147,7 @@ const generarDatosUniversales = (clubes) => {
                     infraestructuras: { ...club.infraestructuras }, 
                     escudo: club.escudo,
                     popularidad: Math.floor(club.popularidad * 0.4),
-                    reputacion: 40,
+                    reputacion: repFilial,
                     historialTitulos: []
                 });
             }

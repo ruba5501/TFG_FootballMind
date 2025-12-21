@@ -32,6 +32,7 @@ class PartidaDAO {
   }
 
   async eliminarPartida(id) {
+    await Jugador.deleteMany({ partidaId: id });
     return await Partida.findByIdAndDelete(id);
   }
 }
