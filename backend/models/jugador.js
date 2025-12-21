@@ -7,11 +7,25 @@ const jugadorSchema = new mongoose.Schema({
   altura: Number,
   peso: Number,
 
-  posicion: {
+  posicionPrincipal: {
     type: String,
-    enum: ['portero', 'defensa', 'medio', 'delantero'],
+    enum: [
+      'POR',       
+      'LD', 'LI', 'DFC', 'CAD', 'CAI', 
+      'MCD', 'MC', 'MCO', 'MD', 'MI', 
+      'ED', 'EI', 'DC', 'SD'         
+    ],
     required: true
   },
+
+  posicionesSecundarias: [{
+    type: String,
+    enum: [
+      'LD', 'LI', 'DFC', 'CAD', 'CAI', 
+      'MCD', 'MC', 'MCO', 'MD', 'MI', 
+      'ED', 'EI', 'DC', 'SD'
+    ]
+  }],
 
   piernaBuena: { type: String, enum: ['izquierda', 'derecha'], required: true },
   piernaMala: { type: Number, min: 0, max: 5, default: 0 },
@@ -25,8 +39,9 @@ const jugadorSchema = new mongoose.Schema({
   clubActual: { type: mongoose.Schema.Types.ObjectId, ref: 'Club', required: true },
   estadoClub: {
     type: String,
-    enum: ['primerEquipo', 'cantera'],
-    required: true
+    enum: ['primerEquipo', 'cantera', 'cedido'],
+    required: true,
+    default: 'primerEquipo'
   },
   
   atributos: {
