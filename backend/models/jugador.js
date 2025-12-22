@@ -95,11 +95,11 @@ const jugadorSchema = new mongoose.Schema({
       salto: { type: Number, min: 0, max: 100, default: 0 }
     },
     mental: {
-      concentracion: { type: Number, min: 0, max: 10, default: 0 },
+      concentracion: { type: Number, min: 0, max: 100, default: 0 },      
       liderazgo: { type: Number, min: 0, max: 100, default: 0 },
       agresividad: { type: Number, min: 0, max: 100, default: 0 },
-      motivacion: { type: Number, min: 0, max: 10, default: 0 },
-      composturaBajoPresion: { type: Number, min: 0, max: 10, default: 0 }
+      motivacion: { type: Number, min: 0, max: 100, default: 0 },
+      composturaBajoPresion: { type: Number, min: 0, max: 100, default: 0 }
     },
     portero: {
       reflejos: { type: Number, min: 0, max: 100, default: 0 },
