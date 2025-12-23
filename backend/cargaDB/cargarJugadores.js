@@ -132,8 +132,8 @@ async function generarJugadoresNuevaPartida(partidaId) {
                     nacionalidad: identidad.nacionalidad,
                     posicionPrincipal: posicion,
                     piernaBuena: Math.random() > 0.2 ? 'derecha' : 'izquierda',
-                    piernaMala: Math.floor(Math.random() * 4) + 1,
-                    versatilidad: Math.floor(Math.random() * 4) + 1,
+                    piernaMala: Math.floor(Math.random() * 5) + 1,
+                    versatilidad: Math.floor(Math.random() * 5) + 1,
                     valoracion: ratings.ca,
                     potencial: ratings.pa,
                     rolEquipo: rolContrato,
@@ -202,12 +202,15 @@ function calcularRatings(rol, rep, repMatriz, esFilial) {
     if (esFilial) {
         ca = (repMatriz * 0.45) + (Math.random() * 12 + 8);
     } else {
-        if (rol === 'ESTRELLA') ca = rep + (Math.random() * 3);
+        if (rol === 'ESTRELLA') {
+            let bonoCima = rep > 90 ? (Math.random() * 1) : (Math.random() * 3);
+            ca = rep + bonoCima;
+        }       
         else if (rol === 'TITULAR') ca = rep - (Math.random() * 5 + 2);
         else if (rol === 'ROTACION') ca = rep - (Math.random() * 7 + 10);
         else ca = rep - (Math.random() * 10 + 18);
     }
-    ca = Math.max(15, Math.floor(ca));
+    ca = Math.min(92, Math.max(15, Math.floor(ca)));
 
     let pa;
     if (esFilial) {
@@ -225,12 +228,27 @@ function calcularRatings(rol, rep, repMatriz, esFilial) {
             pa = sueloPotencial + (Math.random() * 15);
         }
     } else {
-        pa = ca + (Math.random() * 8);
-    }
+        let margenCrecimiento = 0;
+        
+        if (edad < 25) margenCrecimiento = 12;     
+        else if (edad < 28) margenCrecimiento = 6;  
+        else if (edad < 32) margenCrecimiento = 2; 
+        else margenCrecimiento = 0;                
 
+        pa = ca + (Math.random() * margenCrecimiento);
+
+        if (edad < 25 && Math.random() < 0.08) {
+            let esElite = Math.random() < 0.20;
+            let basePotencial = esElite ? 89 : 85;
+            let variacion = esElite ? 5 : 3;
+            
+            pa = Math.max(pa, basePotencial + (Math.random() * variacion));
+            }
+    }
+    let paFinal = esFilial ? pa : Math.min(94, pa);
     return { 
         ca: Math.floor(ca), 
-        pa: Math.min(99, Math.max(Math.floor(ca), Math.floor(pa))) 
+        pa: Math.min(99, Math.max(Math.floor(ca), Math.floor(paFinal))) 
     };
 }
 
@@ -267,103 +285,224 @@ function calcularSalario(ca, rep) {
 }
 
 function generarAtributos(pos, val, arquetipo) {
-    const MAX_INICIAL = 96;
-    // tB (Técnico Base): El estándar del jugador. Muy cerca de su media.
-    const tB = () => Math.floor(val * (0.90 + Math.random() * 0.05)); 
-    // tE (Técnico Especialista): Su gran virtud técnica. Entre 5% y 12% sobre su media.
-    const tE = (bonus = 0) => {
-        const factorBono = 1.05 + (bonus / 250); 
-        return Math.min(MAX_INICIAL, Math.floor(val * factorBono + (Math.random() * 4)));
+    const esPortero = pos === 'POR';
+    const MAX_TECNICO = 93;
+    const MAX_FISICO = 96;
+        
+    // Especialista Técnico (tE)
+    const tE = (puntosOriginales) => {
+        let ratio = puntosOriginales / 80; 
+        let base = val * 0.85 + (15 * ratio);
+        return Math.min(MAX_TECNICO, Math.floor(base + (Math.random() * 5)));
     };
-    // tI (Técnico Irrelevante): Su carencia profesional. Entre 15% y 20% bajo su media.
-    const tI = () => Math.floor(val * (0.80 + Math.random() * 0.05)); 
 
-    // fB (Físico Base): El físico estándar. Con un suelo mínimo de 50 para realismo.
-    const fB = () => Math.min(MAX_INICIAL, Math.floor(50 + (val * 0.40) + (Math.random() * 5)));
-    // fE (Físico Especialista): La excepción física. Permite picos altos (12% al 18% extra).
-    const fE = (bonus = 10) => {
-        const factorBono = 1.12 + (bonus / 200); 
-        return Math.min(MAX_INICIAL, Math.floor(val * factorBono + (Math.random() * 5)));
+    // Técnico Base (tB): Para atributos donde el jugador cumple bien.
+    const tB = () => Math.floor(val * (0.75 + Math.random() * 0.05));
+
+    // Técnico Insuficiente (tI): Para debilidades.
+    const tI = () => Math.floor(val * (0.5 + Math.random() * 0.05));
+
+    // Físico Genético (fG): Rango base 30-85 + bono. No depende de 'val'.
+    const fG = (bonusOriginal) => {
+        let baseGenetica = 50 + Math.floor(Math.random() * 36); 
+        let bonusAdaptado = (bonusOriginal / 40) * 15; 
+        return Math.min(MAX_FISICO, baseGenetica + bonusAdaptado);
     };
-    // m: Mental. Basado en media con un factor de suerte equilibrado.
-    const m = () => Math.min(MAX_INICIAL, Math.floor(val * 0.85 + (Math.random() * 10)));
 
-    // Inicialización por defecto
     let a = {
-        habilidad: { regate: tI(), controlBalon: tI(), desmarques: tI() },
-        tiro: { definicion: tI(), potenciaTiro: fB(), tiroLejano: tI(), lanzamientoFaltas: tI(), lanzamientoPenaltis: tI(), remateCabeza: fB() },
-        pase: { paseCorto: tB(), paseLargo: tB(), vision: tI(), centros: tI() },
-        defensa: { marcaje: tI(), entradas: tI(), intercepciones: tI(), despejes: fB(), duelosAereos: fB(), colocacion: tI() },
-        fisico: { velocidad: fB(), aceleracion: fB(), agilidad: fB(), fuerza: fB(), resistencia: fB(), equilibrio: fB(), salto: fB() },
-        mental: { concentracion: m(), liderazgo: tB(), agresividad: fB(), motivacion: m(), composturaBajoPresion: m() },
+        habilidad: { regate: tB(), controlBalon: tB(), desmarques: tB() },
+        tiro: { definicion: tB(), potenciaTiro: tB(), tiroLejano: tB(), lanzamientoFaltas: tI(), lanzamientoPenaltis: tI(), remateCabeza: tB() },
+        pase: { paseCorto: tB(), paseLargo: tB(), vision: tB(), centros: tB() },
+        defensa: { marcaje: tI(), entradas: tI(), intercepciones: tI(), despejes: tB(), duelosAereos: tB(), colocacion: tB() },
+        fisico: { velocidad: fG(0), aceleracion: fG(0), agilidad: fG(0), fuerza: fG(0), resistencia: fG(0), equilibrio: fG(0), salto: fG(0) },
+        mental: { concentracion: tB(), liderazgo: tI(), agresividad: tB(), motivacion: tB(), composturaBajoPresion: tB() },
         portero: { reflejos: 1, paradas: 1, estirada: 1, juegoAereo: 1, unoContraUno: 1, blocaje: 1, saque: 1, comunicacion: 1, penales: 1 }
     };
 
+    if (['DFC', 'LD', 'LI', 'MCD'].includes(pos)) { 
+        if(['LD', 'LI'].includes(pos)){
+            a.fisico.resistencia = fG(30);
+            a.pase.centros = tE(15);
+        }
+        a.defensa.marcaje = tE(25);          
+        a.defensa.entradas = tE(25);         
+        a.defensa.intercepciones = tE(20);   
+        a.defensa.colocacion = tE(20);       
+        a.defensa.duelosAereos = tE(15);     
+    }
+
+    if (['MC', 'MCO', 'MCD'].includes(pos)) {
+        a.pase.paseCorto = tE(25);           
+        a.pase.vision = tE(20);              
+        a.pase.paseLargo = tE(15);           
+    }
+
+    if (['DC', 'ED', 'EI', 'SD'].includes(pos)) {
+        a.tiro.definicion = tE(20);          
+        a.habilidad.desmarques = tE(15);    
+        a.tiro.potenciaTiro = tE(15);       
+    }
     switch(arquetipo) {
         // --- PORTEROS ---
-        case 'CASILLAS': a.portero.reflejos = tE(15); a.portero.estirada = tE(12); a.portero.unoContraUno = tE(12); a.portero.juegoAereo = tI(); a.portero.saque = tI(); break;
-        case 'COURTOIS': a.portero.juegoAereo = tE(12); a.portero.paradas = tE(10); a.portero.reflejos = tB(); a.portero.estirada = tB(); a.portero.saque = tI(); break;
-        case 'TER_STEGEN': a.portero.saque = tE(20); a.pase.paseCorto = tE(10); a.portero.reflejos = tI(); a.portero.paradas = tB(); a.portero.blocaje = tB(); break;
-        case 'DIBU': a.portero.penales = tE(25); a.mental.agresividad = tE(10); a.portero.reflejos = tB(); a.portero.paradas = tB(); a.portero.comunicacion = tE(5); break;
-        case 'ALISSON': a.portero.reflejos = tB(); a.portero.paradas = tB(); a.portero.saque = tB(); a.portero.unoContraUno = tB(); a.portero.juegoAereo = tB(); break;
+        case 'CASILLAS':
+            a.portero.reflejos = tE(75); a.portero.unoContraUno = tE(70); a.portero.estirada = tE(65);
+            a.fisico.agilidad = fG(35); a.portero.juegoAereo = tI(); a.pase.paseCorto = tI(); break;
+        case 'COURTOIS':
+            a.portero.juegoAereo = tE(70); a.portero.paradas = tE(65); a.portero.blocaje = tE(60);
+            a.portero.reflejos = tE(55); a.portero.estirada = tE(40); a.pase.paseCorto = tB(); break;
+        case 'TER_STEGEN':
+            a.portero.saque = tE(75); a.pase.paseCorto = tE(65); a.habilidad.controlBalon = tE(50);
+            a.portero.reflejos = tE(40); a.portero.paradas = tE(40); break;
+        case 'DIBU':
+            a.portero.penales = tE(80); a.mental.composturaBajoPresion = tE(60); 
+            a.portero.reflejos = tB(); a.portero.estirada = tB(); break;
+        case 'ALISSON':
+            a.portero.reflejos = tE(40); a.portero.unoContraUno = tE(40); a.portero.blocaje = tE(40);
+            a.portero.saque = tE(40); a.portero.juegoAereo = tE(40); break;
 
         // --- LATERALES ---
-        case 'ROBERTO_CARLOS': a.fisico.velocidad = fE(15); a.habilidad.regate = tB(); a.tiro.potenciaTiro = tE(20); a.tiro.tiroLejano = tE(15); a.defensa.marcaje = tI(); break;
-        case 'MARCELO': a.habilidad.regate = tE(18); a.habilidad.controlBalon = tE(15); a.pase.paseCorto = tE(10); a.pase.centros = tE(10); a.defensa.entradas = tI(); break;
-        case 'JORDI_ALBA': a.fisico.velocidad = fE(18); a.pase.centros = tE(15); a.defensa.entradas = tB(); a.fisico.aceleracion = fE(15); a.habilidad.regate = tI(); break;
-        case 'MENDY': a.defensa.marcaje = tE(15); a.defensa.entradas = tE(15); a.fisico.fuerza = fE(10); a.defensa.colocacion = tE(10); a.tiro.definicion = tI(); break;
-        case 'ARNOLD_LAHM': a.pase.centros = tE(20); a.pase.paseLargo = tE(15); a.pase.paseCorto = tE(12); a.fisico.velocidad = fB(); a.defensa.colocacion = tE(8); break;
-        case 'HAKIMI_MENDES': a.fisico.velocidad = fE(18); a.fisico.resistencia = fE(15); a.fisico.fuerza = fE(10); a.pase.centros = tE(12); a.habilidad.regate = tE(8); break;
-        case 'CARVAJAL': a.fisico.resistencia = fE(15); a.pase.centros = tE(10); a.defensa.marcaje = tB(); a.defensa.entradas = tB(); a.mental.agresividad = tE(12); break;
+        case 'ROBERTO_CARLOS':
+            a.fisico.velocidad = fG(40); a.tiro.potenciaTiro = tE(75); a.tiro.tiroLejano = tE(70);
+            a.habilidad.regate = tE(45); a.defensa.marcaje = tB(); break;
+        case 'MARCELO':
+            a.habilidad.controlBalon = tE(75); a.habilidad.regate = tE(70); a.pase.centros = tE(60);
+            a.fisico.velocidad = tB(); a.defensa.marcaje = tI(); break;
+        case 'JORDI_ALBA':
+            a.fisico.velocidad = fG(35); a.fisico.aceleracion = fG(35);
+            a.pase.centros = tE(65); a.defensa.marcaje = tB(); break;
+        case 'MENDY':
+            a.defensa.marcaje = tE(65); a.defensa.entradas = tE(65); a.fisico.fuerza = fG(25);
+            a.fisico.velocidad = (Math.random() > 0.5) ? fG(25) : tB(); a.pase.centros = tI(); break;
+        case 'ARNOLD_LAHM':
+            a.pase.centros = tE(75); a.pase.paseLargo = tE(70); a.pase.vision = tE(65);
+            a.fisico.velocidad = tB(); a.defensa.marcaje = tE(20); break;
+        case 'HAKIMI_MENDES':
+            a.fisico.velocidad = fG(35); a.fisico.resistencia = fG(35); a.fisico.fuerza = fG(20);
+            a.pase.centros = tE(55); a.habilidad.regate = tE(50); a.defensa.entradas = tE(30); break;
+        case 'CARVAJAL':
+            a.fisico.resistencia = fG(30); a.pase.centros = tE(55); a.defensa.entradas = tB();
+            a.defensa.marcaje = tB(); a.fisico.velocidad = tB(); break;
 
         // --- CENTRALES ---
-        case 'PIQUE': a.pase.paseCorto = tE(15); a.pase.paseLargo = tE(15); a.habilidad.controlBalon = tE(12); a.defensa.colocacion = tE(10); a.fisico.fuerza = tB(); break;
-        case 'RAMOS': a.defensa.duelosAereos = fE(15); a.tiro.remateCabeza = tE(18); a.mental.liderazgo = tE(20); a.fisico.velocidad = fE(10); a.defensa.entradas = tE(12); break;
-        case 'PEPE': a.fisico.fuerza = fE(15); a.mental.agresividad = tE(25); a.defensa.duelosAereos = fE(12); a.defensa.entradas = tE(12); a.defensa.marcaje = tB(); break;
-        case 'VARANE': a.fisico.velocidad = fE(18); a.defensa.intercepciones = tE(10); a.defensa.marcaje = tB(); a.fisico.salto = fE(12); a.habilidad.controlBalon = tI(); break;
-        case 'MAGUIRE': a.fisico.fuerza = fE(20); a.defensa.duelosAereos = fE(20); a.defensa.marcaje = tE(10); a.fisico.velocidad = fB(); a.pase.paseCorto = tI(); break;
-        case 'KOEMAN': a.tiro.potenciaTiro = tE(25); a.tiro.lanzamientoFaltas = tE(25); a.pase.paseLargo = tE(18); a.defensa.marcaje = tB(); a.fisico.velocidad = fB(); break;
-        case 'NACHO': a.defensa.marcaje = tE(6); a.defensa.entradas = tE(6); a.defensa.intercepciones = tE(6); a.fisico.velocidad = fE(6); a.fisico.resistencia = fE(6); a.mental.concentracion = tE(10); break;
+        case 'PIQUE':
+            a.pase.paseCorto = tE(65); a.pase.paseLargo = tE(60); a.habilidad.controlBalon = tE(55);
+            a.defensa.colocacion = tE(50); a.fisico.velocidad = tI(); break;
+        case 'RAMOS':
+            a.tiro.remateCabeza = tE(75); a.fisico.salto = fG(35); a.mental.liderazgo = tE(75);
+            a.defensa.marcaje = tE(60); a.defensa.intercepciones = tE(60); a.fisico.velocidad = fG(15); break;
+        case 'PEPE':
+            a.mental.agresividad = tE(75); a.defensa.entradas = tE(70); a.fisico.fuerza = fG(30);
+            a.defensa.marcaje = tE(60); a.pase.paseCorto = tB(); break;
+        case 'VARANE':
+            a.fisico.velocidad = fG(35); a.fisico.aceleracion = fG(30);
+            a.defensa.intercepciones = tE(50); a.defensa.marcaje = tE(40); break;
+        case 'MAGUIRE':
+            a.fisico.fuerza = fG(35); a.defensa.duelosAereos = fG(35); a.tiro.remateCabeza = tE(65); a.defensa.entradas = tE(60);
+            a.fisico.velocidad = tI(); a.pase.paseCorto = tI(); break;
+        case 'KOEMAN':
+            a.tiro.potenciaTiro = tE(75); a.tiro.lanzamientoFaltas = tE(70); a.tiro.tiroLejano = tE(70);
+            a.defensa.marcaje = tE(40); a.fisico.velocidad = tI(); break;
+        case 'NACHO':
+            a.defensa.marcaje = tE(20); a.defensa.entradas = tE(20); a.mental.concentracion = tE(20);
+            a.fisico.velocidad = tB(); a.fisico.resistencia = tB(); break;
 
         // --- MEDIOCENTROS ---
-        case 'BUSQUETS_ALONSO': a.pase.vision = tE(20); a.pase.paseLargo = tE(18); a.habilidad.controlBalon = tE(15); a.tiro.lanzamientoFaltas = tE(10); a.defensa.colocacion = tB(); break;
-        case 'CASEMIRO': a.fisico.fuerza = fE(15); a.defensa.entradas = tE(18); a.defensa.duelosAereos = fE(15); a.tiro.remateCabeza = tE(10); a.tiro.potenciaTiro = tB(); break;
-        case 'KANTE': a.fisico.resistencia = fE(22); a.fisico.velocidad = fE(10); a.defensa.intercepciones = tE(18); a.defensa.entradas = tE(12); a.pase.paseCorto = tB(); break;
-        case 'RODRI': a.defensa.intercepciones = tE(15); a.pase.paseCorto = tE(15); a.tiro.tiroLejano = tE(15); a.fisico.fuerza = fE(12); a.defensa.colocacion = tE(12); break;
-        case 'XAVI_KROOS': a.pase.paseCorto = tE(25); a.pase.paseLargo = tE(25); a.tiro.tiroLejano = tE(18); a.tiro.potenciaTiro = tE(15); a.pase.vision = tE(12); break;
-        case 'INIESTA_MODRIC': a.habilidad.regate = tE(22); a.habilidad.controlBalon = tE(22); a.pase.vision = tE(20); a.pase.paseCorto = tE(15); a.fisico.agilidad = fE(10); break;
-        case 'VALVERDE': a.fisico.velocidad = fE(18); a.fisico.resistencia = fE(20); a.tiro.potenciaTiro = tE(15); a.pase.paseLargo = tE(12); a.defensa.entradas = tB(); break;
+        case 'BUSQUETS_ALONSO':
+            a.pase.vision = tE(75); a.pase.paseCorto = tE(75); a.pase.paseLargo = tE(75);
+            a.tiro.lanzamientoFaltas = tE(50); a.fisico.velocidad = tI(); break;
+        case 'CASEMIRO':
+            a.defensa.entradas = tE(70); a.fisico.fuerza = fG(30); a.defensa.intercepciones = tE(60);
+            a.tiro.remateCabeza = tE(60); a.fisico.velocidad = tB(); break;
+        case 'KANTE':
+            a.fisico.resistencia = fG(40); a.fisico.velocidad = fG(25);
+            a.defensa.intercepciones = tE(65); a.pase.paseCorto = tE(40); break;
+        case 'RODRI':
+            a.pase.paseCorto = tE(65); a.defensa.colocacion = tE(60); a.tiro.tiroLejano = tE(60);
+            a.fisico.fuerza = fG(20); a.fisico.velocidad = fG(10); break;
+        case 'XAVI_KROOS':
+            a.pase.paseCorto = tE(80); a.pase.paseLargo = tE(80); a.tiro.potenciaTiro = tE(65);
+            a.fisico.velocidad = tB(); a.defensa.colocacion = tB(); break;
+        case 'INIESTA_MODRIC':
+            a.habilidad.controlBalon = tE(75); a.habilidad.regate = tE(75); a.pase.vision = tE(70);
+            a.fisico.resistencia = tB(); a.defensa.entradas = tB(); break;
+        case 'VALVERDE':
+            a.fisico.velocidad = fG(30); a.fisico.resistencia = fG(35);
+            a.tiro.potenciaTiro = tE(60); a.defensa.entradas = tE(40); break;
 
-        // --- MCO / SD ---
-        case 'BELLINGHAM': a.habilidad.desmarques = tE(15); a.tiro.remateCabeza = tE(15); a.tiro.definicion = tE(12); a.fisico.resistencia = fE(15); a.defensa.entradas = tB(); break;
-        case 'OZIL': a.pase.vision = tE(25); a.pase.centros = tE(15); a.habilidad.controlBalon = tE(18); a.pase.paseCorto = tE(12); a.defensa.marcaje = tI(); break;
-        case 'DYBALA': a.tiro.tiroLejano = tE(20); a.tiro.definicion = tE(18); a.habilidad.regate = tE(15); a.tiro.lanzamientoFaltas = tE(15); a.pase.vision = tE(12); break;
-        case 'DE_BRUYNE': a.pase.paseLargo = tE(25); a.pase.centros = tE(22); a.tiro.tiroLejano = tE(20); a.pase.paseCorto = tE(18); a.defensa.intercepciones = tB(); break;
-        case 'POTENTE': a.tiro.potenciaTiro = tE(25); a.tiro.tiroLejano = tE(25); a.tiro.lanzamientoFaltas = tE(15); a.fisico.fuerza = fE(12); a.mental.motivacion = tB(); break;
-
-        // --- EXTREMOS ---
-        case 'MESSI': a.habilidad.regate = tE(25); a.habilidad.controlBalon = tE(25); a.pase.vision = tE(20); a.tiro.lanzamientoFaltas = tE(20); a.tiro.definicion = tE(12); break;
-        case 'CRISTIANO': a.tiro.definicion = tE(22); a.tiro.potenciaTiro = tE(20); a.tiro.remateCabeza = tE(20); a.fisico.salto = fE(20); a.fisico.velocidad = fE(15); break;
-        case 'BALE': a.fisico.velocidad = fE(22); a.fisico.resistencia = fE(18); a.tiro.potenciaTiro = tE(18); a.pase.centros = tE(12); a.fisico.fuerza = fE(12); break;
-        case 'VINI': a.fisico.velocidad = fE(25); a.fisico.aceleracion = fE(25); a.habilidad.regate = tE(22); a.fisico.resistencia = fE(15); a.tiro.definicion = tI(); break;
-        case 'RONALDINHO': a.habilidad.regate = tE(25); a.habilidad.controlBalon = tE(25); a.habilidad.desmarques = tE(12); a.tiro.lanzamientoFaltas = tE(15); a.pase.vision = tE(15); break;
-        case 'GREALISH': a.pase.centros = tE(20); a.pase.vision = tE(18); a.habilidad.controlBalon = tE(18); a.fisico.equilibrio = fE(18); a.fisico.velocidad = tI(); break;
+        // --- MCO / EXTREMOS ---
+        case 'BELLINGHAM':
+            a.habilidad.desmarques = tE(70); a.tiro.definicion = tE(65); a.tiro.remateCabeza = tE(60);
+            a.fisico.resistencia = fG(25); a.defensa.entradas = tE(30); break;
+        case 'OZIL':
+            a.pase.vision = tE(80); a.pase.paseCorto = tE(70); a.habilidad.controlBalon = tE(70);
+            a.defensa.marcaje = tI(); a.tiro.definicion = tB(); break;
+        case 'DYBALA':
+            a.habilidad.regate = tE(70); a.habilidad.controlBalon = tE(70); a.tiro.definicion = tE(70);
+            a.tiro.lanzamientoFaltas = tE(65); a.defensa.marcaje = tI(); break;
+        case 'DE_BRUYNE':
+            a.tiro.tiroLejano = tE(75); a.pase.paseLargo = tE(75); a.tiro.potenciaTiro = tE(70);
+            a.defensa.entradas = tB(); a.fisico.velocidad = tB(); break;
+        case 'POTENTE_MC':
+            a.tiro.potenciaTiro = tE(75); a.tiro.tiroLejano = tE(75); a.tiro.definicion = tB(); break;
+        case 'MESSI':
+            a.habilidad.regate = tE(80); a.habilidad.controlBalon = tE(80); a.pase.vision = tE(75);
+            a.tiro.lanzamientoFaltas = tE(75); a.defensa.marcaje = tI(); break;
+        case 'CRISTIANO':
+            a.tiro.definicion = tE(75); a.tiro.potenciaTiro = tE(75); a.fisico.salto = fG(35);
+            a.tiro.remateCabeza = tE(70); a.fisico.velocidad = fG(30); break;
+        case 'BALE':
+            a.fisico.velocidad = fG(35); a.fisico.resistencia = fG(35); a.fisico.fuerza = fG(25);
+            a.pase.centros = tE(65); a.defensa.entradas = tB(); break;
+        case 'VINI':
+            a.fisico.velocidad = fG(35); a.habilidad.regate = tE(75); a.fisico.resistencia = fG(25);
+            a.tiro.definicion = tB(); a.pase.paseCorto = tB(); break;
+        case 'RONALDINHO':
+            a.habilidad.controlBalon = tE(80); a.habilidad.regate = tE(80);
+            a.pase.vision = tE(70); a.defensa.marcaje = tI(); break;
+        case 'GREALISH':
+            a.pase.centros = tE(75); a.pase.vision = tE(65); a.habilidad.controlBalon = tE(65);
+            a.fisico.velocidad = tB(); a.defensa.entradas = tB(); break;
 
         // --- DELANTEROS ---
-        case 'LEWAN_SUAREZ': a.tiro.definicion = tE(22); a.tiro.remateCabeza = tE(18); a.tiro.lanzamientoPenaltis = tE(15); a.habilidad.desmarques = tE(15); a.tiro.potenciaTiro = tE(10); break;
-        case 'BENZEMA': a.habilidad.controlBalon = tE(20); a.pase.paseCorto = tE(18); a.tiro.definicion = tE(18); a.tiro.remateCabeza = tE(15); a.habilidad.desmarques = tE(12); break;
-        case 'MBAPPE_RONALDO': a.fisico.velocidad = fE(22); a.tiro.definicion = tE(22); a.habilidad.regate = tE(18); a.fisico.aceleracion = fE(22); a.tiro.potenciaTiro = tE(12); break;
-        case 'HAALAND': a.fisico.fuerza = fE(22); a.tiro.definicion = tE(22); a.tiro.potenciaTiro = tE(22); a.fisico.velocidad = fE(15); a.tiro.remateCabeza = fE(15); break;
-        case 'JOSELU_LLORENTE': a.tiro.remateCabeza = tE(25); a.defensa.duelosAereos = fE(25); a.fisico.fuerza = fE(15); a.mental.agresividad = tE(12); a.fisico.velocidad = fB(); break;
-        case 'MURIQI': a.tiro.remateCabeza = tE(25); a.defensa.duelosAereos = fE(25); a.fisico.fuerza = fE(18); a.pase.vision = tE(12); a.mental.agresividad = tE(15); break;
-        case 'RAUL': a.habilidad.desmarques = tE(25); a.tiro.definicion = tE(20); a.mental.concentracion = tE(18); a.mental.composturaBajoPresion = tE(18); a.fisico.velocidad = tB(); break;
+        case 'LEWAN_SUAREZ':
+            a.tiro.definicion = tE(75); a.habilidad.desmarques = tE(70); a.tiro.remateCabeza = tE(65);
+            a.fisico.velocidad = tB(); a.mental.agresividad = tB(); break;
+        case 'BENZEMA':
+            a.habilidad.controlBalon = tE(70); a.pase.paseCorto = tE(65); a.tiro.definicion = tE(70);
+            a.tiro.remateCabeza = tE(60); a.fisico.velocidad = tB(); break;
+        case 'MBAPPE_RONALDO':
+            a.fisico.velocidad = fG(35); a.habilidad.regate = tE(75); a.tiro.definicion = tE(75);
+            a.tiro.remateCabeza = tI(); break;
+        case 'HAALAND':
+            a.tiro.definicion = tE(75); a.fisico.fuerza = fG(35); a.tiro.potenciaTiro = tE(75);
+            a.fisico.velocidad = fG(25); a.tiro.remateCabeza = tE(65); break;
+        case 'JOSELU_LLORENTE':
+            a.tiro.remateCabeza = tE(80); a.defensa.duelosAereos = fG(35); a.fisico.fuerza = fG(30);
+            a.fisico.velocidad = tI(); break;
+        case 'MURIQI':
+            a.tiro.remateCabeza = tE(80); a.defensa.duelosAereos = fG(30); a.pase.vision = tE(60);
+            a.habilidad.controlBalon = tE(50); a.fisico.velocidad = tI(); break;
+        case 'RAUL':
+            a.habilidad.desmarques = tE(80); a.tiro.definicion = tE(75); a.mental.concentracion = tE(70);
+            a.fisico.velocidad = tB(); a.habilidad.controlBalon = tB(); break;
     }
 
-    if (['MD', 'MI'].includes(pos)) { 
-        a.defensa.entradas = Math.min(MAX_INICIAL, a.defensa.entradas + 12); 
-        a.fisico.resistencia = Math.min(MAX_INICIAL, a.fisico.resistencia + 8); 
-    }
-    if (['EI', 'ED'].includes(pos)) { a.tiro.definicion = Math.min(MAX_INICIAL, a.tiro.definicion + 5); }
+    if (esPortero) {
+    const capSuelo = 20; 
+    Object.keys(a.habilidad).forEach(k => a.habilidad[k] = Math.min(capSuelo, tI()));
+    Object.keys(a.tiro).forEach(k => a.tiro[k] = Math.min(capSuelo, tI()));
+    Object.keys(a.pase).forEach(k => { if(k !== 'saque') a.pase[k] = Math.min(35, a.pase[k]); });
+    Object.keys(a.portero).forEach(k => { 
+        if(a.portero[k] === 1) a.portero[k] = tE(20); 
+    });
+}
+
+    Object.keys(a).forEach(cat => {
+        Object.keys(a[cat]).forEach(attr => {
+            const limite = cat === 'fisico' ? MAX_FISICO : MAX_TECNICO;
+            a[cat][attr] = Math.max(1, Math.min(limite, Math.floor(a[cat][attr])));
+        });
+    });
 
     return a;
 }
