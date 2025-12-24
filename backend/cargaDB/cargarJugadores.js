@@ -1,6 +1,7 @@
 const Club = require('../models/club');
 const Jugador = require('../models/jugador');
 const Partida = require('../models/partida');
+const { obtenerIdentidad } = require('./cargarIdentidades');
 
 // 1. CONFIGURACIÓN DE PLANTILLA BASE
 const ARQUETIPOS = {
@@ -24,64 +25,6 @@ const BASE_FIJA = [
 ];
 
 const POSICIONES_EXTRAS = ['LD', 'LI', 'DFC', 'MCD', 'MC', 'MCO', 'MD', 'MI', 'ED', 'EI', 'DC', 'SD', 'POR'];
-
-const IDENTIDADES = {
-    "España": {
-        nombres: ["Hugo", "Mateo", "Lucas", "Leo", "Daniel", "Alejandro", "Pablo", "Álvaro", "Adrián", "David"],
-        apellidos: ["García", "Rodríguez", "González", "Fernández", "López", "Martínez", "Sánchez", "Pérez", "Gómez", "Martín"]
-    },
-    "Brasil": {
-        nombres: ["Gabriel", "Lucas", "Matheus", "Guilherme", "Enzo", "Rafael", "Felipe", "Gustavo", "Igor", "Thiago"],
-        apellidos: ["Silva", "Dos Santos", "Ferreira", "Pereira", "Oliveira", "Costa", "Rodrigues", "Almeida", "Nascimento", "Melo"]
-    },
-    "Argentina": {
-        nombres: ["Bautista", "Benjamín", "Felipe", "Lautaro", "Joaquín", "Julián", "Facundo", "Nicolás", "Rodrigo", "Tomás"],
-        apellidos: ["González", "Rodríguez", "López", "Martínez", "García", "Fernández", "Pérez", "Álvarez", "Romero", "Sosa"]
-    },
-    "Francia": {
-        nombres: ["Gabriel", "Léo", "Raphaël", "Arthur", "Louis", "Lucas", "Adam", "Jules", "Hugo", "Maël"],
-        apellidos: ["Martin", "Bernard", "Thomas", "Petit", "Robert", "Richard", "Durand", "Dubois", "Moreau", "Laurent"]
-    },
-    "Alemania": {
-        nombres: ["Noah", "Leon", "Paul", "Lukas", "Jonas", "Finn", "Elias", "Julian", "Max", "Jakob"],
-        apellidos: ["Müller", "Schmidt", "Schneider", "Fischer", "Meyer", "Weber", "Schulz", "Wagner", "Becker", "Hoffmann"]
-    },
-    "Inglaterra": {
-        nombres: ["Oliver", "George", "Harry", "Noah", "Jack", "Leo", "Arthur", "Muhammad", "Oscar", "Charlie"],
-        apellidos: ["Smith", "Jones", "Taylor", "Brown", "Williams", "Wilson", "Johnson", "Davies", "Robinson", "Wright"]
-    },
-    "Italia": {
-        nombres: ["Leonardo", "Francesco", "Alessandro", "Lorenzo", "Mattia", "Tommaso", "Gabriele", "Andrea", "Riccardo", "Edoardo"],
-        apellidos: ["Rossi", "Russo", "Ferrari", "Esposito", "Bianchi", "Romano", "Colombo", "Ricci", "Marino", "Greco"]
-    },
-    "Portugal": {
-        nombres: ["Francisco", "João", "Afonso", "Tomas", "Duarte", "Lourenço", "Rodrigo", "Martim", "Tiago", "Diogo"],
-        apellidos: ["Silva", "Ferreira", "Pereira", "Oliveira", "Costa", "Santos", "Rodrigues", "Sousa", "Gomes", "Martins"]
-    },
-    "Países Bajos": {
-        nombres: ["Sem", "Liam", "Lucas", "Noah", "Daan", "Levi", "Luuk", "Mees", "Bram", "Milan", "Thijs", "Stijn", "Sven", "Finn", "Jesse"],
-        apellidos: ["De Jong", "De Vries", "Van Dijk", "Van de Berg", "Bakker", "Janssen", "Visser", "Smit", "Meijer", "De Boer", "Hendriks", "Vos", "Dekker"]
-    },
-    "Egipto": {
-        nombres: ["Mohamed", "Ahmed", "Mahmoud", "Mostafa", "Youssef", "Ibrahim", "Hassan", "Kareem", "Omar"],
-        apellidos: ["Salah", "El-Sayed", "Hassan", "Ibrahim", "Abdel-Rahman", "Mansour", "Ghanem", "Said"]
-    },
-    "Noruega": {
-        nombres: ["Erling", "Magnus", "Olav", "Henrik", "Kristian", "Jakob", "Anders", "Sander", "Marius"],
-        apellidos: ["Haaland", "Odegaard", "Larsen", "Nielsen", "Hansen", "Johansen", "Bakke", "Solberg"]
-    },
-    "Japón": {
-        nombres: ["Hiroto", "Ren", "Minato", "Yuma", "Itsuki", "Haruto", "Sota", "Yuto"],
-        apellidos: ["Tanaka", "Sato", "Suzuki", "Takahashi", "Watanabe", "Ito", "Nakamura", "Kobayashi"]
-    }
-};
-
-const IDENTIDAD_GLOBAL = {
-    nombres: ["Alex", "Jordan", "Chris", "Sam", "Daniel", "Michael", "Stefan", "Luka"],
-    apellidos: ["Jovanovic", "Petrovic", "Ivanov", "Müller", "Smith", "Silva", "Kwon", "Abbas"]
-};
-
-const PAISES_EXOTICOS = ["Egipto", "Noruega", "Corea del Sur", "Japón", "Nigeria", "Senegal", "Marruecos", "EEUU", "Polonia", "Grecia"];
 
 async function generarJugadoresNuevaPartida(partidaId) {
     try {
@@ -116,15 +59,15 @@ async function generarJugadoresNuevaPartida(partidaId) {
                 const listaArq = ARQUETIPOS[posicion] || ['NACHO'];
                 const arquetipo = listaArq[Math.floor(Math.random() * listaArq.length)];
 
-                const ratings = calcularRatings(rolInterno, rep, repMatriz, club.esFilial);
-                const edad = generarEdad(rolInterno, club.esFilial);
+                const edad = generarEdad(rolInterno, club.esFilial, posicion);
+                const ratings = calcularRatings(rolInterno, rep, repMatriz, club.esFilial, edad);
                 const fisico = generarFisico(posicion, arquetipo);
-                const identidad = generarIdentidadCompleta(club.pais, rep);
+                const identidad = obtenerIdentidad(club.pais, rep, false);      
                 const dorsal = asignarDorsalRealista(posicion, dorsalesLibres);
 
                 jugadoresDelClub.push({
                     partidaId,
-                    nombre: identidad.nombre,
+                    nombre: identidad.nombreCompleto,
                     dorsal,
                     edad,
                     altura: fisico.altura, 
@@ -174,29 +117,7 @@ function generarFisico(pos, arquetipo) {
     return { altura, peso };
 }
 
-function generarIdentidadCompleta(paisClub, reputacion) {
-    let nacionalidad;
-    let prob = Math.pow(reputacion / 100, 2.2) * 0.6;
-    const finalProb = Math.max(0.05, Math.min(0.55, prob));
-
-    if (Math.random() > finalProb) {
-        nacionalidad = paisClub;
-    } else {
-        if (Math.random() < 0.10) {
-            nacionalidad = PAISES_EXOTICOS[Math.floor(Math.random() * PAISES_EXOTICOS.length)];
-        } else {
-            const paisesDisponibles = Object.keys(IDENTIDADES).filter(p => p !== paisClub);
-            nacionalidad = paisesDisponibles[Math.floor(Math.random() * paisesDisponibles.length)];
-        }
-    }
-    const pool = IDENTIDADES[nacionalidad] || IDENTIDAD_GLOBAL;
-    const nombre = pool.nombres[Math.floor(Math.random() * pool.nombres.length)];
-    const apellido = pool.apellidos[Math.floor(Math.random() * pool.apellidos.length)];
-
-    return { nombre: `${nombre} ${apellido}`, nacionalidad };
-}
-
-function calcularRatings(rol, rep, repMatriz, esFilial) {
+function calcularRatings(rol, rep, repMatriz, esFilial, edad) {
     let ca;
     const suerteTalento = Math.random();
     if (esFilial) {
@@ -215,8 +136,6 @@ function calcularRatings(rol, rep, repMatriz, esFilial) {
     let pa;
     if (esFilial) {
         const factorAcademia = repMatriz / 100; 
-
-
         if (suerteTalento > (1 - (0.01 + factorAcademia * 0.04))) { 
             pa = 88 + (Math.random() * 8);
         } 
@@ -227,25 +146,32 @@ function calcularRatings(rol, rep, repMatriz, esFilial) {
             const sueloPotencial = (repMatriz * 0.55) + 15;
             pa = sueloPotencial + (Math.random() * 15);
         }
-    } else {
-        let margenCrecimiento = 0;
-        
-        if (edad < 25) margenCrecimiento = 12;     
-        else if (edad < 28) margenCrecimiento = 6;  
-        else if (edad < 32) margenCrecimiento = 2; 
-        else margenCrecimiento = 0;                
-
-        pa = ca + (Math.random() * margenCrecimiento);
-
-        if (edad < 25 && Math.random() < 0.08) {
-            let esElite = Math.random() < 0.20;
-            let basePotencial = esElite ? 89 : 85;
-            let variacion = esElite ? 5 : 3;
-            
-            pa = Math.max(pa, basePotencial + (Math.random() * variacion));
-            }
     }
-    let paFinal = esFilial ? pa : Math.min(94, pa);
+    else {
+        let distanciaAlTop = 96 - ca;
+        let factorAmbicion = 0;
+        const azarTalento = Math.random();
+
+        if (azarTalento < 0.02) { 
+            factorAmbicion = 0.95; 
+        } else if (azarTalento < 0.10) {
+            factorAmbicion = 0.70;
+        } else if (azarTalento < 0.30) {
+            factorAmbicion = 0.45;
+        } else {
+            factorAmbicion = 0.20;
+        }
+
+        let factorEdad = 0;
+        if (edad < 22) factorEdad = 1.0;      
+        else if (edad < 26) factorEdad = 0.75; 
+        else if (edad < 29) factorEdad = 0.50; 
+        else if (edad < 32) factorEdad = 0.25; 
+        else factorEdad = 0.05;
+
+        pa = ca + (distanciaAlTop * factorAmbicion * factorEdad * (0.9 + Math.random() * 0.3));
+    }
+    let paFinal = esFilial ? pa : Math.min(95, pa);
     return { 
         ca: Math.floor(ca), 
         pa: Math.min(99, Math.max(Math.floor(ca), Math.floor(paFinal))) 
@@ -265,10 +191,23 @@ function asignarDorsalRealista(pos, libres) {
     return libres.splice(0, 1)[0];
 }
 
-function generarEdad(rol, esFilial) {
-    if (esFilial) return Math.floor(Math.random() * 6) + 16;
-    if (rol === 'ESTRELLA') return Math.floor(Math.random() * 10) + 23;
-    return Math.floor(Math.random() * 15) + 18;
+function generarEdad(rol, esFilial, posicion) {
+    if (esFilial) return Math.floor(Math.random() * 6) + 15; 
+    const azar = Math.random();
+    if (posicion === 'POR') {
+        if (azar < 0.10) return Math.floor(Math.random() * 5) + 18;  
+        if (azar < 0.70) return Math.floor(Math.random() * 10) + 23; 
+        return Math.floor(Math.random() * 8) + 33;                  
+    }
+    if (rol === 'ESTRELLA') {
+        return azar < 0.92 
+            ? Math.floor(Math.random() * 10) + 23 
+            : Math.floor(Math.random() * 4) + 33;
+    }
+
+    if (azar < 0.25) return Math.floor(Math.random() * 5) + 18; 
+    if (azar < 0.90) return Math.floor(Math.random() * 10) + 23; 
+    return Math.floor(Math.random() * 5) + 33;
 }
 
 function calcularValorMercado(ca, pa, edad) {
@@ -362,7 +301,7 @@ function generarAtributos(pos, val, arquetipo) {
 
         // --- LATERALES ---
         case 'ROBERTO_CARLOS':
-            a.fisico.velocidad = fG(40); a.tiro.potenciaTiro = tE(75); a.tiro.tiroLejano = tE(70);
+            a.fisico.velocidad = fG(30); a.fisico.aceleracion = fG(30); a.tiro.potenciaTiro = tE(75); a.tiro.tiroLejano = tE(70);
             a.habilidad.regate = tE(45); a.defensa.marcaje = tB(); break;
         case 'MARCELO':
             a.habilidad.controlBalon = tE(75); a.habilidad.regate = tE(70); a.pase.centros = tE(60);
@@ -442,7 +381,7 @@ function generarAtributos(pos, val, arquetipo) {
         case 'DE_BRUYNE':
             a.tiro.tiroLejano = tE(75); a.pase.paseLargo = tE(75); a.tiro.potenciaTiro = tE(70);
             a.defensa.entradas = tB(); a.fisico.velocidad = tB(); break;
-        case 'POTENTE_MC':
+        case 'POTENTE':
             a.tiro.potenciaTiro = tE(75); a.tiro.tiroLejano = tE(75); a.tiro.definicion = tB(); break;
         case 'MESSI':
             a.habilidad.regate = tE(80); a.habilidad.controlBalon = tE(80); a.pase.vision = tE(75);
