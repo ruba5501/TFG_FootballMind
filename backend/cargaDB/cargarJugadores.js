@@ -5,7 +5,7 @@ const { obtenerIdentidad } = require('./cargarIdentidades');
 
 // 1. CONFIGURACIÓN DE PLANTILLA BASE
 const ARQUETIPOS = {
-    POR: ['CASILLAS', 'COURTOIS', 'TER_STEGEN', 'DIBU', 'ALISSON'],
+    POR: ['CASILLAS', 'BUFFON', 'COURTOIS', 'TER_STEGEN', 'DIBU', 'ALISSON'],
     LD: ['ROBERTO_CARLOS', 'MARCELO', 'JORDI_ALBA', 'MENDY', 'ARNOLD_LAHM', 'HAKIMI_MENDES', 'CARVAJAL'],
     LI: ['ROBERTO_CARLOS', 'MARCELO', 'JORDI_ALBA', 'MENDY', 'ARNOLD_LAHM', 'HAKIMI_MENDES', 'CARVAJAL'],
     DFC: ['PIQUE', 'RAMOS', 'PEPE', 'VARANE', 'MAGUIRE', 'KOEMAN', 'NACHO'],
@@ -26,6 +26,17 @@ const BASE_FIJA = [
 
 const POSICIONES_EXTRAS = ['LD', 'LI', 'DFC', 'MCD', 'MC', 'MCO', 'MD', 'MI', 'ED', 'EI', 'DC', 'SD', 'POR'];
 
+const DORSALES_POR_JERARQUIA = {
+    'POR': { titular: [1], suplente: [13, 25] },
+    'DFC': { titular: [2, 3, 4, 5], suplente: [6, 17, 18] },
+    'LI/LD': { titular: [2, 3, 12, 15], suplente: [17, 18] },
+    'MCD': { titular: [6, 5, 14], suplente: [16, 19] },
+    'MC': { titular: [8, 10, 6], suplente: [14, 16, 21] },
+    'MCO': { titular: [10, 21], suplente: [19, 22, 23, 16] },
+    'MD/ED/MI/EI': { titular: [7, 11, 10], suplente: [19, 21, 22] },
+    'DC/SD': { titular: [9, 10], suplente: [20, 22, 23] }
+};
+
 async function generarJugadoresNuevaPartida(partidaId) {
     try {
         const partidaInfo = await Partida.findById(partidaId).select('nombrePartida');
@@ -43,10 +54,8 @@ async function generarJugadoresNuevaPartida(partidaId) {
                 plantillaBase.push(POSICIONES_EXTRAS[Math.floor(Math.random() * POSICIONES_EXTRAS.length)]);
             }
 
-            let dorsalesLibres = Array.from({length: 25}, (_, i) => i + 1); 
-            if (plantillaBase.length > 25) { for(let d=26; d<=50; d++) dorsalesLibres.push(d); }
-
-            let jugadoresDelClub = [];
+            let jugadoresTemporales = [];
+            let dorsalesOcupados = [];
 
             for (let i = 0; i < plantillaBase.length; i++) {
                 const posicion = plantillaBase[i];
@@ -56,19 +65,18 @@ async function generarJugadoresNuevaPartida(partidaId) {
                 else if (i < 11) { rolContrato = 'importante'; rolInterno = 'TITULAR'; }
                 else if (i > 20) { rolContrato = club.esFilial ? 'promesa' : 'reserva'; rolInterno = 'RESERVA'; }
 
-                const listaArq = ARQUETIPOS[posicion] || ['NACHO'];
+                const listaArq = ARQUETIPOS[posicion];
                 const arquetipo = listaArq[Math.floor(Math.random() * listaArq.length)];
 
                 const edad = generarEdad(rolInterno, club.esFilial, posicion);
                 const ratings = calcularRatings(rolInterno, rep, repMatriz, club.esFilial, edad);
                 const fisico = generarFisico(posicion, arquetipo);
                 const identidad = obtenerIdentidad(club.pais, rep, false);      
-                const dorsal = asignarDorsalRealista(posicion, dorsalesLibres);
 
-                jugadoresDelClub.push({
+                jugadoresTemporales.push({
                     partidaId,
                     nombre: identidad.nombreCompleto,
-                    dorsal,
+                    rolInterno,
                     edad,
                     altura: fisico.altura, 
                     peso: fisico.peso,    
@@ -88,8 +96,21 @@ async function generarJugadoresNuevaPartida(partidaId) {
                     estado: { forma: 100, moral: Math.floor(Math.random() * 21) + 80, satisfaccion: 100, lesion: null }
                 });
             }
+            const orden = { 'ESTRELLA': 1, 'TITULAR': 2, 'ROTACION': 3, 'RESERVA': 4 };
+            jugadoresTemporales.sort((a, b) => orden[a.rolInterno] - orden[b.rolInterno]);
 
-            const insertados = await Jugador.insertMany(jugadoresDelClub);
+            for (let jugador of jugadoresTemporales) {
+                const numAsignado = asignarDorsalRealista(jugador.posicionPrincipal, jugador.rolInterno, dorsalesOcupados);
+                jugador.dorsal = numAsignado;
+                dorsalesOcupados.push(numAsignado);
+                
+                // Aprovechamos para generar los atributos finales basados en el arquetipo
+                //jugador.atributos = generarAtributos(jugador.posicionPrincipal, jugador.valoracion, jugador.arquetipo);
+                
+                delete jugador.rolInterno; 
+            }
+
+            const insertados = await Jugador.insertMany(jugadoresTemporales);
             const idsJugadores = insertados.map(j => j._id);
             await Club.findByIdAndUpdate(club._id, { $set: { plantilla: idsJugadores } });
             contadorTotal += insertados.length;
@@ -178,17 +199,43 @@ function calcularRatings(rol, rep, repMatriz, esFilial, edad) {
     };
 }
 
-function asignarDorsalRealista(pos, libres) {
-    let pref = [];
-    if (pos === 'POR') pref = [1, 13, 25];
-    else if (['LD', 'LI', 'DFC'].includes(pos)) pref = [2, 3, 4, 5, 12, 14, 15, 22];
-    else if (['MCD', 'MC', 'MCO', 'MD', 'MI'].includes(pos)) pref = [6, 8, 10, 11, 16, 18, 20, 21];
-    else pref = [7, 9, 11, 17, 19, 23, 24];
-    for (let p of pref) {
-        const idx = libres.indexOf(p);
-        if (idx !== -1) return libres.splice(idx, 1)[0];
+function normalizarPosicion(pos) {
+    if (['POR'].includes(pos)) return 'POR';
+    if (['DFC'].includes(pos)) return 'DFC';
+    if (['LI', 'LD'].includes(pos)) return 'LI/LD';
+    if (['MCD'].includes(pos)) return 'MCD';
+    if (['MC'].includes(pos)) return 'MC';
+    if (['MCO'].includes(pos)) return 'MCO';
+    if (['MD', 'ED', 'MI', 'EI'].includes(pos)) return 'MD/ED/MI/EI';
+    if (['DC', 'SD'].includes(pos)) return 'DC/SD';
+    return 'DC/SD'; 
+}
+
+function asignarDorsalRealista(pos, rol, ocupados) {
+    const posicion = normalizarPosicion(pos); 
+    const dorsales = DORSALES_POR_JERARQUIA[posicion];
+    
+    if (rol !== 'RESERVA') {
+        let nivel = (rol === 'ESTRELLA' || rol === 'TITULAR') ? 'titular' : 'suplente';
+        const ordenBusqueda = (nivel === 'titular') ? ['titular', 'suplente'] : ['suplente', 'titular'];
+
+        for (let n of ordenBusqueda) {
+            let opcionesLibres = dorsales[nivel].filter(num => !ocupados.includes(num));
+            
+            if (opcionesLibres.length > 0) {
+                const dorsal = opcionesLibres[Math.floor(Math.random() * opcionesLibres.length)];
+                return dorsal;
+            }
+        }
     }
-    return libres.splice(0, 1)[0];
+
+    let todosLosNumeros = Array.from({length: 99}, (_, i) => i + 1);
+    let disponibles = todosLosNumeros.filter(n => !ocupados.includes(n));
+
+    if (disponibles.length === 0) return 99; 
+
+    const indice = Math.floor(Math.random() * disponibles.length);
+    return disponibles[indice];
 }
 
 function generarEdad(rol, esFilial, posicion) {
@@ -225,21 +272,26 @@ function calcularSalario(ca, rep) {
 
 function generarAtributos(pos, val, arquetipo) {
     const esPortero = pos === 'POR';
-    const MAX_TECNICO = 93;
+    const MAX_TECNICO = 95;
     const MAX_FISICO = 96;
-        
+    const reduccion = (Math.random() * 0.1) + 0.95;
+
     // Especialista Técnico (tE)
     const tE = (puntosOriginales) => {
         let ratio = puntosOriginales / 80; 
-        let base = val * 0.85 + (15 * ratio);
-        return Math.min(MAX_TECNICO, Math.floor(base + (Math.random() * 5)));
+        let base = (val * reduccion) * 0.75 + (18 * ratio);
+        const rangoAzar = 2 + (Math.random() * 13);
+        return Math.min(MAX_TECNICO, Math.floor(base + (Math.random() * rangoAzar)));
     };
 
     // Técnico Base (tB): Para atributos donde el jugador cumple bien.
-    const tB = () => Math.floor(val * (0.75 + Math.random() * 0.05));
+    const tB = () => {
+        const talentoOculto = Math.random() < 0.15 ? 0.07 : 0;
+        return Math.floor((val * reduccion) * (0.75 + talentoOculto + Math.random() * 0.05));
+    };
 
     // Técnico Insuficiente (tI): Para debilidades.
-    const tI = () => Math.floor(val * (0.5 + Math.random() * 0.05));
+    const tI = () => Math.floor((val * reduccion) * (0.5 + Math.random() * 0.05));
 
     // Físico Genético (fG): Rango base 30-85 + bono. No depende de 'val'.
     const fG = (bonusOriginal) => {
@@ -285,19 +337,22 @@ function generarAtributos(pos, val, arquetipo) {
         // --- PORTEROS ---
         case 'CASILLAS':
             a.portero.reflejos = tE(75); a.portero.unoContraUno = tE(70); a.portero.estirada = tE(65);
-            a.fisico.agilidad = fG(35); a.portero.juegoAereo = tI(); a.pase.paseCorto = tI(); break;
+            a.fisico.agilidad = fG(35); a.portero.juegoAereo = tI(); break;
+        case 'BUFFON':
+            a.defensa.colocacion = tE(80); a.portero.paradas = tE(75); a.portero.estirada = tE(65); 
+            a.fisico.agilidad = fG(15); break;
         case 'COURTOIS':
             a.portero.juegoAereo = tE(70); a.portero.paradas = tE(65); a.portero.blocaje = tE(60);
-            a.portero.reflejos = tE(55); a.portero.estirada = tE(40); a.pase.paseCorto = tB(); break;
+            a.portero.reflejos = tE(55); a.portero.estirada = tE(40); a.defensa.colocacion = tE(65); break;
         case 'TER_STEGEN':
             a.portero.saque = tE(75); a.pase.paseCorto = tE(65); a.habilidad.controlBalon = tE(50);
             a.portero.reflejos = tE(40); a.portero.paradas = tE(40); break;
         case 'DIBU':
             a.portero.penales = tE(80); a.mental.composturaBajoPresion = tE(60); 
-            a.portero.reflejos = tB(); a.portero.estirada = tB(); break;
+            a.defensa.colocacion = tE(60); break;
         case 'ALISSON':
-            a.portero.reflejos = tE(40); a.portero.unoContraUno = tE(40); a.portero.blocaje = tE(40);
-            a.portero.saque = tE(40); a.portero.juegoAereo = tE(40); break;
+            a.portero.reflejos = tE(40); a.portero.unoContraUno = tE(40); a.portero.saque = tE(40);
+            a.portero.juegoAereo = tE(40); a.defensa.colocacion = tE(60); break;
 
         // --- LATERALES ---
         case 'ROBERTO_CARLOS':
@@ -384,7 +439,7 @@ function generarAtributos(pos, val, arquetipo) {
         case 'POTENTE':
             a.tiro.potenciaTiro = tE(75); a.tiro.tiroLejano = tE(75); a.tiro.definicion = tB(); break;
         case 'MESSI':
-            a.habilidad.regate = tE(80); a.habilidad.controlBalon = tE(80); a.pase.vision = tE(75);
+            a.habilidad.regate = tE(75); a.habilidad.controlBalon = tE(75); a.pase.vision = tE(75);
             a.tiro.lanzamientoFaltas = tE(75); a.defensa.marcaje = tI(); break;
         case 'CRISTIANO':
             a.tiro.definicion = tE(75); a.tiro.potenciaTiro = tE(75); a.fisico.salto = fG(35);
@@ -399,7 +454,7 @@ function generarAtributos(pos, val, arquetipo) {
             a.habilidad.controlBalon = tE(80); a.habilidad.regate = tE(80);
             a.pase.vision = tE(70); a.defensa.marcaje = tI(); break;
         case 'GREALISH':
-            a.pase.centros = tE(75); a.pase.vision = tE(65); a.habilidad.controlBalon = tE(65);
+            a.pase.centros = tE(75); a.pase.vision = tE(65); a.habilidad.controlBalon = tE(60);
             a.fisico.velocidad = tB(); a.defensa.entradas = tB(); break;
 
         // --- DELANTEROS ---
@@ -427,19 +482,27 @@ function generarAtributos(pos, val, arquetipo) {
     }
 
     if (esPortero) {
-    const capSuelo = 20; 
-    Object.keys(a.habilidad).forEach(k => a.habilidad[k] = Math.min(capSuelo, tI()));
-    Object.keys(a.tiro).forEach(k => a.tiro[k] = Math.min(capSuelo, tI()));
-    Object.keys(a.pase).forEach(k => { if(k !== 'saque') a.pase[k] = Math.min(35, a.pase[k]); });
-    Object.keys(a.portero).forEach(k => { 
-        if(a.portero[k] === 1) a.portero[k] = tE(20); 
-    });
-}
+        const capSuelo = 15; 
+        Object.keys(a.habilidad).forEach(k => a.habilidad[k] = Math.min(capSuelo, tI()));
+        Object.keys(a.tiro).forEach(k => a.tiro[k] = Math.min(capSuelo, tI()));
+        Object.keys(a.pase).forEach(k => { 
+            if(k !== 'saque') a.pase[k] = Math.min(35, a.pase[k]); 
+        });
+       
+        a.fisico.resistencia = Math.min(40, a.fisico.resistencia);
+        a.fisico.velocidad = Math.min(50, a.fisico.velocidad); 
+        a.fisico.agilidad = Math.max(a.fisico.agilidad, a.portero.reflejos - 10);
+        a.defensa.colocacion = tB();
 
-    Object.keys(a).forEach(cat => {
-        Object.keys(a[cat]).forEach(attr => {
-            const limite = cat === 'fisico' ? MAX_FISICO : MAX_TECNICO;
-            a[cat][attr] = Math.max(1, Math.min(limite, Math.floor(a[cat][attr])));
+        Object.keys(a.portero).forEach(k => { 
+            if(a.portero[k] === 1) a.portero[k] = tB(); 
+        });
+    }
+
+    Object.keys(a).forEach(aux => {
+        Object.keys(a[aux]).forEach(attr => {
+            const limite = aux === 'fisico' ? MAX_FISICO : MAX_TECNICO;
+            a[aux][attr] = Math.max(1, Math.min(limite, Math.floor(a[aux][attr])));
         });
     });
 

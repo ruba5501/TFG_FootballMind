@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const Competicion = require('../models/competicion'); // Asegura la ruta a tu modelo
+const Competicion = require('../models/competicion'); 
 
 async function cargarCompeticiones() {
   try {
@@ -24,7 +24,6 @@ async function cargarCompeticiones() {
     const insertadas = await Competicion.insertMany(nuevasCompeticiones);
     console.log(`Competiciones: Se han cargado ${insertadas.length} competiciones.`);
     
-    // Devolvemos las competiciones insertadas para el módulo de clubes, si es necesario
     return insertadas; 
   } catch (err) {
     console.error('Error cargando las competiciones:', err.message);

@@ -16,20 +16,19 @@ async function cargarClubes() {
     const dataPath = path.join(__dirname, '../../base_datos/clubes.json');
     const clubesData = JSON.parse(fs.readFileSync(dataPath, 'utf8'));
 
-    // Separar y preparar datos
     const clubesNormales = clubesData.filter(club => !club.esFilial);
     const clubesFiliales = clubesData.filter(club => club.esFilial);
 
     const clubesFinalNormales = [];
     
-    // --- 1. PROCESAR CLUBES NORMALES ---
+    // para cargar los clubes normales
     for (const club of clubesNormales) {
       const [comps, estadio] = await Promise.all([
           Competicion.find({ nombre: { $in: club.competiciones || [] } }).lean(),
           Estadio.findOne({ nombre: club.estadio }).lean()
       ]);
 
-      // Un club normal DEBE tener estadio, pero permitimos que no tenga competición 
+      // Un club normal debe tener estadio, pero permitimos que no tenga competición 
       // por si es un club libre o de ligas bajas no cargadas.
       if (!estadio) {
         console.warn(`Clubes: No se encontró estadio para ${club.nombre}. Saltando club.`);
@@ -50,7 +49,7 @@ async function cargarClubes() {
         return acc;
     }, {});
 
-    // --- 2. PROCESAR CLUBES FILIALES ---
+    // para cargar los clubes filiales
     const clubesFinalFiliales = [];
     for (const club of clubesFiliales) {
       const clubMatrizId = nombreToId[club.clubMatriz];
@@ -65,8 +64,6 @@ async function cargarClubes() {
           Estadio.findOne({ nombre: club.estadio }).lean()
       ]);
 
-      // LÓGICA FLEXIBLE PARA FILIALES:
-      // Si no tiene estadio propio, intentamos buscar el estadio del club matriz
       let estadioFinalId = null;
       if (estadio) {
           estadioFinalId = estadio._id;
@@ -83,14 +80,13 @@ async function cargarClubes() {
       clubesFinalFiliales.push({
         ...club,
         estadio: estadioFinalId,
-        competiciones: comps.map(c => c._id), // Ahora puede ser un array vacío []
+        competiciones: comps.map(c => c._id),
         clubMatriz: clubMatrizId,
       });
     }
 
     const insertadosFiliales = await Club.insertMany(clubesFinalFiliales);
 
-    // --- 3. SINCRONIZAR COMPETICIONES ---
     const todosClubes = [...insertadosNormales, ...insertadosFiliales];
     const bulkOps = [];
     

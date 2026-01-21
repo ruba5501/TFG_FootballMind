@@ -80,7 +80,6 @@ const redondearPresupuesto = (num) => {
     return Math.round(num / 100000) * 100000;
 };
 
-// 4. LÓGICA DE GENERACIÓN
 const generarDatosUniversales = (clubes) => {
     const base = clubes.map(club => {
         const n = club.nombre;
@@ -157,11 +156,8 @@ const generarDatosUniversales = (clubes) => {
     return [...base, ...nuevosFiliales];
 };
 
-// 5. POST-PROCESAMIENTO PARA EL FORMATO DEL JSON (SOLUCIÓN 1)
 const resultado = generarDatosUniversales(clubesOriginales);
 
-// Convertimos a string con formato normal y luego usamos una expresión regular 
-// para poner los arrays de competiciones en una sola línea
 let jsonString = JSON.stringify(resultado, null, 2);
 jsonString = jsonString.replace(/"competiciones": \[\s+([\s\S]*?)\s+\]/g, (match, p1) => {
     const items = p1.trim().replace(/\n\s+/g, ' ');
