@@ -551,12 +551,12 @@ function generarAtributos(pos, val, arquetipo) {
             a.tiro.lanzamientoFaltas = tE(65); a.fisico.velocidad = fG(25); a.tiro.definicion = tE(70); break;
         case 'CRISTIANO':
             a.habilidad.regate = tE(65); a.habilidad.controlBalon = tE(65); a.tiro.definicion = tE(70);
-            a.tiro.potenciaTiro = tE(70); a.fisico.salto = fG(38); a.tiro.remateCabeza = tE(60); a.fisico.velocidad = fG(35); break;
+            a.tiro.potenciaTiro = tE(70); a.fisico.salto = fG(38); a.tiro.remateCabeza = tE(60); a.fisico.velocidad = fG(35); a.fisico.aceleracion = fG(35);break;
         case 'BALE':
-            a.fisico.velocidad = fG(40); a.fisico.resistencia = fG(38); a.fisico.fuerza = fG(25);
+            a.fisico.aceleracion = fG(40); a.fisico.velocidad = fG(40); a.fisico.resistencia = fG(38); a.fisico.fuerza = fG(25);
             a.pase.centros = tE(60); a.defensa.entradas = tE(25); a.tiro.potenciaTiro = tE(60); break;
         case 'VINI':
-            a.fisico.velocidad = fG(38); a.habilidad.regate = tE(65); a.habilidad.controlBalon = tE(55);
+            a.fisico.aceleracion = fG(38); a.fisico.velocidad = fG(38); a.habilidad.regate = tE(65); a.habilidad.controlBalon = tE(55);
             a.fisico.resistencia = fG(25); a.tiro.definicion = tE(35); a.pase.paseCorto = tE(40); break;
         case 'RONALDINHO':
             a.habilidad.controlBalon = tE(70); a.habilidad.regate = tE(70); a.tiro.potenciaTiro = tE(55);
