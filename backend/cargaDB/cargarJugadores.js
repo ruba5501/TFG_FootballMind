@@ -148,17 +148,18 @@ function calcularRatings(rol, rep, repMatriz, esFilial, edad) {
             let caBase = rep * 0.93 + (Math.random() * 2); 
             
             const suerteElite = Math.random();
-            if (caBase > 88.5) {
-                if (suerteElite > 0.94) ca = 92;      
-                else if (suerteElite > 0.85) ca = 91; 
-                else if (suerteElite > 0.70) ca = 90; 
-                else ca = 88 + (Math.random() * 2);
+            if (caBase > 87) {
+                if (suerteElite > 0.98) ca = 92;      
+                else if (suerteElite > 0.92) ca = 91; 
+                else if (suerteElite > 0.82) ca = 90; 
+                else if (suerteElite > 0.65) ca = 89;
+                else ca = 87 + (Math.random() * 2);
             } else {
                 ca = caBase;
             }
         }
-        else if (rol === 'TITULAR') ca = rep - (Math.random() * 4 + 3);  
-        else if (rol === 'ROTACION') ca = rep - (Math.random() * 6 + 9); 
+        else if (rol === 'TITULAR') ca = rep - (Math.random() * 5 + 5);  
+        else if (rol === 'ROTACION') ca = rep - (Math.random() * 6 + 10); 
         else ca = rep - (Math.random() * 12 + 20);
     }
 
@@ -273,43 +274,70 @@ function calcularSalario(ca, rep) {
     return Math.floor(sueldo / 12000) * 12000;
 }
 
-function aplicarMentalidad(a, tE, tB, tI) {
+function aplicarMentalidad(a) {
     const azar = Math.random();
+    const mAlto = () => Math.floor(Math.random() * 15 + 80);
+    const mMedio = () => Math.floor(Math.random() * 25 + 50);
+    const mBajo = () => Math.floor(Math.random() * 30 + 20);
     
-    // LÍDER 20%
-    if (azar < 0.20) { 
-        a.mental.liderazgo = tE(60);
-        a.mental.composturaBajoPresion = tE(50);
-        a.mental.motivacion = tE(50);
-        a.mental.concentracion = tB();
-        a.mental.agresividad = tB();
+    // 1. LÍDER (15%)
+    if (azar < 0.15) { 
+        a.mental.liderazgo = mAlto();
+        a.mental.composturaBajoPresion = mAlto();
+        a.mental.motivacion = mMedio();
+        a.mental.concentracion = mMedio();
+        a.mental.agresividad = mMedio();
     } 
-    // GUERRERO 20%
+    // 2. GUERRERO (15%)
+    else if (azar < 0.30) { 
+        a.mental.agresividad = mAlto();
+        a.mental.motivacion = mAlto();
+        a.mental.liderazgo = mMedio();
+        a.mental.concentracion = mMedio();
+        a.mental.composturaBajoPresion = mMedio();
+    } 
+    // 3. FRÍO (10%)
     else if (azar < 0.40) { 
-        a.mental.agresividad = tE(65);
-        a.mental.motivacion = tE(55);
-        a.mental.liderazgo = tB();
-        a.mental.concentracion = tB();
-        a.mental.composturaBajoPresion = tB();
-    } 
-    // IRREGULAR 15%
-    else if (azar < 0.55) { 
-        a.mental.composturaBajoPresion = tI(); 
-        a.mental.concentracion = tI();
-        a.mental.motivacion = tB();
-        a.mental.agresividad = tI();
-        a.mental.liderazgo = tI();
+        a.mental.composturaBajoPresion = mAlto();
+        a.mental.concentracion = mAlto();
+        a.mental.motivacion = mMedio();
+        a.mental.agresividad = mBajo();
+        a.mental.liderazgo = mMedio();
     }
-    // INDISCIPLINADO (10%)
-    else if (azar < 0.65) {
-        a.mental.agresividad = tE(75);
-        a.mental.concentracion = tI();
-        a.mental.composturaBajoPresion = tB();
-        a.mental.liderazgo = tI();
+    // 4. AMBICIOSO (10%)
+    else if (azar < 0.50) {
+        a.mental.motivacion = mAlto();
+        a.mental.concentracion = mMedio();
+        a.mental.liderazgo = mMedio();
+        a.mental.composturaBajoPresion = mMedio();
+        a.mental.agresividad = mMedio();
     }
-    // ESTÁNDAR 35%
+    // 5. IRREGULAR (10%)
+    else if (azar < 0.60) { 
+        a.mental.composturaBajoPresion = mBajo(); 
+        a.mental.concentracion = mBajo();
+        a.mental.motivacion = mMedio();
+        a.mental.agresividad = mBajo();
+        a.mental.liderazgo = mBajo();
+    }
+    // 6. INDISCIPLINADO (10%)
+    else if (azar < 0.70) {
+        a.mental.agresividad = mAlto();
+        a.mental.concentracion = mBajo();
+        a.mental.composturaBajoPresion = mMedio();
+        a.mental.liderazgo = mBajo();
+    }
+    // 7. PASIVO (5%)
+    else if (azar < 0.75) {
+        a.mental.motivacion = mBajo();
+        a.mental.agresividad = mBajo();
+        a.mental.concentracion = mMedio();
+        a.mental.composturaBajoPresion = mMedio();
+        a.mental.liderazgo = mBajo();
+    }
+    // 8. ESTÁNDAR (25%)
     else { 
-        Object.keys(a.mental).forEach(k => a.mental[k] = tB());
+        Object.keys(a.mental).forEach(k => a.mental[k] = mMedio());
     }
     
     return a;
@@ -342,7 +370,7 @@ function generarAtributos(pos, val, arquetipo) {
             factorSuerte = -0.08; 
         }
 
-        return Math.floor((val * reduccion) * (0.88 + factorSuerte + Math.random() * 0.05));
+        return Math.floor((val * reduccion) * (0.92 + factorSuerte + Math.random() * 0.05));
     };
 
     // Técnico Insuficiente (tI): Para debilidades.
@@ -357,7 +385,7 @@ function generarAtributos(pos, val, arquetipo) {
 
     let a = {
         habilidad: { regate: tE(-10), controlBalon: tE(-10), desmarques: tE(-10) },
-        tiro: { definicion: tE(-10), potenciaTiro: tE(-10), tiroLejano: tE(-10), lanzamientoFaltas: tE(-10), lanzamientoPenaltis: tE(-10), remateCabeza: tE(-10) },
+        tiro: { definicion: tE(-10), potenciaTiro: tE(-10), tiroLejano: tE(-10), lanzamientoFaltas: tE(-10), lanzamientoPenaltis: Math.floor(40 + Math.random() * 50), remateCabeza: tE(-10) },
         pase: { paseCorto: tE(-10), paseLargo: tE(-10), vision: tE(-10), centros: tE(-10) },
         defensa: { marcaje: tE(-10), entradas: tE(-10), intercepciones: tE(-10), despejes: tE(-10), duelosAereos: tE(-10), colocacion: tE(-10) },
         fisico: { velocidad: fG(0), aceleracion: fG(0), agilidad: fG(0), fuerza: fG(0), resistencia: fG(0), equilibrio: fG(0), salto: fG(0) },
@@ -367,7 +395,7 @@ function generarAtributos(pos, val, arquetipo) {
 
     if (['DFC'].includes(pos)) {
         a.habilidad.regate = tI(); a.habilidad.desmarques = tI();
-        a.tiro.definicion = tI(); a.tiro.potenciaTiro = tI(); a.tiro.tiroLejano = tI(); a.tiro.remateCabeza = tB();
+        a.tiro.definicion = tI(); a.tiro.potenciaTiro = tI(); a.tiro.tiroLejano = tI(); a.tiro.remateCabeza = tB(); a.tiro.lanzamientoFaltas = tI();
         a.pase.centros = tI();
         a.defensa.marcaje = tB(); a.defensa.entradas = tB(); a.defensa.intercepciones = tB();
         a.defensa.despejes = tB(); a.defensa.duelosAereos = tB(); a.defensa.colocacion = tB();
@@ -376,7 +404,7 @@ function generarAtributos(pos, val, arquetipo) {
 
     if (['LD', 'LI'].includes(pos)) {
         a.habilidad.regate = tB(); a.habilidad.controlBalon = tB();
-        a.tiro.definicion = tI(); a.tiro.potenciaTiro = tI(); a.tiro.tiroLejano = tI(); a.tiro.remateCabeza = tI();
+        a.tiro.definicion = tI(); a.tiro.potenciaTiro = tI(); a.tiro.tiroLejano = tI(); a.tiro.remateCabeza = tI(); a.tiro.lanzamientoFaltas = tI();
         a.pase.centros = tE(35); a.pase.paseCorto = tB(); a.pase.paseLargo = tE(20);
         a.defensa.marcaje = tB(); a.defensa.entradas = tB(); a.defensa.colocacion = tB(); a.defensa.intercepciones = tB();
         a.fisico.resistencia = fG(20); a.fisico.velocidad = fG(15); a.fisico.aceleracion = fG(15);
@@ -416,13 +444,13 @@ function generarAtributos(pos, val, arquetipo) {
 
     if (['DC', 'SD'].includes(pos)) {
         a.habilidad.controlBalon = tB(); a.habilidad.desmarques = tE(30);
-        a.tiro.definicion = tB(); a.tiro.potenciaTiro = tB(); a.tiro.tiroLejano = tB(); a.tiro.lanzamientoPenaltis = tB(); a.tiro.remateCabeza = tB();
+        a.tiro.definicion = tB(); a.tiro.potenciaTiro = tB(); a.tiro.tiroLejano = tB(); a.tiro.lanzamientoPenaltis = Math.floor(60 + Math.random() * 30); a.tiro.remateCabeza = tB();
         a.pase.paseCorto = tB();
         a.defensa.intercepciones = tI(); a.defensa.entradas = tI(); a.defensa.colocacion = tI(); a.defensa.marcaje = tI(); a.defensa.despejes = tI();
         a.fisico.equilibrio = fG(15); a.fisico.salto = fG(12);
     }
 
-    a = aplicarMentalidad(a, tE, tB, tI);
+    a = aplicarMentalidad(a);
 
     switch(arquetipo) {
         // --- PORTEROS ---
@@ -436,7 +464,7 @@ function generarAtributos(pos, val, arquetipo) {
             a.portero.juegoAereo = tE(60); a.portero.paradas = tE(55); a.portero.blocaje = tE(50);
             a.portero.reflejos = tE(45); break;
         case 'TER_STEGEN':
-            a.portero.saque = tE(60); a.pase.paseCorto = tE(50); a.habilidad.controlBalon = tE(40);
+            a.portero.saque = tE(60); a.pase.paseCorto = tE(20); a.habilidad.controlBalon = tE(20);
             a.portero.reflejos = tE(45); a.portero.paradas = tE(40); break;
         case 'DIBU':
             a.portero.penales = tE(60); a.portero.paradas = tE(35); a.portero.blocaje = tE(35); 
@@ -445,14 +473,14 @@ function generarAtributos(pos, val, arquetipo) {
             a.portero.reflejos = tE(45); a.portero.unoContraUno = tE(45); a.portero.saque = tE(35);
             a.portero.juegoAereo = tE(40); a.portero.comunicacion = tE(35); break;
         case 'NEUER':
-            a.portero.saque = tE(60); a.pase.paseCorto = tE(55); a.portero.unoContraUno = tE(55);
-            a.habilidad.controlBalon = tE(40); a.portero.comunicacion = tE(50); a.portero.blocaje = tE(45); break;
+            a.portero.saque = tE(60); a.pase.paseCorto = tE(20); a.portero.unoContraUno = tE(55);
+            a.habilidad.controlBalon = tE(15); a.portero.comunicacion = tE(50); a.portero.blocaje = tE(45); break;
         case 'OBLAK': 
             a.portero.blocaje = tE(60); a.portero.paradas = tE(55); a.portero.reflejos = tE(50);
             a.portero.saque = tE(-20); a.portero.unoContraUno = tE(45); break;
         case 'KEYLOR': 
             a.portero.reflejos = tE(60); a.portero.estirada = tE(55); a.portero.paradas = tE(35);
-            a.portero.blocaje = tE(-20); a.fisico.agilidad = fG(35); a.fisico.salto = fG(35); break;
+            a.portero.blocaje = tE(-20); a.fisico.agilidad = fG(30); a.fisico.salto = fG(30); break;
         case 'KAHN': 
             a.portero.comunicacion = tE(60); a.portero.paradas = tE(50); a.portero.blocaje = tE(45);
             a.portero.juegoAereo = tE(45); a.fisico.salto = fG(35); break;
@@ -460,7 +488,7 @@ function generarAtributos(pos, val, arquetipo) {
         // --- LATERALES ---
         case 'ROBERTO_CARLOS':
             a.fisico.velocidad = fG(35); a.fisico.aceleracion = fG(35); a.tiro.potenciaTiro = tE(60); 
-            a.tiro.tiroLejano = tE(60); a.tiro.lanzamientoFaltas = tE(60); a.habilidad.regate = tE(35); 
+            a.tiro.tiroLejano = tE(60); a.tiro.lanzamientoFaltas = tE(50); a.habilidad.regate = tE(35); 
             a.defensa.marcaje = tE(-25); break;
         case 'MARCELO':
             a.habilidad.controlBalon = tE(60); a.habilidad.regate = tE(60); a.pase.centros = tE(50);
@@ -473,11 +501,11 @@ function generarAtributos(pos, val, arquetipo) {
             a.defensa.marcaje = tE(60); a.defensa.entradas = tE(60); a.fisico.fuerza = fG(35);
             a.fisico.aceleracion = fG(25); a.fisico.velocidad = fG(25); a.pase.centros = tE(-20); a.defensa.colocacion = tE(45); break;
         case 'ARNOLD':
-            a.pase.centros = tE(60); a.pase.paseLargo = tE(55); a.pase.vision = tE(55);
+            a.pase.centros = tE(60); a.pase.paseLargo = tE(55); a.pase.vision = tE(55); a.tiro.lanzamientoFaltas = tE(30);
             a.fisico.aceleracion = fG(0); a.fisico.velocidad = fG(0); a.defensa.marcaje = tE(5); break;
         case 'LAHM':
             a.pase.centros = tE(55); a.pase.paseLargo = tE(50); a.pase.paseCorto = tE(55); a.pase.vision = tE(55);
-            a.defensa.marcaje = tE(55); break;
+            a.defensa.marcaje = tE(55);  a.tiro.lanzamientoFaltas = tE(25); break;
         case 'HAKIMI_MENDES':
             a.fisico.aceleracion = fG(45); a.fisico.velocidad = fG(45); a.fisico.resistencia = fG(42);
             a.pase.centros = tE(50); a.habilidad.regate = tE(45); a.defensa.entradas = tE(30); break;
@@ -490,7 +518,7 @@ function generarAtributos(pos, val, arquetipo) {
             a.pase.paseCorto = tE(55); a.pase.paseLargo = tE(50); a.habilidad.controlBalon = tE(50);
             a.defensa.colocacion = tE(55); a.fisico.velocidad = fG(-10); a.fisico.aceleracion = fG(-10); break;
         case 'RAMOS':
-            a.tiro.remateCabeza = tE(60); a.fisico.salto = fG(45); a.mental.liderazgo = tE(60);
+            a.tiro.remateCabeza = tE(60); a.fisico.salto = fG(45); a.mental.liderazgo = tE(60);  a.tiro.lanzamientoFaltas = tE(30);
             a.defensa.marcaje = tE(55); a.defensa.intercepciones = tE(50); a.fisico.velocidad = fG(25); break;
         case 'PEPE':
             a.mental.agresividad = tE(60); a.defensa.entradas = tE(60); a.fisico.fuerza = fG(40);
@@ -502,7 +530,7 @@ function generarAtributos(pos, val, arquetipo) {
             a.fisico.fuerza = fG(45); a.defensa.duelosAereos = fG(45); a.tiro.remateCabeza = tE(55);
             a.fisico.velocidad = fG(-25); a.fisico.aceleracion = fG(-25); a.pase.paseCorto = tE(15); break;
         case 'KOEMAN':
-            a.tiro.potenciaTiro = tE(60); a.tiro.lanzamientoFaltas = tE(60); a.tiro.tiroLejano = tE(60);
+            a.tiro.potenciaTiro = tE(60); a.tiro.lanzamientoFaltas = tE(50); a.tiro.tiroLejano = tE(60);
             a.defensa.marcaje = tE(45); break;
         case 'NACHO':
             a.defensa.marcaje = tE(45); a.defensa.entradas = tE(45); a.pase.paseCorto = tE(40);
@@ -517,7 +545,7 @@ function generarAtributos(pos, val, arquetipo) {
         // --- MEDIOCENTROS ---
         case 'BUSQUETS_ALONSO':
             a.pase.vision = tE(60); a.pase.paseCorto = tE(60); a.pase.paseLargo = tE(55);
-            a.fisico.velocidad = fG(-25); a.fisico.aceleracion = fG(-25); break;
+            a.fisico.velocidad = fG(-25); a.fisico.aceleracion = fG(-25); a.tiro.lanzamientoFaltas = tE(30); break;
         case 'CASEMIRO':
             a.defensa.entradas = tE(60); a.fisico.fuerza = fG(40); a.defensa.intercepciones = tE(55);
             a.tiro.remateCabeza = tE(50); break;
@@ -526,10 +554,10 @@ function generarAtributos(pos, val, arquetipo) {
             a.defensa.intercepciones = tE(60); a.pase.paseCorto = tE(40); break;
         case 'RODRI':
             a.pase.paseCorto = tE(60); a.defensa.colocacion = tE(60); a.tiro.tiroLejano = tE(50);
-            a.fisico.fuerza = fG(30); break;
+            a.fisico.fuerza = fG(30); a.tiro.lanzamientoFaltas = tE(40); break;
         case 'XAVI_KROOS':
             a.pase.paseCorto = tE(60); a.pase.paseLargo = tE(60); a.tiro.potenciaTiro = tE(50);
-            a.fisico.velocidad = fG(-15); a.defensa.marcaje = tE(-15); break;
+            a.fisico.velocidad = fG(-15); a.defensa.marcaje = tE(-15); a.tiro.lanzamientoFaltas = tE(45); break;
         case 'INIESTA_MODRIC':
             a.habilidad.controlBalon = tE(60); a.habilidad.regate = tE(55); a.pase.vision = tE(55);
             a.fisico.resistencia = fG(35); break;
@@ -558,14 +586,14 @@ function generarAtributos(pos, val, arquetipo) {
             a.tiro.lanzamientoFaltas = tE(55); a.defensa.marcaje = tE(-25); break;
         case 'DE_BRUYNE':
             a.tiro.tiroLejano = tE(60); a.pase.vision = tE(60); a.pase.paseLargo = tE(60); a.tiro.potenciaTiro = tE(55);
-            a.defensa.entradas = tE(20); break;
+            a.defensa.entradas = tE(20); a.tiro.lanzamientoFaltas = tE(40); break;
         case 'POTENTE':
             a.tiro.potenciaTiro = tE(60); a.tiro.tiroLejano = tE(60); a.tiro.definicion = tE(35); break;
         case 'MESSI':
             a.habilidad.regate = tE(60); a.habilidad.controlBalon = tE(60); a.pase.vision = tE(60);
-            a.tiro.lanzamientoFaltas = tE(60); a.tiro.definicion = tE(60); a.fisico.aceleracion = fG(25); break;
+            a.tiro.lanzamientoFaltas = tE(55); a.tiro.definicion = tE(60); a.fisico.aceleracion = fG(25); break;
         case 'CRISTIANO':
-            a.tiro.definicion = tE(60); a.tiro.potenciaTiro = tE(60); a.fisico.salto = fG(45); 
+            a.tiro.definicion = tE(60); a.tiro.potenciaTiro = tE(60); a.fisico.salto = fG(45); a.tiro.lanzamientoFaltas = tE(30); 
             a.habilidad.regate = tE(40); a.tiro.remateCabeza = tE(55); a.fisico.velocidad = fG(40); a.fisico.aceleracion = fG(40); break;
         case 'BALE':
             a.fisico.aceleracion = fG(45); a.fisico.velocidad = fG(45); a.tiro.potenciaTiro = tE(45); 
@@ -578,7 +606,7 @@ function generarAtributos(pos, val, arquetipo) {
             a.defensa.marcaje = tE(-25); a.fisico.aceleracion = fG(20); break;
         case 'GREALISH':
             a.pase.centros = tE(55); a.pase.vision = tE(50); a.habilidad.controlBalon = tE(45);
-            a.fisico.aceleracion = fG(5); a.defensa.entradas = tE(15); break;
+            a.fisico.aceleracion = fG(5); a.defensa.entradas = tE(15); a.tiro.lanzamientoFaltas = tE(40); break;
 
         // --- DELANTEROS ---
         case 'LEWAN_SUAREZ':
@@ -614,11 +642,27 @@ function generarAtributos(pos, val, arquetipo) {
         Object.keys(a.pase).forEach(k => {
              a.pase[k] = Math.min(45, a.pase[k]); 
         });
+        Object.keys(a.defensa).forEach(k => {
+            a.defensa[k] = Math.floor(a.defensa[k] * (0.3 + Math.random() * 0.2));
+        });
+        Object.keys(a.pase).forEach(k => {
+        if (k === 'paseCorto' || k === 'paseLargo') {
+            let factorGolpeo = (0.75 + Math.random() * 0.1); 
+            a.pase[k] = Math.floor(a.pase[k] * factorGolpeo);
+        } else {
+            let factorCreacion = (0.35 + Math.random() * 0.15);
+            a.pase[k] = Math.floor(a.pase[k] * factorCreacion);
+        }
+    });
        
-        a.fisico.resistencia = Math.min(40, a.fisico.resistencia);
-        a.fisico.velocidad = Math.min(30, a.fisico.velocidad); 
-        a.fisico.agilidad = Math.max(a.fisico.agilidad, a.portero.reflejos - 10);
-
+        a.fisico.resistencia = Math.floor(a.fisico.resistencia * (0.50 + Math.random() * 0.1));
+        a.fisico.velocidad = Math.floor(a.fisico.velocidad * (0.55 + Math.random() * 0.1)); 
+        a.fisico.aceleracion = Math.floor(a.fisico.aceleracion * (0.55 + Math.random() * 0.1));
+        a.fisico.agilidad = Math.max(a.fisico.agilidad, (a.portero.reflejos - 5) - Math.floor(Math.random() * 5));
+        a.fisico.salto = Math.max(a.fisico.salto, (a.portero.juegoAereo - 5) - Math.floor(Math.random() * 5));
+        a.fisico.fuerza = Math.floor(a.fisico.fuerza * (0.8 + Math.random() * 0.1)); 
+        a.fisico.equilibrio = Math.floor(a.fisico.equilibrio * (0.8 + Math.random() * 0.1));
+            
         Object.keys(a.portero).forEach(k => { 
             if(a.portero[k] === 1) a.portero[k] = tB() + 6; 
         });
