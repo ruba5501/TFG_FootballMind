@@ -15,8 +15,8 @@ const ARQUETIPOS = {
     SD: ['BELLINGHAM', 'DYBALA', 'RAUL'],
     ED: ['MESSI', 'CRISTIANO', 'BALE', 'VINI', 'RONALDINHO', 'GREALISH'],
     EI: ['MESSI', 'CRISTIANO', 'BALE', 'VINI', 'RONALDINHO', 'GREALISH'],
-    MD: ['BALE', 'GREALISH', 'VINI'],
-    MI: ['BALE', 'GREALISH', 'VINI'],
+    MD: ['BALE', 'GREALISH', 'VALVERDE', 'DYBALA'],
+    MI: ['BALE', 'GREALISH', 'VALVERDE', 'DYBALA'],
     DC: ['LEWAN_SUAREZ', 'BENZEMA', 'MBAPPE_RONALDO', 'HAALAND', 'JOSELU_LLORENTE', 'MURIQI', 'RAUL']
 };
 const BASE_FIJA = [
@@ -132,7 +132,10 @@ function generarFisico(pos, arquetipo) {
         'MESSI': [168, 175], 'CRISTIANO': [175, 185], 'BALE': [175, 185], 'VINI': [168, 182], 'RONALDINHO': [168, 182], 'GREALISH': [175, 184],
         'LEWAN_SUAREZ': [180, 187], 'BENZEMA': [180, 187], 'MBAPPE_RONALDO': [178, 184], 'HAALAND': [188, 195], 'JOSELU_LLORENTE': [190, 195], 'MURIQI': [190, 195], 'RAUL': [178, 184]
     };
-    if (rangos[arquetipo]) { [minAlt, maxAlt] = rangos[arquetipo]; }
+    if (rangos[arquetipo]) {
+        [minAlt, maxAlt] = rangos[arquetipo];
+    }
+
     const altura = Math.floor(Math.random() * (maxAlt - minAlt + 1)) + minAlt;
     const peso = (altura - 100) + (Math.floor(Math.random() * 11) - 5);
     return { altura, peso };
@@ -140,27 +143,37 @@ function generarFisico(pos, arquetipo) {
 
 function calcularRatings(rol, rep, repMatriz, esFilial, edad) {
     let ca;
-    
+    const azarSorteo = Math.random();
     if (esFilial) {
-        ca = (repMatriz * 0.45) + (Math.random() * 12 + 8);
+        ca = (repMatriz * 0.50) + (Math.random() * 12 + 10);
     } else {
-        if (rol === 'ESTRELLA') {
-            let caBase = rep * 0.93 + (Math.random() * 2); 
-            
-            const suerteElite = Math.random();
-            if (caBase > 87) {
-                if (suerteElite > 0.98) ca = 92;      
-                else if (suerteElite > 0.92) ca = 91; 
-                else if (suerteElite > 0.82) ca = 90; 
-                else if (suerteElite > 0.65) ca = 89;
-                else ca = 87 + (Math.random() * 2);
+       if (rol === 'ESTRELLA') {
+            if (rep >= 90) { 
+                const suerteElite = Math.random();
+                
+                if (suerteElite > 0.99) ca = 92;     
+                else if (suerteElite > 0.95) ca = 91; 
+                else if (suerteElite > 0.87) ca = 90; 
+                else if (suerteElite > 0.75) ca = 89; 
+                else ca = 88;
             } else {
-                ca = caBase;
+                let techoEspecial = Math.min(88, rep + 2);
+                ca = techoEspecial + (Math.random() * 1.5);
             }
         }
-        else if (rol === 'TITULAR') ca = rep - (Math.random() * 5 + 5);  
-        else if (rol === 'ROTACION') ca = rep - (Math.random() * 6 + 10); 
-        else ca = rep - (Math.random() * 12 + 20);
+        else if (rol === 'TITULAR') {
+            if (rep >= 90 && azarSorteo > 0.85) { 
+                ca = 87 + (Math.random() * 1.5);
+            } else {
+                ca = rep - (Math.random() * 5 + 5); 
+            } 
+        }
+        else if (rol === 'ROTACION') {
+            ca = rep - (Math.random() * 7 + 8); 
+        }
+        else {
+            ca = rep - (Math.random() * 10 + 18);
+        }
     }
 
     ca = Math.min(92, Math.max(15, Math.floor(ca)));
@@ -168,38 +181,43 @@ function calcularRatings(rol, rep, repMatriz, esFilial, edad) {
     let pa;
     if (esFilial) {
         const factorAcademia = repMatriz / 100; 
-        if (Math.random() > (1 - (0.01 + factorAcademia * 0.03))) {
-            pa = 88 + (Math.random() * 10);
-        } else if (Math.random() > (1 - (0.05 + factorAcademia * 0.12))) {
-            pa = 78 + (Math.random() * 10); 
-        } else {
-            const sueloPotencial = (repMatriz * 0.50) + 15;
-            pa = sueloPotencial + (Math.random() * 20);
+        const azar = Math.random();
+
+        if (azar > (1 - (0.02 + factorAcademia * 0.04))) { 
+            pa = 91 + (Math.random() * 8); 
+        } 
+        else if (azar > (1 - (0.10 + factorAcademia * 0.15))) {
+            pa = 86 + (Math.random() * 4.5); 
+        } 
+        else if (azar > (1 - (0.25 + factorAcademia * 0.25))) {
+            pa = 80 + (Math.random() * 5); 
+        }
+        else {
+            const sueloPotencial = (repMatriz * 0.78) + 10; 
+            pa = sueloPotencial + (Math.random() * 6);
         }
     } else {
-        let distanciaAlTop = 97 - ca;
-        let factorAmbicion = 0;
-        const azarTalento = Math.random();
+        let distanciaAlTop = 98 - ca;
+        let azarTalento = Math.random();
+        let factorAmbicion;
 
-        if (azarTalento < 0.01) factorAmbicion = 0.98; 
-        else if (azarTalento < 0.08) factorAmbicion = 0.75;
-        else if (azarTalento < 0.25) factorAmbicion = 0.50;
-        else factorAmbicion = 0.25;
+        if (azarTalento < 0.05) factorAmbicion = 0.85;     
+        else if (azarTalento < 0.20) factorAmbicion = 0.50; 
+        else factorAmbicion = 0.20;                        
 
-        let factorEdad = 0;
+        let factorEdad;
         if (edad < 22) factorEdad = 1.0;
-        else if (edad < 26) factorEdad = 0.80; 
-        else if (edad < 29) factorEdad = 0.40; 
-        else if (edad < 33) factorEdad = 0.15; 
+        else if (edad < 26) factorEdad = 0.70; 
+        else if (edad < 30) factorEdad = 0.25; 
         else factorEdad = 0.05;
 
         pa = ca + (distanciaAlTop * factorAmbicion * factorEdad);
     }
+    let paFinal = Math.min(99, Math.max(ca, pa));
 
-    let paFinal = Math.min(99, pa);
     return { 
         ca: Math.floor(ca), 
-        pa: Math.min(99, Math.max(Math.floor(ca), Math.floor(paFinal))) 
+        pa: Math.floor(paFinal) 
     };
 }
 
@@ -402,7 +420,7 @@ function generarAtributos(pos, val, arquetipo) {
         a.fisico.fuerza = fG(15); a.fisico.equilibrio = fG(15); a.fisico.salto = fG(15);
     }
 
-    if (['LD', 'LI'].includes(pos)) {
+    else if (['LD', 'LI'].includes(pos)) {
         a.habilidad.regate = tB(); a.habilidad.controlBalon = tB();
         a.tiro.definicion = tI(); a.tiro.potenciaTiro = tI(); a.tiro.tiroLejano = tI(); a.tiro.remateCabeza = tI(); a.tiro.lanzamientoFaltas = tI();
         a.pase.centros = tE(35); a.pase.paseCorto = tB(); a.pase.paseLargo = tE(20);
@@ -411,7 +429,7 @@ function generarAtributos(pos, val, arquetipo) {
         a.fisico.agilidad = fG(15); a.fisico.equilibrio = fG(10); 
     }
 
-    if (['MCD'].includes(pos)) {
+    else if (['MCD'].includes(pos)) {
         a.habilidad.regate = tI(); a.habilidad.controlBalon = tB(); a.habilidad.desmarques = tI();
         a.tiro.definicion = tI(); a.tiro.remateCabeza = tB();
         a.pase.paseCorto = tB(); a.pase.paseLargo = tB(); a.pase.vision = tB(); 
@@ -420,13 +438,13 @@ function generarAtributos(pos, val, arquetipo) {
         a.fisico.resistencia = fG(10); a.fisico.fuerza = fG(15); a.fisico.equilibrio = fG(15); a.fisico.salto = fG(15);
     }
 
-    if (['MC'].includes(pos)) {
+    else if (['MC'].includes(pos)) {
         a.habilidad.controlBalon = tB(); a.habilidad.regate = tB();
         a.pase.paseCorto = tB(); a.pase.vision = tB(); a.pase.paseLargo = tB(); a.pase.centros = tB();
         a.fisico.velocidad = fG(10); a.fisico.aceleracion = fG(10); a.fisico.agilidad = fG(10); a.fisico.resistencia = fG(20); a.fisico.fuerza = fG(10);
     }
 
-    if (['MCO'].includes(pos)) {
+    else if (['MCO'].includes(pos)) {
         a.habilidad.controlBalon = tB(); a.habilidad.regate = tB(); a.habilidad.desmarques = tB();
         a.tiro.definicion = tB(); a.tiro.potenciaTiro = tB();
         a.pase.paseCorto = tB(); a.pase.vision = tB(); a.pase.paseLargo = tB(); a.pase.centros = tB();
@@ -434,7 +452,13 @@ function generarAtributos(pos, val, arquetipo) {
         a.fisico.velocidad = fG(10); a.fisico.aceleracion = fG(10); a.fisico.agilidad = fG(15); a.fisico.resistencia = fG(10);
     }
 
-    if (['ED', 'EI'].includes(pos)) {
+    else if (['MD', 'MI'].includes(pos)) {
+        a.habilidad.regate = tB(); a.habilidad.controlBalon = tB();
+        a.pase.paseCorto = tB(); a.pase.centros = tE(35);
+        a.fisico.velocidad = fG(15); a.fisico.aceleracion = fG(15); a.fisico.agilidad = fG(20); a.fisico.resistencia = fG(20); a.fisico.equilibrio = fG(15);
+    }
+
+    else if (['ED', 'EI'].includes(pos)) {
         a.habilidad.regate = tB(); a.habilidad.controlBalon = tB();
         a.tiro.potenciaTiro = tE(15); a.tiro.tiroLejano = tB();
         a.pase.paseCorto = tB(); a.pase.centros = tE(35);
@@ -442,7 +466,7 @@ function generarAtributos(pos, val, arquetipo) {
         a.fisico.velocidad = fG(20); a.fisico.aceleracion = fG(20); a.fisico.agilidad = fG(20); a.fisico.resistencia = fG(20); a.fisico.equilibrio = fG(15);
     }
 
-    if (['DC', 'SD'].includes(pos)) {
+    else if (['DC', 'SD'].includes(pos)) {
         a.habilidad.controlBalon = tB(); a.habilidad.desmarques = tE(30);
         a.tiro.definicion = tB(); a.tiro.potenciaTiro = tB(); a.tiro.tiroLejano = tB(); a.tiro.lanzamientoPenaltis = Math.floor(60 + Math.random() * 30); a.tiro.remateCabeza = tB();
         a.pase.paseCorto = tB();
@@ -562,7 +586,7 @@ function generarAtributos(pos, val, arquetipo) {
             a.habilidad.controlBalon = tE(60); a.habilidad.regate = tE(55); a.pase.vision = tE(55);
             a.fisico.resistencia = fG(35); break;
         case 'VALVERDE':
-            a.fisico.velocidad = fG(40); a.fisico.aceleracion = fG(40); a.fisico.resistencia = fG(42);
+            a.fisico.velocidad = fG(35); a.fisico.aceleracion = fG(35); a.fisico.resistencia = fG(42);
             a.tiro.potenciaTiro = tE(60); a.tiro.tiroLejano = tE(55); a.defensa.entradas = tE(35); break;
         case 'PIRLO': 
             a.pase.vision = tE(60); a.tiro.lanzamientoFaltas = tE(60); a.pase.paseLargo = tE(60);
@@ -591,12 +615,12 @@ function generarAtributos(pos, val, arquetipo) {
             a.tiro.potenciaTiro = tE(60); a.tiro.tiroLejano = tE(60); a.tiro.definicion = tE(35); break;
         case 'MESSI':
             a.habilidad.regate = tE(60); a.habilidad.controlBalon = tE(60); a.pase.vision = tE(60);
-            a.tiro.lanzamientoFaltas = tE(55); a.tiro.definicion = tE(60); a.fisico.aceleracion = fG(25); break;
+            a.tiro.lanzamientoFaltas = tE(55); a.tiro.definicion = tE(60); a.fisico.velocidad = fG(25); a.fisico.aceleracion = fG(30); break;
         case 'CRISTIANO':
             a.tiro.definicion = tE(60); a.tiro.potenciaTiro = tE(60); a.fisico.salto = fG(45); a.tiro.lanzamientoFaltas = tE(30); 
-            a.habilidad.regate = tE(40); a.tiro.remateCabeza = tE(55); a.fisico.velocidad = fG(40); a.fisico.aceleracion = fG(40); break;
+            a.habilidad.regate = tE(40); a.habilidad.desmarques = tE(40); a.tiro.remateCabeza = tE(55); a.fisico.velocidad = fG(40); a.fisico.aceleracion = fG(40); break;
         case 'BALE':
-            a.fisico.aceleracion = fG(45); a.fisico.velocidad = fG(45); a.tiro.potenciaTiro = tE(45); 
+            a.fisico.aceleracion = fG(48); a.fisico.velocidad = fG(48); a.tiro.potenciaTiro = tE(45); 
             a.tiro.tiroLejano = tE(45); a.pase.centros = tE(55); a.defensa.entradas = tE(15); break;
         case 'VINI':
             a.fisico.aceleracion = fG(45); a.fisico.velocidad = fG(45); a.habilidad.regate = tE(60); 
@@ -664,7 +688,7 @@ function generarAtributos(pos, val, arquetipo) {
         a.fisico.equilibrio = Math.floor(a.fisico.equilibrio * (0.8 + Math.random() * 0.1));
             
         Object.keys(a.portero).forEach(k => { 
-            if(a.portero[k] === 1) a.portero[k] = tB() + 6; 
+            if(a.portero[k] === 1) a.portero[k] = tB() + 5; 
         });
     }
 
