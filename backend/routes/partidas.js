@@ -1,5 +1,6 @@
 const express = require('express');
 const partidaRouter = express.Router();
+const mongoose = require('mongoose');
 
 const partidaDAO = require('../daos/partidasDAO');
 const empleadoDAO = require('../daos/empleadosDAO');
@@ -7,6 +8,7 @@ const clubesDAO = require('../daos/clubesDAO');
 const Competicion = require('../models/competicion');
 const Club = require('../models/club');
 const generarJugadores = require('../cargaDB/cargarJugadores');
+const generarEmpleados = require('../cargaDB/cargarEmpleados');
 const { requireLogin } = require('../middleware/autenticacion');
 
 const atributosDefault = {
@@ -120,23 +122,27 @@ partidaRouter.get('/crearPartida/final', requireLogin, async (req, res) => {
   if (!datos) return res.redirect('/crearPartida/step1');
 
   try {
+    const entrenadorId = new mongoose.Types.ObjectId();
+
+    const nuevaPartida = await partidaDAO.crearPartida(
+      req.session.user._id,
+      datos.nombrePartida,
+      datos.clubSeleccionado,
+      entrenadorId
+    );
+
     const entrenador = await empleadoDAO.crearEmpleado({
-      nombre: datos.nombreEntrenador,
-      apellido: datos.apellidoEntrenador,
+      _id: entrenadorId,
+      partidaId: nuevaPartida._id,
+      nombre: `${datos.nombreEntrenador} ${datos.apellidoEntrenador}`,
       edad: datos.edad,
       nacionalidad: datos.nacionalidad,
       tipo: 'entrenadorPrincipal',
       atributos: datos.atributos
     });
 
-    const nuevaPartida = await partidaDAO.crearPartida(
-      req.session.user._id,
-      datos.nombrePartida,
-      datos.clubSeleccionado,
-      entrenador._id
-    );
-
     await generarJugadores(nuevaPartida._id);
+    //await generarEmpleados(nuevaPartida._id);
 
     const club = await clubesDAO.buscarClubPorId(datos.clubSeleccionado);
 
@@ -146,7 +152,7 @@ partidaRouter.get('/crearPartida/final', requireLogin, async (req, res) => {
       datos: {
         id: nuevaPartida._id,
         nombrePartida: datos.nombrePartida,
-        nombreEntrenador: `${entrenador.nombre} ${entrenador.apellido}`,
+        nombreEntrenador: entrenador.nombre,
         clubNombre: club ? club.nombre : 'Desconocido'
       }
     });

@@ -1,8 +1,12 @@
 const mongoose = require('mongoose');
 
 const empleadoSchema = new mongoose.Schema({
+  partidaId: { 
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Partida',
+    required: true
+  },
   nombre: { type: String, required: true, trim: true },
-  apellido: { type: String, required: true, trim: true },
   edad: { type: Number, min: 18, max: 80, required: true },
   nacionalidad: { type: String, required: true, trim: true },
   bandera: { type: String, trim: true, default: null },

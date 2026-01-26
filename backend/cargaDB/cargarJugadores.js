@@ -104,9 +104,6 @@ async function generarJugadoresNuevaPartida(partidaId) {
                 jugador.dorsal = numAsignado;
                 dorsalesOcupados.push(numAsignado);
                 
-                // Aprovechamos para generar los atributos finales basados en el arquetipo
-                //jugador.atributos = generarAtributos(jugador.posicionPrincipal, jugador.valoracion, jugador.arquetipo);
-                
                 delete jugador.rolInterno; 
             }
 
