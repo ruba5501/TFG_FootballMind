@@ -142,7 +142,7 @@ partidaRouter.get('/crearPartida/final', requireLogin, async (req, res) => {
     });
 
     await generarJugadores(nuevaPartida._id);
-    //await generarEmpleados(nuevaPartida._id);
+    await generarEmpleados(nuevaPartida._id);
 
     const club = await clubesDAO.buscarClubPorId(datos.clubSeleccionado);
 

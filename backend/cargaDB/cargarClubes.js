@@ -16,98 +16,76 @@ async function cargarClubes() {
     const dataPath = path.join(__dirname, '../../base_datos/clubes.json');
     const clubesData = JSON.parse(fs.readFileSync(dataPath, 'utf8'));
 
-    const clubesNormales = clubesData.filter(club => !club.esFilial);
-    const clubesFiliales = clubesData.filter(club => club.esFilial);
+    const todosEstadios = await Estadio.find().lean();
+    const todasComps = await Competicion.find().lean();
 
-    const clubesFinalNormales = [];
+    const estadioMap = {}; 
+    const compMap = {}; 
+    todosEstadios.forEach(e => estadioMap[e.nombre] = e._id);
+    todasComps.forEach(c => compMap[c.nombre] = c._id);
+
+    const clubesParaInsertar = [];
     
-    // para cargar los clubes normales
-    for (const club of clubesNormales) {
-      const [comps, estadio] = await Promise.all([
-          Competicion.find({ nombre: { $in: club.competiciones || [] } }).lean(),
-          Estadio.findOne({ nombre: club.estadio }).lean()
-      ]);
+    for (const club of clubesData) {
+      let estadioId = estadioMap[club.estadio];
 
-      // Un club normal debe tener estadio, pero permitimos que no tenga competición 
-      // por si es un club libre o de ligas bajas no cargadas.
-      if (!estadio) {
-        console.warn(`Clubes: No se encontró estadio para ${club.nombre}. Saltando club.`);
-        continue;
+      if (!estadioId && !club.esFilial) {
+          console.warn(`Clubes: No se encontró estadio para ${club.nombre}.`);
+          continue; 
       }
-      
-      clubesFinalNormales.push({
+
+      clubesParaInsertar.push({
         ...club,
-        estadio: estadio._id,
-        competiciones: comps.map(c => c._id),
+        estadio: estadioId, 
+        competiciones: (club.competiciones || []).map(name => compMap[name]).filter(id => id),
+        clubMatriz: null
       });
     }
 
-    const insertadosNormales = await Club.insertMany(clubesFinalNormales);
-    
-    const nombreToId = insertadosNormales.reduce((acc, club) => {
-        acc[club.nombre] = club._id;
-        return acc;
-    }, {});
+    const insertados = await Club.insertMany(clubesParaInsertar);
+    console.log(`Clubes: Se han cargado ${insertados.length} clubes.`);
 
-    // para cargar los clubes filiales
-    const clubesFinalFiliales = [];
-    for (const club of clubesFiliales) {
-      const clubMatrizId = nombreToId[club.clubMatriz];
-      
-      if (!clubMatrizId) {
-        console.warn(`Clubes Filial: No se encontró club matriz (${club.clubMatriz}) para ${club.nombre}.`);
-        continue;
-      }
+    const nombreToIdMap = {};
+    insertados.forEach(c => nombreToIdMap[c.nombre] = { id: c._id, estadio: c.estadio });
 
-      const [comps, estadio] = await Promise.all([
-          Competicion.find({ nombre: { $in: club.competiciones || [] } }).lean(),
-          Estadio.findOne({ nombre: club.estadio }).lean()
-      ]);
+    const bulkUpdateOps = [];
+    const bulkCompOps = [];
 
-      let estadioFinalId = null;
-      if (estadio) {
-          estadioFinalId = estadio._id;
-      } else {
-          const matrizDoc = await Club.findById(clubMatrizId).lean();
-          estadioFinalId = matrizDoc ? matrizDoc.estadio : null;
-      }
+    for (const clubJson of clubesData) {
+        const clubInsertadoId = nombreToIdMap[clubJson.nombre].id;
 
-      if (!estadioFinalId) {
-          console.warn(`Clubes Filial: ${club.nombre} no tiene estadio y su matriz tampoco. Saltando.`);
-          continue;
-      }
-
-      clubesFinalFiliales.push({
-        ...club,
-        estadio: estadioFinalId,
-        competiciones: comps.map(c => c._id),
-        clubMatriz: clubMatrizId,
-      });
-    }
-
-    const insertadosFiliales = await Club.insertMany(clubesFinalFiliales);
-
-    const todosClubes = [...insertadosNormales, ...insertadosFiliales];
-    const bulkOps = [];
-    
-    for (const club of todosClubes) {
-      if (club.competiciones && club.competiciones.length > 0) {
-        for (const compId of club.competiciones) {
-          bulkOps.push({
-            updateOne: {
-              filter: { _id: compId },
-              update: { $addToSet: { clubes: club._id } }
+        if (clubJson.esFilial && clubJson.clubMatriz) {
+            const matrizInfo = nombreToIdMap[clubJson.clubMatriz];
+            if (matrizInfo) {
+                bulkUpdateOps.push({
+                    updateOne: {
+                        filter: { _id: clubInsertadoId },
+                        update: { $set: { 
+                            clubMatriz: matrizInfo.id,
+                            estadio: nombreToIdMap[clubJson.nombre].estadio || matrizInfo.estadio
+                        }}
+                    }
+                });
             }
-          });
         }
-      }
-    }
-    
-    if (bulkOps.length > 0) {
-        await Competicion.bulkWrite(bulkOps);
+        if (clubJson.competiciones) {
+            clubJson.competiciones.forEach(compNombre => {
+                const compId = compMap[compNombre];
+                if (compId) {
+                    bulkCompOps.push({
+                        updateOne: {
+                            filter: { _id: compId },
+                            update: { $addToSet: { clubes: clubInsertadoId } }
+                        }
+                    });
+                }
+            });
+        }
     }
 
-    console.log(`Clubes: Cargados ${todosClubes.length} en total (Normales: ${insertadosNormales.length}, Filiales: ${insertadosFiliales.length}).`);
+    if (bulkUpdateOps.length > 0) await Club.bulkWrite(bulkUpdateOps);
+    if (bulkCompOps.length > 0) await Competicion.bulkWrite(bulkCompOps);
+
   } catch (err) {
     console.error('Error cargando clubes:', err.message);
     throw err;

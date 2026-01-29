@@ -1,7 +1,7 @@
 const Club = require('../models/club');
 const Jugador = require('../models/jugador');
-const Partida = require('../models/partida');
 const { obtenerIdentidad } = require('./cargarIdentidades');
+const mongoose = require('mongoose');
 
 // 1. CONFIGURACIÓN DE PLANTILLA BASE
 const ARQUETIPOS = {
@@ -19,12 +19,6 @@ const ARQUETIPOS = {
     MI: ['BALE', 'GREALISH', 'VALVERDE', 'DYBALA'],
     DC: ['LEWAN_SUAREZ', 'BENZEMA', 'MBAPPE_RONALDO', 'HAALAND', 'JOSELU_LLORENTE', 'MURIQI', 'RAUL']
 };
-const BASE_FIJA = [
-    'POR', 'POR', 'LD', 'LD', 'LI', 'LI', 'DFC', 'DFC', 'DFC', 'DFC', 
-    'MCD', 'MC', 'MC', 'MCO', 'MD', 'MI', 'ED', 'EI', 'DC', 'DC', 'SD'
-];
-
-const POSICIONES_EXTRAS = ['LD', 'LI', 'DFC', 'MCD', 'MC', 'MCO', 'MD', 'MI', 'ED', 'EI', 'DC', 'SD', 'POR'];
 
 const DORSALES_POR_JERARQUIA = {
     'POR': { titular: [1], suplente: [13, 25] },
@@ -37,43 +31,101 @@ const DORSALES_POR_JERARQUIA = {
     'DC/SD': { titular: [9, 10], suplente: [20, 22, 23] }
 };
 
+const POSICIONES_EXTRAS = ['LD', 'LI', 'DFC', 'MCD', 'MC', 'MCO', 'MD', 'MI', 'ED', 'EI', 'DC', 'SD', 'POR'];
+
 async function generarJugadoresNuevaPartida(partidaId) {
     try {
-        const partidaInfo = await Partida.findById(partidaId).select('nombrePartida');
-        const nombrePartida = partidaInfo ? partidaInfo.nombrePartida : partidaId;
         const clubes = await Club.find().populate('clubMatriz');
+        
+        let todosLosJugadores = [];
+        let operacionesClubes = []; 
         let contadorTotal = 0;
 
         for (const club of clubes) {
             const rep = club.reputacion;
             const repMatriz = (club.esFilial && club.clubMatriz) ? club.clubMatriz.reputacion : rep;
             
-            const numExtras = Math.floor(Math.random() * 3) + 3;
-            let plantillaBase = [...BASE_FIJA];
-            for (let i = 0; i < numExtras; i++) {
-                plantillaBase.push(POSICIONES_EXTRAS[Math.floor(Math.random() * POSICIONES_EXTRAS.length)]);
+            let titulares = ['POR', 'DFC', 'DFC', 'LI', 'LD'];
+            const azarCentro = Math.random();
+            if (azarCentro > 0.7) {
+                titulares.push('MCD', 'MC', 'MC');    
+            } else if (azarCentro > 0.4) {
+                titulares.push('MCD', 'MC', 'MCO');   
+            } else if (azarCentro > 0.15) {
+                titulares.push('MC', 'MC', 'MCO');    
+            } else {
+                titulares.push('MCD', 'MCD', 'MCO'); 
+            }
+            titulares.push(Math.random() > 0.5 ? 'EI' : 'MI');
+            titulares.push(Math.random() > 0.5 ? 'ED' : 'MD');
+            const azarFinal = Math.random();
+            if (azarFinal > 0.4) {
+                titulares.push('DC');                 
+            } else if (azarFinal > 0.15) {
+                titulares.push('SD');                
+            } else {
+                const comodinTactico = ['DFC', 'MCO', 'MC', 'DC']; 
+                titulares.push(comodinTactico[Math.floor(Math.random() * comodinTactico.length)]);
             }
 
-            let jugadoresTemporales = [];
+            let extras = ['POR', 'POR'];
+            const poolDef = ['DFC', 'LI', 'LD'];
+            const poolMed = ['MCD', 'MC', 'MCO'];
+            const poolBan = ['EI', 'ED', 'MI', 'MD'];
+            const poolDel = ['DC', 'SD'];
+
+            for(let i=0; i<4; i++){
+                extras.push(poolDef[Math.floor(Math.random() * poolDef.length)]);
+            }
+            for(let i=0; i<3; i++) {
+                extras.push(poolMed[Math.floor(Math.random() * poolMed.length)]);
+            }
+            for(let i=0; i<2; i++) {
+                extras.push(poolBan[Math.floor(Math.random() * poolBan.length)]);
+            }
+            for(let i=0; i<2; i++) {
+                extras.push(poolDel[Math.floor(Math.random() * poolDel.length)]);
+            }
+            const numRelleno = Math.floor(Math.random() * 5);
+            for(let i=0; i < numRelleno; i++) {
+                const posicionAzar = POSICIONES_EXTRAS[Math.floor(Math.random() * POSICIONES_EXTRAS.length)];
+                extras.push(posicionAzar);
+            }
+
+            let plantillaBase = [...titulares, ...extras];
+            let indicesTitulares = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+            let indicesEstrellas = indicesTitulares.sort(() => Math.random() - 0.5).slice(0, 4);
+
+            let jugadoresDelClub = [];
             let dorsalesOcupados = [];
 
             for (let i = 0; i < plantillaBase.length; i++) {
                 const posicion = plantillaBase[i];
                 let rolContrato = 'suplente';
                 let rolInterno = 'ROTACION';
-                if (i === 0 || i === 8 || i === 12 || i === 18) { rolContrato = 'clave'; rolInterno = 'ESTRELLA'; }
-                else if (i < 11) { rolContrato = 'importante'; rolInterno = 'TITULAR'; }
-                else if (i > 20) { rolContrato = club.esFilial ? 'promesa' : 'reserva'; rolInterno = 'RESERVA'; }
 
-                const listaArq = ARQUETIPOS[posicion];
-                const arquetipo = listaArq[Math.floor(Math.random() * listaArq.length)];
+                if (indicesEstrellas.includes(i)) { 
+                    rolContrato = 'clave'; 
+                    rolInterno = 'ESTRELLA'; 
+                } 
+                else if (i < 11) { 
+                    rolContrato = 'importante'; 
+                    rolInterno = 'TITULAR'; 
+                } 
+                else if (i > 19) { 
+                    rolContrato = club.esFilial ? 'promesa' : 'reserva'; 
+                    rolInterno = 'RESERVA'; 
+                }
 
+                const arquetipo = ARQUETIPOS[posicion][Math.floor(Math.random() * ARQUETIPOS[posicion].length)];
                 const edad = generarEdad(rolInterno, club.esFilial, posicion);
                 const ratings = calcularRatings(rolInterno, rep, repMatriz, club.esFilial, edad);
                 const fisico = generarFisico(posicion, arquetipo);
                 const identidad = obtenerIdentidad(club.pais, rep, false);      
+                const idJugador = new mongoose.Types.ObjectId();
 
-                jugadoresTemporales.push({
+                jugadoresDelClub.push({
+                    _id: idJugador,
                     partidaId,
                     nombre: identidad.nombreCompleto,
                     rolInterno,
@@ -97,21 +149,31 @@ async function generarJugadoresNuevaPartida(partidaId) {
                 });
             }
             const orden = { 'ESTRELLA': 1, 'TITULAR': 2, 'ROTACION': 3, 'RESERVA': 4 };
-            jugadoresTemporales.sort((a, b) => orden[a.rolInterno] - orden[b.rolInterno]);
+            jugadoresDelClub.sort((a, b) => orden[a.rolInterno] - orden[b.rolInterno]);
 
-            for (let jugador of jugadoresTemporales) {
-                const numAsignado = asignarDorsalRealista(jugador.posicionPrincipal, jugador.rolInterno, dorsalesOcupados);
-                jugador.dorsal = numAsignado;
-                dorsalesOcupados.push(numAsignado);
+            const idsJugadoresFinales = [];
+            for (let jugador of jugadoresDelClub) {
+                jugador.dorsal = asignarDorsalRealista(jugador.posicionPrincipal, jugador.rolInterno, dorsalesOcupados);
+                dorsalesOcupados.push(jugador.dorsal);
                 
-                delete jugador.rolInterno; 
+                idsJugadoresFinales.push(jugador._id);
+                const { rolInterno, ...jugadorParaInsertar } = jugador;
+                todosLosJugadores.push(jugadorParaInsertar);
             }
-
-            const insertados = await Jugador.insertMany(jugadoresTemporales);
-            const idsJugadores = insertados.map(j => j._id);
-            await Club.findByIdAndUpdate(club._id, { $set: { plantilla: idsJugadores } });
-            contadorTotal += insertados.length;
+            operacionesClubes.push({
+                updateOne: {
+                    filter: { _id: club._id },
+                    update: { $set: { plantilla: idsJugadoresFinales } }
+                }
+            });
+            contadorTotal += jugadoresDelClub.length;
         }
+
+        if (todosLosJugadores.length > 0) {
+            await Jugador.insertMany(todosLosJugadores, { lean: true });
+            await Club.bulkWrite(operacionesClubes);
+        }
+
         console.log(`Se han añadido ${contadorTotal} jugadores.`);
         return true;
     } catch (err) { console.error(err); throw err; }
@@ -140,36 +202,55 @@ function generarFisico(pos, arquetipo) {
 
 function calcularRatings(rol, rep, repMatriz, esFilial, edad) {
     let ca;
-    const azarSorteo = Math.random();
     if (esFilial) {
         ca = (repMatriz * 0.50) + (Math.random() * 12 + 10);
     } else {
        if (rol === 'ESTRELLA') {
             if (rep >= 90) { 
-                const suerteElite = Math.random();
-                
-                if (suerteElite > 0.99) ca = 92;     
-                else if (suerteElite > 0.95) ca = 91; 
-                else if (suerteElite > 0.87) ca = 90; 
-                else if (suerteElite > 0.75) ca = 89; 
-                else ca = 88;
-            } else {
-                let techoEspecial = Math.min(88, rep + 2);
-                ca = techoEspecial + (Math.random() * 1.5);
+                const azar = Math.random();
+                if (azar > 0.98) ca = 92;       
+                else if (azar > 0.90) ca = 91;  
+                else if (azar > 0.80) ca = 90; 
+                else if (azar > 0.55) ca = 89;
+                else if (azar > 0.30) ca = 88;
+                else ca = 87;                         
+            } 
+            else if (rep >= 86) {
+                const azar = Math.random();
+                if (azar > 0.92) ca = 89;   
+                else if (azar > 0.85) ca = 88;
+                else if (azar > 0.65) ca = 87;
+                else if (azar > 0.40) ca = 86;
+                else ca = 85;
+            }
+
+            else if (rep >= 82) {
+                const azar = Math.random();
+                if (azar > 0.90) ca = 86;
+                else if (azar > 0.70) ca = 85;   
+                else if (azar > 0.40) ca = 84;   
+                else ca = 83;
+            }
+            else {
+                ca = Math.min(83, rep + (Math.random() * 2));
             }
         }
         else if (rol === 'TITULAR') {
-            if (rep >= 90 && azarSorteo > 0.85) { 
-                ca = 87 + (Math.random() * 1.5);
+            if (rep >= 88) {
+                const azar = Math.random();
+                if (azar > 0.85) ca = 85;      
+                else if (azar > 0.65) ca = 84;
+                else ca = 80 + (Math.random() * 4);
             } else {
-                ca = rep - (Math.random() * 5 + 5); 
-            } 
-        }
-        else if (rol === 'ROTACION') {
-            ca = rep - (Math.random() * 7 + 8); 
+                ca = rep - (Math.random() * 4 + 4); 
+            }
         }
         else {
-            ca = rep - (Math.random() * 10 + 18);
+           if (rep >= 88) {
+                ca = 76 + (Math.random() * 6);
+            } else {
+                ca = rep - (Math.random() * 8 + 12);
+            }
         }
     }
 
@@ -504,7 +585,7 @@ function generarAtributos(pos, val, arquetipo) {
             a.portero.blocaje = tE(-20); a.fisico.agilidad = fG(30); a.fisico.salto = fG(30); break;
         case 'KAHN': 
             a.portero.comunicacion = tE(60); a.portero.paradas = tE(50); a.portero.blocaje = tE(45);
-            a.portero.juegoAereo = tE(45); a.fisico.salto = fG(35); break;
+            a.portero.juegoAereo = tE(45); a.fisico.salto = fG(25); break;
 
         // --- LATERALES ---
         case 'ROBERTO_CARLOS':

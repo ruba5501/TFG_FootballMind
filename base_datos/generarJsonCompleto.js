@@ -7,59 +7,67 @@ const clubesOriginales = JSON.parse(fs.readFileSync('./clubes_sin_datos.json', '
 
 // --- ESPAÑA ---
 const ESP_ELITE = ["Real Madrid", "FC Barcelona", "Atlético de Madrid"];
-const ESP_ALTO = ["Real Sociedad", "Athletic Club", "Villarreal CF", "Real Betis"];
-const ESP_MEDIO_ALTO = ["Sevilla FC", "Valencia CF", "CA Osasuna", "Celta de Vigo", "Girona FC", "RCD Mallorca", "Getafe CF", "Rayo Vallecano", "RCD Espanyol"];
-const ESP_MEDIO_BAJO = ["Deportivo Alavés", "Elche CF", "Levante UD", "Real Oviedo", "UD Almería", "UD Las Palmas", "Real Valladolid CF", "CD Leganés"];
-const ESP_BAJO = ["RC Deportivo de La Coruña", "Real Racing Club", "Real Sporting de Gijón", "Real Zaragoza", "Granada CF", "Cádiz CF", "SD Eibar", "Málaga CF"];
-const ESP_MUY_BAJO = ["CD Mirandés", "Burgos CF", "CD Castellón", "Córdoba CF", "Albacete Balompié", "SD Huesca", "FC Andorra", "Cultural Leonesa", "AD Ceuta FC"];
+const ESP_MUY_ALTO = ["Athletic Club", "Villarreal CF", "Real Betis", "Real Sociedad"];
+const ESP_ALTO = ["Rayo Vallecano", "Celta de Vigo", "Sevilla FC", "Valencia CF"];
+const ESP_MEDIO_ALTO = ["CA Osasuna", "Girona FC", "RCD Mallorca", "Getafe CF", "RCD Espanyol"];
+const ESP_MEDIO = ["Elche CF", "Levante UD", "Real Oviedo", "Deportivo Alavés", "UD Almería", "UD Las Palmas", "Real Valladolid CF", "CD Leganés"];
+const ESP_MEDIO_BAJO = ["RC Deportivo de La Coruña", "Real Racing Club", "Real Sporting de Gijón", "Real Zaragoza", "Granada CF", "Cádiz CF", "SD Eibar", "Burgos CF", "Málaga CF"];
+const ESP_BAJO = ["CD Mirandés", "CD Castellón", "Córdoba CF", "Albacete Balompié", "SD Huesca", "FC Andorra", "Cultural Leonesa", "AD Ceuta FC"];
 // Nota: Real Sociedad B se maneja en la lógica de filiales
 
 // --- INGLATERRA ---
 const ENG_ELITE = ["Manchester City", "Liverpool FC", "Arsenal FC"];
-const ENG_ALTO = ["Chelsea FC", "Manchester United", "Tottenham Hotspur", "Newcastle United", "Aston Villa"];
-const ENG_MEDIO_ALTO = ["Brighton & Hove Albion", "West Ham United", "Everton FC", "Fulham FC", "Wolverhampton Wanderers", "Crystal Palace", "AFC Bournemouth"];
-const ENG_MEDIO_BAJO = ["Nottingham Forest", "Brentford FC", "Sunderland AFC", "Leeds United", "Burnley FC", "Leicester City", "Southampton FC", "Ipswich Town"];
-const ENG_BAJO = ["Sheffield United", "Middlesbrough FC", "Norwich City", "West Bromwich Albion", "Watford FC", "Hull City", "Coventry City", "Stoke City", "Swansea City"];
-const ENG_MUY_BAJO = ["Birmingham City", "Bristol City", "Millwall FC", "Wrexham AFC", "Derby County", "Queens Park Rangers", "Preston North End", "Portsmouth FC", "Blackburn Rovers", "Oxford United", "Charlton Athletic", "Sheffield Wednesday"];
+const ENG_MUY_ALTO = ["Chelsea FC", "Manchester United", "Tottenham Hotspur", "Newcastle United", "Aston Villa"];
+const ENG_ALTO = ["Brighton & Hove Albion", "West Ham United", "Everton FC", "Fulham FC", "AFC Bournemouth"];
+const ENG_MEDIO_ALTO = ["Brentford FC", "Wolverhampton Wanderers", "Crystal Palace"];
+const ENG_MEDIO = ["Nottingham Forest", "Sunderland AFC", "Leeds United", "Burnley FC", "Leicester City", "Southampton FC", "Ipswich Town"];
+const ENG_MEDIO_BAJO = ["Sheffield United", "Middlesbrough FC", "Norwich City", "West Bromwich Albion", "Watford FC", "Hull City", "Coventry City", "Stoke City", "Swansea City"];
+const ENG_BAJO = ["Birmingham City", "Bristol City", "Millwall FC", "Wrexham AFC", "Derby County", "Queens Park Rangers", "Preston North End", "Portsmouth FC", "Blackburn Rovers", "Oxford United", "Charlton Athletic", "Sheffield Wednesday"];
 
 // --- ITALIA ---
 const ITA_ELITE = ["Inter de Milán"];
-const ITA_ALTO = [ "Juventus de Turín", "SSC Nápoles", "AC Milan", "Atalanta de Bérgamo", "AS Roma", "SS Lazio"];
-const ITA_MEDIO_ALTO = ["Fiorentina", "Bolonia", "Torino FC", "Genoa", "Como 1907"];
-const ITA_MEDIO_BAJO = ["Parma", "Udinese", "US Sassuolo", "Cagliari", "Hellas Verona", "AC Monza", "Empoli FC"];
-const ITA_BAJO = ["Pisa Sporting Club", "US Cremonese", "US Lecce", "Venezia FC", "Palermo FC", "Spezia", "UC Sampdoria", "Frosinone Calcio"];
-const ITA_MUY_BAJO = ["US Catanzaro", "Cesena FC", "Modena FC", "SS Juve Stabia", "AC Reggiana 1919", "SSC Bari", "Carrarese Calcio 1908", "Delfino Pescara 1936", "US Avellino 1912", "Mantova 1911", "FC Südtirol", "Calcio Padova", "Virtus Entella"];
+const ITA_MUY_ALTO = ["Juventus de Turín", "SSC Nápoles", "AC Milan"];
+const ITA_ALTO = ["Atalanta de Bérgamo", "AS Roma", "SS Lazio", "Como 1907"];
+const ITA_MEDIO_ALTO = ["Fiorentina", "Bolonia", "Torino FC", "Genoa", "Parma", "Udinese", "US Sassuolo", "Cagliari"];
+const ITA_MEDIO = ["Hellas Verona", "US Lecce", "Pisa Sporting Club", "US Cremonese", "AC Monza", "Empoli FC", "Venezia FC"];
+const ITA_MEDIO_BAJO = ["Palermo FC", "Spezia", "UC Sampdoria", "Frosinone Calcio", "US Catanzaro", "Cesena FC", "Modena FC"];
+const ITA_BAJO = ["SS Juve Stabia", "AC Reggiana 1919", "SSC Bari", "Carrarese Calcio 1908", "Delfino Pescara 1936", "US Avellino 1912", "Mantova 1911", "FC Südtirol", "Calcio Padova", "Virtus Entella"];
 
 // --- ALEMANIA ---
 const GER_ELITE = ["Bayern Múnich"];
-const GER_ALTO = ["Borussia Dortmund", "Bayer 04 Leverkusen", "RB Leipzig", "VfB Stuttgart"];
-const GER_MEDIO_ALTO = ["Eintracht Fráncfort", "VfL Wolfsburgo", "SV Werder Bremen", "TSG 1899 Hoffenheim", "SC Friburgo", "Borussia Mönchengladbach"];
-const GER_MEDIO_BAJO = ["1.FSV Mainz 05", "FC Augsburgo", "1.FC Unión Berlín", "1.FC Heidenheim 1846", "Hamburgo SV", "FC Colonia", "FC St. Pauli"];
-const GER_BAJO = ["Hertha Berlín", "Holstein Kiel", "VfL Bochum", "1. FC Núremberg", "Hannover 96", "Fortuna Düsseldorf", "FC Schalke 04"];
-const GER_MUY_BAJO = ["SC Paderborn 07", "1.FC Magdeburg", "1.FC Kaiserslautern", "SV Darmstadt 98", "Karlsruher SC", "SV 07 Elversberg", "SpVgg Greuther Fürth", "Eintracht Braunschweig", "Preußen Münster", "Arminia Bielefeld", "SG Dynamo Dresden"];
+const GER_ALTO = ["Borussia Dortmund", "Bayer 04 Leverkusen", "RB Leipzig"];
+const GER_MEDIO_ALTO = ["Eintracht Fráncfort", "VfB Stuttgart", "SV Werder Bremen", "TSG 1899 Hoffenheim", "SC Friburgo", "Borussia Mönchengladbach"];
+const GER_MEDIO = ["VfL Wolfsburgo", "1.FSV Mainz 05", "FC Augsburgo", "1.FC Unión Berlín"];
+const GER_MEDIO_BAJO = ["FC St. Pauli","1.FC Heidenheim 1846","Hamburgo SV", "FC Colonia", "Holstein Kiel", "VfL Bochum"];
+const GER_BAJO = ["Hertha Berlín", "1. FC Núremberg", "Hannover 96", "Fortuna Düsseldorf", "FC Schalke 04", "SC Paderborn 07", "1.FC Magdeburg", "1.FC Kaiserslautern", "SV Darmstadt 98", "Karlsruher SC", "SV 07 Elversberg"];
+const GER_MUY_BAJO = ["Eintracht Braunschweig", "Preußen Münster", "SpVgg Greuther Fürth", "Arminia Bielefeld", "SG Dynamo Dresden"];
 
 // --- FRANCIA ---
 const FRA_ELITE = ["Paris Saint-Germain FC"];
 const FRA_ALTO = ["Olympique de Marsella", "AS Mónaco", "LOSC Lille", "Olympique de Lyon"];
 const FRA_MEDIO_ALTO = ["OGC Niza", "Stade Rennais FC", "RC Lens", "Stade Brestois 29"];
-const FRA_MEDIO_BAJO = ["Racing Club de Estrasburgo", "Toulouse FC", "FC Nantes", "AJ Auxerre", "FC Lorient", "FC Metz", "Stade de Reims", "Montpellier HSC"];
-const FRA_BAJO = ["Paris FC", "Le Havre AC", "Angers SCO", "AS Saint-Étienne", "ESTAC Troyes", "Amiens SC", "EA Guingamp", "Clermont Foot 63"];
-const FRA_MUY_BAJO = ["USL Dunkerque", "Red Star FC", "Pau FC", "Grenoble Foot 38", "SC Bastia", "Rodez AF", "AS Nancy-Lorraine", "FC Annecy", "Stade Lavallois", "Le Mans FC", "US Boulogne"];
+const FRA_MEDIO = ["Racing Club de Estrasburgo", "Toulouse FC", "FC Nantes", "FC Metz"];
+const FRA_MEDIO_BAJO = ["AJ Auxerre", "Angers SCO", "Le Havre AC", "FC Lorient", "Paris FC", "AS Saint-Étienne", "Stade de Reims", "Montpellier HSC", "USL Dunkerque"];
+const FRA_BAJO = ["ESTAC Troyes", "Amiens SC", "EA Guingamp", "Clermont Foot 63", "FC Annecy", "Grenoble Foot 38", "Pau FC", "Le Mans FC"];
+const FRA_MUY_BAJO = ["Red Star FC", "SC Bastia", "Rodez AF", "AS Nancy-Lorraine", "Stade Lavallois", "US Boulogne"];
 
 // --- HOLANDA ---
 const NED_ALTO = ["PSV Eindhoven", "Feyenoord", "Ajax de Ámsterdam"];
 const NED_MEDIO_ALTO = ["AZ Alkmaar", "FC Utrecht", "FC Twente Enschede"];
-const NED_MEDIO_BAJO = ["SC Heerenveen", "NEC Nijmegen", "FC Groningen", "Go Ahead Eagles Deventer", "Sparta Rotterdam", "Willem II Tilburg"];
-const NED_BAJO = ["PEC Zwolle", "Fortuna Sittard", "Excelsior Rotterdam", "NAC Breda", "Heracles Almelo", "FC Volendam", "Vitesse Arnhem", "Almere City FC", "RKC Waalwijk", "SC Cambuur Leeuwarden", "ADO Den Haag", "Roda JC Kerkrade", "FC Emmen", "De Graafschap Doetinchem"];
-const NED_MUY_BAJO = ["SC Telstar", "FC Dordrecht", "FC Den Bosch", "Helmond Sport", "MVV Maastricht", "TOP Oss", "VVV-Venlo", "FC Eindhoven"];
+const NED_MEDIO = ["SC Heerenveen", "NEC Nijmegen", "FC Groningen", "Go Ahead Eagles Deventer", "Sparta Rotterdam"];
+const NED_MEDIO_BAJO = ["PEC Zwolle", "Fortuna Sittard", "Excelsior Rotterdam", "NAC Breda", "Heracles Almelo", "FC Volendam", "SC Telstar"];
+const NED_BAJO = [ "Willem II Tilburg", "Almere City FC", "RKC Waalwijk", "SC Cambuur Leeuwarden", "ADO Den Haag", "FC Emmen", "De Graafschap Doetinchem"];
+const NED_MUY_BAJO = ["Vitesse Arnhem", "Roda JC Kerkrade","FC Dordrecht", "FC Den Bosch", "Helmond Sport", "MVV Maastricht", "TOP Oss", "VVV-Venlo", "FC Eindhoven"];
 // Nota: Ajax U21, PSV U21, Utrecht U21, AZ U21 son filiales.
 
 // --- PORTUGAL ---
 const POR_ALTO = ["Sporting de Lisboa", "FC Oporto", "SL Benfica"];
 const POR_MEDIO_ALTO = ["SC Braga", "Vitória Guimarães SC"];
-const POR_MEDIO_BAJO = ["FC Famalicão", "Rio Ave FC", "CD Santa Clara", "Gil Vicente FC", "Moreirense FC", "FC Arouca", "Vitória Guimarães SC"];
-const POR_BAJO = ["GD Estoril Praia", "FC Alverca", "Casa Pia AC", "CD Tondela", "CD Nacional", "Avs Futebol", "CF Estrela Amadora", "UD Leiria", "CS Marítimo", "Académico Viseu FC"];
-const POR_MUY_BAJO = ["GD Chaves", "SC União Torreense", "SC Farense", "FC Penafiel", "FC Vizela", "Portimonense SAD", "FC Felgueiras 1932", "Leixões SC", "FC Paços de Ferreira", "CD Feirense", "UD Oliveirense", "Lusitânia FC Lourosa"];
+const POR_MEDIO = ["FC Famalicão", "Rio Ave FC", "CD Santa Clara", "Gil Vicente FC", "Moreirense FC", "FC Arouca"];
+const POR_MEDIO_BAJO = ["GD Estoril Praia", "Casa Pia AC", "CD Nacional", "Avs Futebol", "CF Estrela Amadora", "SC Farense", "CD Tondela"];
+const POR_BAJO = ["FC Alverca", "UD Leiria", "CS Marítimo", "Académico Viseu FC", "FC Vizela", "SC União Torreense", "GD Chaves", "CD Feirense"];
+const POR_MUY_BAJO = ["FC Penafiel", "Portimonense SAD", "FC Felgueiras 1932", "Leixões SC", "FC Paços de Ferreira", "UD Oliveirense", "Lusitânia FC Lourosa"];
+// Nota: Benfica II, Oporto II, Sporting de Lisboa II son filiales.
 
 // --- SUDAMÉRICA ---
 const SUD_ALTO = ["CA River Plate", "CA Boca Juniors", "SE Palmeiras", "CR Flamengo"];
@@ -68,16 +76,19 @@ const SUD_BAJO = ["CA Rosario Central", "AA Argentinos Juniors", "CA San Lorenzo
 
 // Agrupación de Tiers Globales
 const CLUBES_ELITE = [...ESP_ELITE, ...ENG_ELITE, ...ITA_ELITE, ...GER_ELITE, ...FRA_ELITE];
+const CLUBES_MUY_ALTO = [...ESP_MUY_ALTO, ...ENG_MUY_ALTO, ...ITA_MUY_ALTO];
 const CLUBES_ALTO = [...ESP_ALTO, ...ENG_ALTO, ...ITA_ALTO, ...GER_ALTO, ...FRA_ALTO, ...NED_ALTO, ...POR_ALTO, ...SUD_ALTO];
-const CLUBES_MEDIO_ALTO = [...ESP_MEDIO_ALTO, ...ENG_MEDIO_ALTO, ...ITA_MEDIO_ALTO, ...GER_MEDIO_ALTO, ...FRA_MEDIO_ALTO, ...NED_MEDIO_ALTO, ...POR_MEDIO_ALTO, ...SUD_MEDIO];
+const CLUBES_MEDIO_ALTO = [...ESP_MEDIO_ALTO, ...ENG_MEDIO_ALTO, ...ITA_MEDIO_ALTO, ...GER_MEDIO_ALTO, ...FRA_MEDIO_ALTO, ...NED_MEDIO_ALTO, ...POR_MEDIO_ALTO];
+const CLUBES_MEDIO = [...ESP_MEDIO, ...ENG_MEDIO, ...ITA_MEDIO, ...GER_MEDIO, ...FRA_MEDIO, ...NED_MEDIO, ...POR_MEDIO, ...SUD_MEDIO];
 const CLUBES_MEDIO_BAJO = [...ESP_MEDIO_BAJO, ...ENG_MEDIO_BAJO, ...ITA_MEDIO_BAJO, ...GER_MEDIO_BAJO, ...FRA_MEDIO_BAJO, ...NED_MEDIO_BAJO, ...POR_MEDIO_BAJO];
 const CLUBES_BAJO = [...ESP_BAJO, ...ENG_BAJO, ...ITA_BAJO, ...GER_BAJO, ...FRA_BAJO, ...NED_BAJO, ...POR_BAJO, ...SUD_BAJO];
-const CLUBES_MUY_BAJO = [...ESP_MUY_BAJO, ...ENG_MUY_BAJO, ...ITA_MUY_BAJO, ...GER_MUY_BAJO, ...FRA_MUY_BAJO, ...NED_MUY_BAJO, ...POR_MUY_BAJO];
+const CLUBES_MUY_BAJO = [...GER_MUY_BAJO, ...FRA_MUY_BAJO, ...NED_MUY_BAJO, ...POR_MUY_BAJO];
 
 const redondearPresupuesto = (num) => {
-    if (num >= 10000000) return Math.round(num / 1000000) * 1000000;
-    if (num >= 1000000) return Math.round(num / 500000) * 500000;
-    return Math.round(num / 100000) * 100000;
+    if (num >= 10000000) return Math.round(num / 1000000) * 1000000; 
+    if (num >= 1000000) return Math.round(num / 500000) * 500000;   
+    if (num >= 500000) return Math.round(num / 100000) * 100000;   
+    return Math.round(num / 50000) * 50000;                         
 };
 
 const generarDatosUniversales = (clubes) => {
@@ -88,12 +99,14 @@ const generarDatosUniversales = (clubes) => {
         
         let rango = { rep: [35, 45], pop: [30, 45], ppto: [400000, 900000] }; 
 
-        if (CLUBES_ELITE.includes(n)) rango = { rep: [88, 92], pop: [90, 95], ppto: [85000000, 160000000] };
-        else if (CLUBES_ALTO.includes(n)) rango = { rep: [80, 87], pop: [78, 88], ppto: [30000000, 65000000] };
-        else if (CLUBES_MEDIO_ALTO.includes(n)) rango = { rep: [72, 79], pop: [70, 83], ppto: [12000000, 26000000] };
-        else if (CLUBES_MEDIO_BAJO.includes(n)) rango = { rep: [64, 71], pop: [65, 80], ppto: [5000000, 11500000] };
-        else if (CLUBES_BAJO.includes(n)) rango = { rep: [52, 63], pop: [53, 71], ppto: [1800000, 4800000] };
-        else if (CLUBES_MUY_BAJO.includes(n)) rango = { rep: [42, 51], pop: [40, 60], ppto: [600000, 1600000] };
+        if (CLUBES_ELITE.includes(n)) rango = { rep: [90, 92], pop: [91, 94], ppto: [75000000, 100000000] };
+        else if (CLUBES_MUY_ALTO.includes(n)) rango = { rep: [86, 89], pop: [78, 88], ppto: [35000000, 55000000] };
+        else if (CLUBES_ALTO.includes(n)) rango = { rep: [80, 85], pop: [78, 88], ppto: [20000000, 35000000] };
+        else if (CLUBES_MEDIO_ALTO.includes(n)) rango = { rep: [74, 79], pop: [70, 83], ppto: [5000000, 12000000] };
+        else if (CLUBES_MEDIO.includes(n)) rango = { rep: [68, 73], pop: [70, 83], ppto: [4000000, 8000000] };
+        else if (CLUBES_MEDIO_BAJO.includes(n)) rango = { rep: [63, 67], pop: [65, 80], ppto: [2500000, 4000000] };
+        else if (CLUBES_BAJO.includes(n)) rango = { rep: [52, 62], pop: [53, 71], ppto: [700000, 2000000] };
+        else if (CLUBES_MUY_BAJO.includes(n)) rango = { rep: [47, 51], pop: [40, 60], ppto: [200000, 600000] };
 
         if (club.esFilial && compiteEnLiga) {
             rango = { rep: [52, 60], pop: [45, 55], ppto: [0, 0] }; 
