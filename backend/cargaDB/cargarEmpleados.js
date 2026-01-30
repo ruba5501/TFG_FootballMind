@@ -45,16 +45,18 @@ async function generarEmpleadosNuevaPartida(partidaId) {
 
                 for (let i = 0; i < cantidadACrear; i++) {
                     const idEmpleado = new mongoose.Types.ObjectId();
-                    const identidad = obtenerIdentidad(club.pais, club.reputacion, false);
+                    const resultado = obtenerIdentidad(club.pais, club.reputacion, true, 0);
+                    const nombre = resultado.nombreCompleto;
+                    const nacionalidad = resultado.nacionalidad;
                     const nivelBase = calcularNivelBase(club.reputacion);
-
+                    
                     todosLosEmpleados.push({
                         _id: idEmpleado,
                         partidaId: partidaId,
-                        nombre: identidad.nombreCompleto,
+                        nombre: nombre,
                         edad: Math.floor(Math.random() * 35) + 35,
-                        nacionalidad: identidad.nacionalidad,
-                        bandera: identidad.bandera,
+                        nacionalidad: nacionalidad,
+                        bandera: `${nacionalidad}.png`,
                         tipo: conf.rol,
                         atributos: generarAtributosPorRol(conf.rol, nivelBase)
                     });

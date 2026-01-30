@@ -33,6 +33,12 @@ const DORSALES_POR_JERARQUIA = {
 
 const POSICIONES_EXTRAS = ['LD', 'LI', 'DFC', 'MCD', 'MC', 'MCO', 'MD', 'MI', 'ED', 'EI', 'DC', 'SD', 'POR'];
 
+const RANKING_PAISES = {
+    TOP: ['España', 'Brasil', 'Francia', 'Argentina', 'Inglaterra', 'Alemania', 'Portugal'],
+    MEDIO: ['Italia', 'Países Bajos', 'Uruguay', 'Bélgica', 'Croacia', 'Marruecos', 'Colombia', 'Noruega', 'Egipto', 'Ecuador'],
+    RESTO: 'otro'
+};
+
 async function generarJugadoresNuevaPartida(partidaId) {
     try {
         const clubes = await Club.find().populate('clubMatriz');
@@ -121,18 +127,18 @@ async function generarJugadoresNuevaPartida(partidaId) {
                 const edad = generarEdad(rolInterno, club.esFilial, posicion);
                 const ratings = calcularRatings(rolInterno, rep, repMatriz, club.esFilial, edad);
                 const fisico = generarFisico(posicion, arquetipo);
-                const identidad = obtenerIdentidad(club.pais, rep, false);      
+                const { nombreCompleto, nacionalidad } = obtenerIdentidad(club.pais, rep, false, ratings.ca);      
                 const idJugador = new mongoose.Types.ObjectId();
 
                 jugadoresDelClub.push({
                     _id: idJugador,
                     partidaId,
-                    nombre: identidad.nombreCompleto,
+                    nombre: nombreCompleto,
                     rolInterno,
                     edad,
                     altura: fisico.altura, 
                     peso: fisico.peso,    
-                    nacionalidad: identidad.nacionalidad,
+                    nacionalidad: nacionalidad,
                     posicionPrincipal: posicion,
                     piernaBuena: Math.random() > 0.2 ? 'derecha' : 'izquierda',
                     piernaMala: Math.floor(Math.random() * 5) + 1,
