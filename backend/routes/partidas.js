@@ -30,11 +30,14 @@ partidaRouter.get('/opcionPartida', requireLogin, (req, res) => {
 
 // Redirección correcta al primer paso
 partidaRouter.get('/crearPartida', requireLogin, (req, res) => {
-  res.redirect('/crearPartida/step1');
+  res.redirect('/crearPartida/step1?reset=true');
 });
 
 // Paso 1
 partidaRouter.get('/crearPartida/step1', requireLogin, (req, res) => {
+  if (req.query.reset === 'true') {
+      req.session.crearPartida = {}; 
+  }
   const datos = req.session.crearPartida || {};
   res.render('crearPartidaStep1', { datos, error: null });
 });
@@ -57,7 +60,10 @@ partidaRouter.post('/crearPartida/step1', requireLogin, (req, res) => {
     nacionalidad
   };
 
-  res.redirect('/crearPartida/step2');
+  req.session.save((err) => {
+    if (err) return res.status(500).send("Error en sesión");
+    res.redirect('/crearPartida/step2');
+  });
 });
 
 // Paso 2
@@ -93,7 +99,10 @@ partidaRouter.post('/crearPartida/step2', requireLogin, async (req, res) => {
   req.session.crearPartida.liga = ligaSelect;
   req.session.crearPartida.clubSeleccionado = club;
 
-  res.redirect('/crearPartida/step3');
+  req.session.save((err) => {
+    if (err) return res.status(500).send("Error en sesión");
+    res.redirect('/crearPartida/step3');
+  });
 });
 
 // Paso 3

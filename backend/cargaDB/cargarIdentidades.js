@@ -320,7 +320,7 @@ const IDENTIDAD_GLOBAL = {
     apellidos: ["Jovanovic", "Petrovic", "Ivanov", "Müller", "Smith", "Silva", "Kwon", "Abbas"]
 };
 
-const PAISES_SUDAMERICANOS = ["Uruguay", "Colombia", "Ecuador", "Chile", "Paraguay", "Perú", "Venezuela"];
+const PAISES_SUDAMERICANOS = ["Uruguay", "Colombia", "Ecuador", "Chile", "Paraguay", "Perú", "Venezuela", "Bolivia"];
 
 const PAISES_ALTOS_EU = [
     "España", "Inglaterra", "Italia", "Alemania", "Francia", "Portugal"
@@ -331,25 +331,27 @@ const PAISES_ALTOS_SUD = [
 ];
 
 const PAISES_MEDIOS_ALTOS = [
-    "Noruega", "Croacia", "Marruecos", "Países Bajos", "Bélgica", "Colombia", "Ecuador", "Uruguay"
+    "Noruega", "Croacia", "Marruecos", "Países Bajos", "Bélgica", "Colombia", "Uruguay"
 ];
 
 const PAISES_MEDIOS = [
-    "Serbia", "Egipto", "Nigeria", "Senegal", "Camerún", "Costa de Marfil", 
-    "México", "EEUU", "Dinamarca", "Suecia", "Polonia", "Chile", "Turquía",, "Suiza"
+    "Serbia", "Egipto", "Nigeria", "Senegal", "Camerún", "Costa de Marfil", "Argelia", "Ecuador",
+    "México", "Estados Unidos", "Dinamarca", "Suecia", "Polonia", "Chile", "Turquía", "Suiza", "Rusia"
 ];
 
 const PAISES_RAROS = [
     "China", "Corea del Sur", "Japón", "Grecia", "Australia", 
-    "Perú", "Venezuela", "Austria", "Irán", "Arabia Saudí",
-    "Sudáfrica", "Ghana", "Rumanía"
+    "Perú", "Venezuela", "Paraguay", "Austria", "Irán", "Arabia Saudí",
+    "Sudáfrica", "Ghana", "Rumanía", "Canadá", "Eslovaquia", "Eslovenia", "Bolivia",
+    "Bulgaria", "Hungría", "República Checa", "Irlanda"
 ];
 const MAPEO_REGIONES = {
     // ASIA
     "Japón": "asia", "Corea del Sur": "asia", "China": "asia", "Australia": "Inglaterra",
     
     // ÁFRICA
-    "Nigeria": "africa", "Senegal": "africa", "Camerún": "africa", "Costa de Marfil": "africa", "Ghana": "africa", "Sudáfrica": "africa",
+    "Nigeria": "africa", "Senegal": "africa", "Camerún": "africa", "Costa de Marfil": "africa", 
+    "Ghana": "africa", "Sudáfrica": "africa", "Argelia": "africa",
     
     // ARABE
     "Irán": "arabe", "Arabia Saudí": "arabe", "Marruecos": "arabe", "Egipto": "arabe",
@@ -361,17 +363,23 @@ const MAPEO_REGIONES = {
     "Polonia": "europa_este", "Grecia": "europa_este", "Croacia": "europa_este", 
     "Serbia": "europa_este", "Turquía": "europa_este", "Rumanía": "europa_este",
     "Suiza": "europa_este", "Austria": "europa_este", "Bélgica": "Francia",
+    "Eslovaquia": "europa_este", "Eslovenia": "europa_este", "Rusia": "europa_este",
+    "Bulgaria": "europa_este", "Hungría": "europa_este", "República Checa": "europa_este", "Irlanda": "Inglaterra",
 
     // AMÉRICA
+    "Canadá": "Francia",
     "México": "Mexico",
-    "EEUU": "EEUU",
+    "Estados Unidos": "EEUU",
     "Colombia": "sudamerica", 
     "Chile": "sudamerica",
     "Ecuador": "sudamerica",
     "Perú": "sudamerica",
     "Venezuela": "sudamerica",
-    "Uruguay": "sudamerica"
+    "Uruguay": "sudamerica",
+    "Bolivia": "sudamerica"
 };
+
+const filtrar = (array, paisAExcluir) => array.filter(p => p !== paisAExcluir);
 
 function obtenerIdentidad(paisClub, reputacion, esEmpleado, media = 60) {
     let nacionalidad = paisClub;
@@ -379,83 +387,99 @@ function obtenerIdentidad(paisClub, reputacion, esEmpleado, media = 60) {
     const esSudamerica = PAISES_ALTOS_SUD.includes(paisClub);
     let probExtranjero = esEmpleado 
         ? (reputacion > 85 ? 0.40 : (reputacion > 70 ? 0.15 : 0.05))
-        : (esSudamerica ? 0.12 : (reputacion < 75 ? 0.15 : (reputacion < 86 ? 0.30 : (reputacion < 90 ? 0.45 : 0.70))));
+        : (esSudamerica ? 0.12 : (reputacion < 75 ? 0.15 : (reputacion < 86 ? 0.30 : (reputacion < 90 ? 0.45 : 0.60))));
     
     if (Math.random() < probExtranjero){
         esExtranjero = true;
     }   
     if (esExtranjero) {
-        if (esEmpleado) {
-            const poolGlobalStaff = [...PAISES_ALTOS_EU, ...PAISES_ALTOS_SUD].filter(p => p !== paisClub);
-            nacionalidad = poolGlobalStaff[Math.floor(Math.random() * poolGlobalStaff.length)];     
-        }
-        else{
-            if (media >= 88) {
-                const azarElite = Math.random();
-                //POTENCIAS MUNDIALES (75%)
-                if (azarElite < 0.75) { 
-                    //40% SUDAMERICANOS 
-                    if (Math.random() < 0.40) {
-                        nacionalidad = PAISES_ALTOS_SUD[Math.floor(Math.random() * PAISES_ALTOS_SUD.length)];
-                    } else { //60% EUROPEOS
-                        const poolTopEU = PAISES_ALTOS_EU.filter(p => p !== paisClub);
-                        nacionalidad = poolTopEU[Math.floor(Math.random() * poolTopEU.length)];
-                    }
+        //95% EXTRANJERO SUDAMERICANO PARA LIGA SUDAMERICANA
+        if (esSudamerica && Math.random() < 0.95) {
+            const poolVecinos = filtrar([...PAISES_ALTOS_SUD, ...PAISES_SUDAMERICANOS], paisClub);
+            nacionalidad = poolVecinos[Math.floor(Math.random() * poolVecinos.length)];
+        } 
+        //LIGA EUROPEA O 5% LIGA SUDAMERICANA
+        else {
+            if (esEmpleado) {
+                const azar = Math.random();
+                //NACIONALIDAD GRANDE (85%)
+                if (azar < 0.85) {
+                    const pool = filtrar([...PAISES_ALTOS_EU, ...PAISES_ALTOS_SUD, ...PAISES_MEDIOS_ALTOS], paisClub);
+                    nacionalidad = pool[Math.floor(Math.random() * pool.length)];
                 } 
-                //PAÍSES_MEDIOS-ALTOS (15%)
-                else if (azarElite < 0.95) {
-                    nacionalidad = PAISES_MEDIOS_ALTOS[Math.floor(Math.random() * PAISES_MEDIOS_ALTOS.length)];
-                }
-                //PAÍSES_MEDIOS (5%)
+                //NACIONALIDAD MEDIA (15%)
                 else {
-                    const resto = [...PAISES_MEDIOS];
-                    nacionalidad = resto[Math.floor(Math.random() * resto.length)];
-                }
-            }
-            else if (media >= 82) {
-                const azarAlto = Math.random();
-                
-                // POTENCIAS MUNDIALES (50%)
-                if (azarAlto < 0.50) {
-                    const tops = [...PAISES_ALTOS_EU, ...PAISES_ALTOS_SUD].filter(p => p !== paisClub);
-                    nacionalidad = tops[Math.floor(Math.random() * tops.length)];
-                }
-                // MEDIOS-ALTOS (35%)
-                else if (azarAlto < 0.85) {
-                    nacionalidad = PAISES_MEDIOS_ALTOS[Math.floor(Math.random() * PAISES_MEDIOS_ALTOS.length)];
-                }
-                // MEDIOS (10%)
-                else if (azarAlto < 0.95) {
                     nacionalidad = PAISES_MEDIOS[Math.floor(Math.random() * PAISES_MEDIOS.length)];
                 }
-                // RAROS (5%)
-                else {
-                    nacionalidad = PAISES_RAROS[Math.floor(Math.random() * PAISES_RAROS.length)];
-                }
             }
-            else {
-                const azarBajo = Math.random();
-                //SUDAMERICANOS (30%)
-                if (azarBajo < 0.30) {
-                    nacionalidad = PAISES_SUDAMERICANOS[Math.floor(Math.random() * PAISES_SUDAMERICANOS.length)];
-                } 
-                //MEDIOS (35%)
-                else if (azarBajo < 0.65) {
-                    const poolMedioCompleto = [...PAISES_MEDIOS_ALTOS, ...PAISES_MEDIOS];
-                    nacionalidad = poolMedioCompleto[Math.floor(Math.random() * poolMedioCompleto.length)];
-                } 
-                //TOP (25%)
-                else if (azarBajo < 0.90) {
-                    const potenciasGlobales = [...PAISES_ALTOS_EU, ...PAISES_ALTOS_SUD];
-                    const poolPotencias = potenciasGlobales.filter(p => p !== paisClub);
-                    nacionalidad = poolPotencias[Math.floor(Math.random() * poolPotencias.length)];
+            else{
+                if (media >= 88) {
+                    const azarElite = Math.random();
+                    //POTENCIAS MUNDIALES (75%)
+                    if (azarElite < 0.75) { 
+                        //40% SUDAMERICANOS 
+                        if (Math.random() < 0.40) {
+                            const poolSud = filtrar(PAISES_ALTOS_SUD, paisClub);
+                            nacionalidad = poolSud[Math.floor(Math.random() * poolSud.length)];                    
+                        } else { //60% EUROPEOS
+                            const poolEU = filtrar(PAISES_ALTOS_EU, paisClub);
+                            nacionalidad = poolEU[Math.floor(Math.random() * poolEU.length)];
+                        }
+                    } 
+                    //PAÍSES_MEDIOS-ALTOS (15%)
+                    else if (azarElite < 0.95) {
+                        const poolMedioAlto = filtrar(PAISES_MEDIOS_ALTOS, paisClub);
+                        nacionalidad = poolMedioAlto[Math.floor(Math.random() * poolMedioAlto.length)];
+                    }
+                    //PAÍSES_MEDIOS (5%)
+                    else {
+                        const resto = [...PAISES_MEDIOS];
+                        nacionalidad = resto[Math.floor(Math.random() * resto.length)];
+                    }
                 }
-                //RAROS (10%)
+                else if (media >= 82) {
+                    const azarAlto = Math.random();
+                    
+                    // POTENCIAS MUNDIALES (50%)
+                    if (azarAlto < 0.50) {
+                    const tops = filtrar([...PAISES_ALTOS_EU, ...PAISES_ALTOS_SUD], paisClub);
+                        nacionalidad = tops[Math.floor(Math.random() * tops.length)];
+                    }
+                    // MEDIOS-ALTOS (35%)
+                    else if (azarAlto < 0.85) {
+                        const poolMA = filtrar(PAISES_MEDIOS_ALTOS, paisClub);
+                        nacionalidad = poolMA[Math.floor(Math.random() * poolMA.length)];
+                    }
+                    // MEDIOS (10%)
+                    else if (azarAlto < 0.95) {
+                        nacionalidad = PAISES_MEDIOS[Math.floor(Math.random() * PAISES_MEDIOS.length)];
+                    }
+                    // RAROS (5%)
+                    else {
+                        nacionalidad = PAISES_RAROS[Math.floor(Math.random() * PAISES_RAROS.length)];
+                    }
+                }
                 else {
-                    nacionalidad = PAISES_RAROS[Math.floor(Math.random() * PAISES_RAROS.length)];
+                    const azarBajo = Math.random();
+
+                    // MEDIOS Y MEDIOS-ALTOS (60%)
+                    if (azarBajo < 0.60) {
+                        const poolGeneral = filtrar([...PAISES_MEDIOS_ALTOS, ...PAISES_MEDIOS], paisClub);
+                        nacionalidad = poolGeneral[Math.floor(Math.random() * poolGeneral.length)];
+                    } 
+                    // TOP (25%)
+                    else if (azarBajo < 0.85) {
+                    const potencias = filtrar([...PAISES_ALTOS_EU, ...PAISES_ALTOS_SUD], paisClub);
+                        nacionalidad = potencias[Math.floor(Math.random() * potencias.length)];
+                    } 
+                    // RAROS (15%)
+                    else {
+                        nacionalidad = PAISES_RAROS[Math.floor(Math.random() * PAISES_RAROS.length)];
+                    }
                 }
             }
         }
+        
     }
 
     let pool;
