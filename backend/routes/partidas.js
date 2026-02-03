@@ -200,9 +200,9 @@ partidaRouter.post('/eliminarPartida/:id', requireLogin, async (req, res) => {
     }
 });
 
-partidaRouter.get('/dashboard/:id', requireLogin, async (req, res) => {
+partidaRouter.get('/inicioJuego/:id', requireLogin, async (req, res) => {
     const partida = await partidaDAO.obtenerPartidaPorId(req.params.id);
-    res.render('dashboard', { user: req.session.user, partida });
+    res.render('inicioJuego', { user: req.session.user, partida });
 });
 
 partidaRouter.get('/partida/:id', requireLogin, async (req, res) => {
@@ -220,7 +220,7 @@ partidaRouter.get('/guardar/:id', requireLogin, async (req, res) => {
         const partida = await partidaDAO.obtenerPartidaPorId(req.params.id);
         res.render('menuSalidaPartida', { partida, mensaje: "¡Partida guardada con éxito!" });
     } catch (error) {
-        res.redirect('/dashboard/' + req.params.id);
+        res.redirect('/inicioJuego/' + req.params.id);
     }
 });
 // RUTA: GUARDAR Y SALIR
