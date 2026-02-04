@@ -3,11 +3,12 @@ const Jugador = require('../models/jugador');
 const Empleado = require('../models/empleado');
 
 class PartidaDAO {
-  async crearPartida(usuarioId, nombrePartida, clubSeleccionado, entrenadorId) {
+  async crearPartida(usuarioId, nombrePartida, clubSeleccionado, entrenadorId, _id) {
     const partida = new Partida({
+      _id,
       usuarioId,
       nombrePartida,
-      clubSeleccionado,
+      clubSeleccionado: clubSeleccionado,
       entrenadorId,
       estadoJuego: {}
     });

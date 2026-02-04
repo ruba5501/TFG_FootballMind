@@ -2,29 +2,17 @@ const fs = require('fs');
 const path = require('path');
 const Competicion = require('../models/competicion'); 
 
-async function cargarCompeticiones() {
+async function cargarCompeticiones(partidaId, nombrePartida) {
   try {
-    const count = await Competicion.countDocuments();
-    
-    if (count > 0) {
-        console.log('Competiciones: Colección ya contiene datos. Omitiendo cargado.');
-        return; 
-    }
-
     const dataPath = path.join(__dirname, '../../base_datos/competiciones.json');
-    const competicionesData = JSON.parse(fs.readFileSync(dataPath, 'utf8'));
+    const compsJson = JSON.parse(fs.readFileSync(dataPath, 'utf8'));
 
-    const nuevasCompeticiones = competicionesData.map(comp => ({
-      nombre: comp.nombre,
-      pais: comp.pais || null,
-      tipo: comp.tipo,
-      logo: comp.logo || null
-    }));
+    const competicionesParaInsertar = compsJson.map(c => ({ ...c, partidaId, clubes: [] }));
 
-    const insertadas = await Competicion.insertMany(nuevasCompeticiones);
-    console.log(`Competiciones: Se han cargado ${insertadas.length} competiciones.`);
-    
-    return insertadas; 
+    const competiciones = await Competicion.insertMany(competicionesParaInsertar);
+    console.log(`Competiciones: ${competiciones.length} cargadas para partida ${nombrePartida}`);
+
+    return competiciones;
   } catch (err) {
     console.error('Error cargando las competiciones:', err.message);
     throw err;

@@ -4,7 +4,8 @@ const empleadoSchema = new mongoose.Schema({
   partidaId: { 
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Partida',
-    required: true
+    required: true,
+    index: true 
   },
   nombre: { type: String, required: true, trim: true },
   edad: { type: Number, min: 18, max: 80, required: true },
@@ -28,6 +29,7 @@ const empleadoSchema = new mongoose.Schema({
     ],
     required: true
   },
+  clubActual: {type: mongoose.Schema.Types.ObjectId, ref: 'Club', default: null},
   atributos: {
     nivelFisico: { type: Number, min: 0, max: 100, default: 50 },
     nivelTecnico: { type: Number, min: 0, max: 100, default: 50 },

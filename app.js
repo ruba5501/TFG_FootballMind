@@ -7,7 +7,6 @@ const path = require('path');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const port = process.env.PORT || 3000;
-const cargaDB = require('./backend/cargaDB/index');
 // Conexión a MongoDB desde db.js
 const connectDB = require('./backend/db');
 
@@ -68,9 +67,6 @@ app.use((err, req, res, next) => {
 async function initializeApp() {
     try {
         await connectDB(); 
-        console.log("Conexión a MongoDB exitosa.");
-
-        await cargaDB(); 
         
         app.listen(port, (err) => {
             if (err)

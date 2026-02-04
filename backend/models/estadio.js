@@ -1,6 +1,12 @@
 const mongoose = require('mongoose');
 
 const estadioSchema = new mongoose.Schema({
+  partidaId: { 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: 'Partida', 
+    required: true, 
+    index: true 
+  },
   nombre: { type: String, required: true, trim: true },
   ciudad: { type: String, required: true, trim: true },
   capacidad: { type: Number, required: true },

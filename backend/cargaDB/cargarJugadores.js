@@ -39,9 +39,9 @@ const RANKING_PAISES = {
     RESTO: 'otro'
 };
 
-async function generarJugadoresNuevaPartida(partidaId) {
+async function generarJugadoresNuevaPartida(partidaId, listaClubes, nombrePartida) {
     try {
-        const clubes = await Club.find().populate('clubMatriz');
+        const clubes = listaClubes;
         
         let todosLosJugadores = [];
         let operacionesClubes = []; 
@@ -132,7 +132,7 @@ async function generarJugadoresNuevaPartida(partidaId) {
 
                 jugadoresDelClub.push({
                     _id: idJugador,
-                    partidaId,
+                    partidaId: partidaId,
                     nombre: nombreCompleto,
                     rolInterno,
                     edad,
@@ -157,12 +157,11 @@ async function generarJugadoresNuevaPartida(partidaId) {
             const orden = { 'ESTRELLA': 1, 'TITULAR': 2, 'ROTACION': 3, 'RESERVA': 4 };
             jugadoresDelClub.sort((a, b) => orden[a.rolInterno] - orden[b.rolInterno]);
 
-            const idsJugadoresFinales = [];
+            const idsJugadoresFinales = jugadoresDelClub.map(j => j._id);
             for (let jugador of jugadoresDelClub) {
                 jugador.dorsal = asignarDorsalRealista(jugador.posicionPrincipal, jugador.rolInterno, dorsalesOcupados);
                 dorsalesOcupados.push(jugador.dorsal);
                 
-                idsJugadoresFinales.push(jugador._id);
                 const { rolInterno, ...jugadorParaInsertar } = jugador;
                 todosLosJugadores.push(jugadorParaInsertar);
             }
@@ -180,7 +179,7 @@ async function generarJugadoresNuevaPartida(partidaId) {
             await Club.bulkWrite(operacionesClubes);
         }
 
-        console.log(`Se han añadido ${contadorTotal} jugadores.`);
+        console.log(`Se han añadido ${contadorTotal} jugadores para partida ${nombrePartida}.`);
         return true;
     } catch (err) { console.error(err); throw err; }
 }

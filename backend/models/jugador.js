@@ -4,7 +4,8 @@ const jugadorSchema = new mongoose.Schema({
   partidaId: { 
     type: mongoose.Schema.Types.ObjectId, 
     ref: 'Partida', 
-    required: true 
+    required: true,
+    index: true 
   },
   nombre: { type: String, required: true, trim: true },
   dorsal: { type: Number, min: 1, max: 99 },

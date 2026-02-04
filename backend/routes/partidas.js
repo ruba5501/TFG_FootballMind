@@ -1,12 +1,20 @@
 const express = require('express');
 const partidaRouter = express.Router();
 const mongoose = require('mongoose');
+const fs = require('fs');
+const path = require('path');
 
 const partidaDAO = require('../daos/partidasDAO');
 const empleadoDAO = require('../daos/empleadosDAO');
 const clubesDAO = require('../daos/clubesDAO');
+
 const Competicion = require('../models/competicion');
 const Club = require('../models/club');
+const Partida = require('../models/partida');
+
+const cargarEstadios = require('../cargaDB/cargarEstadios'); 
+const cargarCompeticiones = require('../cargaDB/cargarCompeticiones');
+const cargarClubes = require('../cargaDB/cargarClubes');
 const generarJugadores = require('../cargaDB/cargarJugadores');
 const generarEmpleados = require('../cargaDB/cargarEmpleados');
 const { requireLogin } = require('../middleware/autenticacion');
@@ -24,8 +32,9 @@ const atributosDefault = {
 };
 
 // Selección de partidas existentes
-partidaRouter.get('/opcionPartida', requireLogin, (req, res) => {
-  res.render('opcionPartida');
+partidaRouter.get('/opcionPartida', requireLogin, async(req, res) => {
+  const totalPartidas = await Partida.countDocuments({ usuarioId: req.session.user._id });
+  res.render('opcionPartida', { totalPartidas });
 });
 
 // Redirección correcta al primer paso
@@ -69,24 +78,32 @@ partidaRouter.post('/crearPartida/step1', requireLogin, (req, res) => {
 // Paso 2
 partidaRouter.get('/crearPartida/step2', requireLogin, async (req, res) => {
   if (!req.session.crearPartida) return res.redirect('/crearPartida/step1');
-  
-  const ligas = await Competicion.find({ tipo: 'liga' });
-  const clubes = await Club.find().populate('competiciones');
+  try {
+      const pathClubes = path.join(__dirname, '../../base_datos/clubes.json');
+      const pathCompeticiones = path.join(__dirname, '../../base_datos/competiciones.json');
+      const ligas = JSON.parse(fs.readFileSync(pathCompeticiones, 'utf8')).filter(c => c.tipo === 'liga');
+      const clubes = JSON.parse(fs.readFileSync(pathClubes, 'utf8'));
 
-  res.render('crearPartidaStep2', {
-    datos: req.session.crearPartida,
-    ligas,
-    clubes,
-    error: null
-  });
+      res.render('crearPartidaStep2', {
+          datos: req.session.crearPartida,
+          ligas,
+          clubes,
+          error: null
+      });
+    } catch (err) {
+        console.error("Error al leer archivos base:", err);
+        res.status(500).send("Error al cargar los datos de selección.");
+    }
 });
 
 partidaRouter.post('/crearPartida/step2', requireLogin, async (req, res) => {
   const { ligaSelect, club } = req.body;
 
   if (!ligaSelect || !club) {
-    const ligas = await Competicion.find({ tipo: 'liga' });
-    const clubes = await Club.find().populate('competiciones');
+    const pathClubes = path.join(__dirname, '../../base_datos/clubes.json');
+    const pathCompeticiones = path.join(__dirname, '../../base_datos/competiciones.json');     
+    const ligas = JSON.parse(fs.readFileSync(pathCompeticiones, 'utf8')).filter(c => c.tipo === 'liga');
+    const clubes = JSON.parse(fs.readFileSync(pathClubes, 'utf8'));
 
     return res.render('crearPartidaStep2', {
       datos: req.session.crearPartida,
@@ -131,38 +148,46 @@ partidaRouter.get('/crearPartida/final', requireLogin, async (req, res) => {
   if (!datos) return res.redirect('/crearPartida/step1');
 
   try {
+    const partidaId = new mongoose.Types.ObjectId();
     const entrenadorId = new mongoose.Types.ObjectId();
+
+    const estadios = await cargarEstadios(partidaId, datos.nombrePartida); 
+    const competiciones = await cargarCompeticiones(partidaId, datos.nombrePartida);
+    const clubes = await cargarClubes(partidaId, estadios, competiciones, datos.nombrePartida);
+
+    const clubJugador = clubes.find(c => c.nombre === datos.clubSeleccionado);
 
     const nuevaPartida = await partidaDAO.crearPartida(
       req.session.user._id,
       datos.nombrePartida,
-      datos.clubSeleccionado,
-      entrenadorId
+      clubJugador._id,
+      entrenadorId,
+      partidaId
     );
 
     const entrenador = await empleadoDAO.crearEmpleado({
       _id: entrenadorId,
-      partidaId: nuevaPartida._id,
+      partidaId: partidaId,
       nombre: `${datos.nombreEntrenador} ${datos.apellidoEntrenador}`,
       edad: datos.edad,
       nacionalidad: datos.nacionalidad,
       tipo: 'entrenadorPrincipal',
+      clubActual: clubJugador._id,
       atributos: datos.atributos
     });
 
-    await generarJugadores(nuevaPartida._id);
-    await generarEmpleados(nuevaPartida._id);
+    await generarJugadores(partidaId, clubes, datos.nombrePartida);
+    await generarEmpleados(partidaId, clubes, datos.nombrePartida);
 
-    const club = await clubesDAO.buscarClubPorId(datos.clubSeleccionado);
 
     req.session.crearPartida = null;
 
     res.render('crearPartidaFinal', { 
       datos: {
-        id: nuevaPartida._id,
+        id: partidaId,
         nombrePartida: datos.nombrePartida,
         nombreEntrenador: entrenador.nombre,
-        clubNombre: club ? club.nombre : 'Desconocido'
+        clubNombre: clubJugador ? clubJugador.nombre : 'Desconocido'
       }
     });
   } catch (err) {

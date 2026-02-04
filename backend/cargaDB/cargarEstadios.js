@@ -2,21 +2,17 @@ const fs = require('fs');
 const path = require('path');
 const Estadio = require('../models/estadio');
 
-async function cargarEstadios() {
+async function cargarEstadios(partidaId, nombrePartida) {
   try {
-    const count = await Estadio.countDocuments();
-    
-    if (count > 0) {
-        console.log('Estadios: Colección ya contiene datos. Omitiendo cargado.');
-        return; 
-    }
-    
     const dataPath = path.join(__dirname, '../../base_datos/estadios.json');
-    const estadios = JSON.parse(fs.readFileSync(dataPath, 'utf8'));
+    const estadiosJson = JSON.parse(fs.readFileSync(dataPath, 'utf8'));
 
-    const estadiosAniadidos = await Estadio.insertMany(estadios);
+    const estadiosParaInsertar = estadiosJson.map(e => ({ ...e, partidaId }));
 
-    console.log(`Estadios: Se han cargado ${estadiosAniadidos.length} estadios.`);
+    const estadios = await Estadio.insertMany(estadiosParaInsertar);
+    console.log(`Estadios: ${estadios.length} cargados para partida ${nombrePartida}`);
+    
+    return estadios;
   } catch (err) {
     console.error('Error cargando los estadios:', err.message);
     throw err; 

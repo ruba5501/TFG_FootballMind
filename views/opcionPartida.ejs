@@ -7,8 +7,23 @@
         <h1 class="mb-4">FootballMind</h1>
         <p class="mb-5">Cree una nueva partida o elija alguna partida guardada</p>
 
+        <div class="alert alert-info d-inline-block">
+            Partidas creadas: <strong><%= totalPartidas %> / 3</strong>
+        </div>
+
+        <% if (totalPartidas >= 3) { %>
+            <div class="alert alert-danger mt-3">
+                Has alcanzado el límite máximo de 3 partidas. Debes borrar una para crear otra.
+            </div>
+        <% } %>
+
         <div class="d-flex justify-content-center gap-4">
-            <a href="/crearPartida" class="btn btn-success btn-lg">Nueva Partida</a>
+            <% if (totalPartidas < 3) { %>
+                <a href="/crearPartida" class="btn btn-success btn-lg">Nueva Partida</a>
+            <% } else { %>
+                <button class="btn btn-secondary btn-lg" disabled title="Límite alcanzado">Nueva Partida</button>
+            <% } %>
+            
             <a href="/listarPartidas" class="btn btn-primary btn-lg">Mostrar Partidas</a>
         </div>
     </div>

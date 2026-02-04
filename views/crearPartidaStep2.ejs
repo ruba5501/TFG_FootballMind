@@ -24,10 +24,10 @@
                 
                 <div id="liga-display" class="flex-grow-1">
                   <% ligas.forEach((l, index) => { %>
-                    <div class="liga-item d-none" id="liga-<%= index %>" data-id="<%= l._id %>">
+                    <div class="liga-item d-none" id="liga-<%= index %>" data-nombre="<%= l.nombre %>">
                       <img src="/img/logos/<%= l.logo %>" 
                            class="img-thumbnail selector-img" 
-                           onclick="confirmarLiga('<%= index %>')">
+                           onclick="confirmarLiga('<%= index %>', '<%= l.nombre %>')">
                       <div class="mt-3 d-flex align-items-center justify-content-center">
                         <img src="/img/banderas/<%= l.pais %>.png" class="bandera-liga">
                         <span class="h5 mb-0"><%= l.nombre %></span>
@@ -49,12 +49,12 @@
                 
                 <div id="club-display" class="flex-grow-1">
                   <% clubes.forEach((c) => { 
-                      const idL = (c.competiciones && c.competiciones._id) ? c.competiciones._id : c.competiciones;
+                      const ligasDelClub = Array.isArray(c.competiciones) ? c.competiciones[0] : c.competiciones;
                   %>
-                    <div class="club-item d-none" data-liga-id="<%= idL %>">
+                    <div class="club-item d-none" data-liga-nombre="<%= ligasDelClub %>">
                       <img src="/img/escudos/<%= c.escudo %>" 
                           class="img-thumbnail selector-img" 
-                          onclick="confirmarClub(this, '<%= c._id %>')">
+                          onclick="confirmarClub(this, '<%= c.nombre %>')">
                       <div class="mt-3 h5 fw-bold"><%= c.nombre %></div>
                     </div>
                   <% }) %>

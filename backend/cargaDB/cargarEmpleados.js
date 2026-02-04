@@ -19,11 +19,11 @@ const CONFIG_ROLES = [
     { rol: 'entrenadorCantera',   cantidadBase: 1, extraPorReputacion: false }
 ];
 
-async function generarEmpleadosNuevaPartida(partidaId) {
+async function generarEmpleadosNuevaPartida(partidaId, listaClubes, nombrePartida) {
     try {
         const partida = await Partida.findById(partidaId);
         const clubUsuarioId = partida.clubSeleccionado.toString();
-        const clubes = await Club.find();
+        const clubes = listaClubes;
 
         let todosLosEmpleados = [];
         let operacionesClubes = [];
@@ -58,6 +58,7 @@ async function generarEmpleadosNuevaPartida(partidaId) {
                         nacionalidad: nacionalidad,
                         bandera: `${nacionalidad}.png`,
                         tipo: conf.rol,
+                        clubActual: club._id,
                         atributos: generarAtributosPorRol(conf.rol, nivelBase)
                     });
 
@@ -78,7 +79,7 @@ async function generarEmpleadosNuevaPartida(partidaId) {
             await Club.bulkWrite(operacionesClubes);
         }
 
-        console.log(`Se han añadido ${todosLosEmpleados.length} empleados.`);
+        console.log(`Se han añadido ${todosLosEmpleados.length} empleados para partida ${nombrePartida}.`);
         return true;
 
     } catch (err) {
