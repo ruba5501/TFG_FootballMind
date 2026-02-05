@@ -1,0 +1,49 @@
+<%- include('partials/head') %>
+<%- include('partials/navbar') %>
+
+<div class="container mt-5">
+    <div class="card text-center">
+        <div class="card-header">
+            Resultado del Partido
+        </div>
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-4">
+                    <h3><%= local.nombre %></h3>
+                    <h1><%= resultado.marcador.local %></h1>
+                </div>
+                <div class="col-4">
+                    <span class="badge bg-secondary">Minuto 90</span>
+                    <p class="mt-2">Posesión: <%= resultado.posesion.local %>% - <%= resultado.posesion.visitante %>%</p>
+                </div>
+                <div class="col-4">
+                    <h3><%= visitante.nombre %></h3>
+                    <h1><%= resultado.marcador.visitante %></h1>
+                </div>
+            </div>
+            
+            <hr>
+            
+            <h5 class="text-start">Eventos del partido:</h5>
+            <ul class="list-group list-group-flush text-start">
+                <% resultado.eventos.forEach(evento => { %>
+                    <li class="list-group-item">
+                        <strong>Min <%= evento.minuto %>:</strong> 
+                        <% if(evento.tipo === 'GOL') { %>
+                            <span class="text-success fw-bold">⚽ GOL</span>
+                        <% } else { %>
+                            <span class="text-warning">⚠ Ocasión</span>
+                        <% } %>
+                        - <%= evento.texto %>
+                    </li>
+                <% }) %>
+                <% if(resultado.eventos.length === 0) { %>
+                    <li class="list-group-item text-muted">Un partido muy aburrido sin ocasiones claras...</li>
+                <% } %>
+            </ul>
+        </div>
+        <div class="card-footer text-muted">
+            <a href="/inicioJuego/<%= partida._id %>" class="btn btn-primary">Volver al Menú</a>
+        </div>
+    </div>
+</div>
