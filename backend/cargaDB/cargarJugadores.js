@@ -105,6 +105,8 @@ async function generarJugadoresNuevaPartida(partidaId, listaClubes, nombrePartid
             let jugadoresDelClub = [];
             let dorsalesOcupados = [];
 
+            const competicionesDelClub = club.competiciones || [];
+
             for (let i = 0; i < plantillaBase.length; i++) {
                 const posicion = plantillaBase[i];
                 let rolContrato = 'suplente';
@@ -151,7 +153,18 @@ async function generarJugadoresNuevaPartida(partidaId, listaClubes, nombrePartid
                     atributos: generarAtributos(posicion, ratings.ca, arquetipo),
                     valorMercado: calcularValorMercado(ratings.ca, ratings.pa, edad),
                     salario: calcularSalario(ratings.ca, rep),
-                    estado: { forma: 100, moral: Math.floor(Math.random() * 21) + 80, satisfaccion: 100, lesion: null }
+                    estado: { forma: 100, moral: Math.floor(Math.random() * 21) + 80, satisfaccion: 100, lesion: null },
+                    statsTemporada: competicionesDelClub.map(compId => ({
+                        competicionId: compId,
+                        pj: 0,
+                        titular: 0,
+                        minutos: 0,
+                        goles: 0,
+                        asistencias: 0,
+                        amarillas: 0,
+                        rojas: 0,
+                        notaMedia: 0
+                    }))
                 });
             }
             const orden = { 'ESTRELLA': 1, 'TITULAR': 2, 'ROTACION': 3, 'RESERVA': 4 };
@@ -175,7 +188,7 @@ async function generarJugadoresNuevaPartida(partidaId, listaClubes, nombrePartid
         }
 
         if (todosLosJugadores.length > 0) {
-            await Jugador.insertMany(todosLosJugadores, { lean: true });
+            await Jugador.insertMany(todosLosJugadores);
             await Club.bulkWrite(operacionesClubes);
         }
 

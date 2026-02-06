@@ -14,13 +14,31 @@ async function cargarClubes(partidaId, estadios, competiciones, nombrePartida) {
     estadios.forEach(e => estadioMap[e.nombre] = e._id);
     competiciones.forEach(c => compMap[c.nombre] = c._id);
 
-    const clubesParaInsertar = clubesData.map(club => ({
-        ...club,
-        partidaId: partidaId,
-        estadio: estadioMap[club.estadio] || null,
-        competiciones: (club.competiciones || []).map(name => compMap[name]).filter(id => id),
-        clubMatriz: null
-    }));
+    const clubesParaInsertar = clubesData.map(club => {
+        const idsCompeticionesReales = (club.competiciones || [])
+            .map(name => compMap[name])
+            .filter(id => id);
+
+        return {
+            ...club,
+            partidaId: partidaId,
+            estadio: estadioMap[club.estadio] || null,
+            competiciones: idsCompeticionesReales,
+            clubMatriz: null,
+            
+            statsTemporada: idsCompeticionesReales.map(compId => ({
+                competicionId: compId,
+                pj: 0,
+                pg: 0,
+                pe: 0,
+                pp: 0,
+                gf: 0,
+                gc: 0,
+                puntos: 0,
+                eliminado: false
+            }))
+        };
+    });
 
     const clubesInsertados = await Club.insertMany(clubesParaInsertar);
     console.log(`Clubes: ${clubesInsertados.length} creados para partida ${nombrePartida}.`);

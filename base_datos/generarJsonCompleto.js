@@ -130,7 +130,8 @@ const generarDatosUniversales = (clubes) => {
             presupuestoSalarios: redondearPresupuesto(pptoFinal * 1.5),
             infraestructuras: { entrenamiento: nivelInfra, cantera: nivelInfra },
             popularidad: pop,
-            reputacion: rep
+            reputacion: rep,
+            statsTemporada: []
         };
     });
 
@@ -160,7 +161,8 @@ const generarDatosUniversales = (clubes) => {
                     escudo: club.escudo,
                     popularidad: Math.floor(club.popularidad * 0.4),
                     reputacion: repFilial,
-                    historialTitulos: []
+                    historialTitulos: [],
+                    statsTemporada: []
                 });
             }
         }

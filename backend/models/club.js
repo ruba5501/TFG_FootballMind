@@ -42,7 +42,20 @@ const clubSchema = new mongoose.Schema({
       cantidad: { type: Number, default: 0 },
       trofeo: { type: String, trim: true, default: null } // URL
     }
-  ]
+  ],
+  statsTemporada: [
+    {
+      competicionId: { type: mongoose.Schema.Types.ObjectId, ref: 'Competicion' },
+      pj: { type: Number, default: 0 },
+      pg: { type: Number, default: 0 },
+      pe: { type: Number, default: 0 },
+      pp: { type: Number, default: 0 },
+      gf: { type: Number, default: 0 },
+      gc: { type: Number, default: 0 },
+      puntos: { type: Number, default: 0 },
+      eliminado: { type: Boolean, default: false }
+    }
+  ] 
 }, { 
     collection: 'clubes' 
 }

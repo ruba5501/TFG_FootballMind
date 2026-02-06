@@ -120,8 +120,20 @@ const jugadorSchema = new mongoose.Schema({
     moral: { type: Number, default: 100 },
     satisfaccion: { type: Number, default: 100 },
     lesion: { type: String, default: null }
-  }
-
+  },
+  statsTemporada: [
+    {
+        competicionId: { type: mongoose.Schema.Types.ObjectId, ref: 'Competicion' },
+        pj: { type: Number, default: 0 },
+        titular: { type: Number, default: 0 },
+        minutos: { type: Number, default: 0 },
+        goles: { type: Number, default: 0 },
+        asistencias: { type: Number, default: 0 },
+        amarillas: { type: Number, default: 0 },
+        rojas: { type: Number, default: 0 },
+        notaMedia: { type: Number, default: 0 }
+    }
+  ]
 }, { 
   timestamps: true,
   collection: 'jugadores' 
