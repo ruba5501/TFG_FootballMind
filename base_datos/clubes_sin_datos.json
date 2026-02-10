@@ -6,7 +6,8 @@
     "estadio": "Santiago Bernabéu",
     "competiciones": [
       "LaLiga EA Sports",
-      "Copa del Rey"
+      "Copa del Rey",
+      "UEFA Champions League"
     ],
     "esFilial": false,
     "clubMatriz": null,
@@ -36,7 +37,8 @@
     "estadio": "Spotify Camp Nou",
     "competiciones": [
       "LaLiga EA Sports",
-      "Copa del Rey"
+      "Copa del Rey",
+      "UEFA Champions League"
     ],
     "esFilial": false,
     "clubMatriz": null,
@@ -66,7 +68,8 @@
     "estadio": "Metropolitano",
     "competiciones": [
       "LaLiga EA Sports",
-      "Copa del Rey"
+      "Copa del Rey",
+      "UEFA Champions League"
     ],
     "esFilial": false,
     "clubMatriz": null,
@@ -96,7 +99,8 @@
     "estadio": "San Mamés",
     "competiciones": [
       "LaLiga EA Sports",
-      "Copa del Rey"
+      "Copa del Rey",
+      "UEFA Champions League"
     ],
     "esFilial": false,
     "clubMatriz": null,
@@ -156,7 +160,8 @@
     "estadio": "Benito Villamarín",
     "competiciones": [
       "LaLiga EA Sports",
-      "Copa del Rey"
+      "Copa del Rey",
+      "UEFA Europa League"
     ],
     "esFilial": false,
     "clubMatriz": null,
@@ -216,7 +221,8 @@
     "estadio": "Estadio de la Cerámica",
     "competiciones": [
       "LaLiga EA Sports",
-      "Copa del Rey"
+      "Copa del Rey",
+      "UEFA Champions League"
     ],
     "esFilial": false,
     "clubMatriz": null,
@@ -306,7 +312,8 @@
     "estadio": "Abanca Balaídos",
     "competiciones": [
       "LaLiga EA Sports",
-      "Copa del Rey"
+      "Copa del Rey",
+      "UEFA Europa League"
     ],
     "esFilial": false,
     "clubMatriz": null,
@@ -336,7 +343,8 @@
     "estadio": "Campo de Fútbol de Vallecas",
     "competiciones": [
       "LaLiga EA Sports",
-      "Copa del Rey"
+      "Copa del Rey",
+      "UEFA Conference League"
     ],
     "esFilial": false,
     "clubMatriz": null,
@@ -1265,7 +1273,8 @@
     "estadio": "Emirates Stadium",
     "competiciones": [
       "Premier League",
-      "FA Cup"
+      "FA Cup",
+      "UEFA Champions League"
     ],
     "esFilial": false,
     "clubMatriz": null,
@@ -1295,7 +1304,8 @@
     "estadio": "Etihad Stadium",
     "competiciones": [
       "Premier League",
-      "FA Cup"
+      "FA Cup",
+      "UEFA Champions League"
     ],
     "esFilial": false,
     "clubMatriz": null,
@@ -1325,7 +1335,8 @@
     "estadio": "Stamford Bridge",
     "competiciones": [
       "Premier League",
-      "FA Cup"
+      "FA Cup",
+      "UEFA Champions League"
     ],
     "esFilial": false,
     "clubMatriz": null,
@@ -1355,7 +1366,8 @@
     "estadio": "Anfield",
     "competiciones": [
       "Premier League",
-      "FA Cup"
+      "FA Cup",
+      "UEFA Champions League"
     ],
     "esFilial": false,
     "clubMatriz": null,
@@ -1385,7 +1397,8 @@
     "estadio": "Tottenham Hotspur Stadium",
     "competiciones": [
       "Premier League",
-      "FA Cup"
+      "FA Cup",
+      "UEFA Champions League"
     ],
     "esFilial": false,
     "clubMatriz": null,
@@ -1445,7 +1458,8 @@
     "estadio": "St James' Park",
     "competiciones": [
       "Premier League",
-      "FA Cup"
+      "FA Cup",
+      "UEFA Champions League"
     ],
     "esFilial": false,
     "clubMatriz": null,
@@ -1475,7 +1489,8 @@
     "estadio": "City Ground",
     "competiciones": [
       "Premier League",
-      "FA Cup"
+      "FA Cup",
+      "UEFA Europa League"
     ],
     "esFilial": false,
     "clubMatriz": null,
@@ -1505,7 +1520,8 @@
     "estadio": "Villa Park",
     "competiciones": [
       "Premier League",
-      "FA Cup"
+      "FA Cup",
+      "UEFA Europa League"
     ],
     "esFilial": false,
     "clubMatriz": null,
@@ -1565,7 +1581,8 @@
     "estadio": "Selhurst Park",
     "competiciones": [
       "Premier League",
-      "FA Cup"
+      "FA Cup",
+      "UEFA Conference League"
     ],
     "esFilial": false,
     "clubMatriz": null,
@@ -2585,7 +2602,8 @@
     "estadio": "San Siro",
     "competiciones": [
       "Serie A",
-      "Coppa Italia"
+      "Coppa Italia",
+      "UEFA Champions League"
     ],
     "esFilial": false,
     "clubMatriz": null,
@@ -2615,7 +2633,8 @@
     "estadio": "Allianz Stadium",
     "competiciones": [
       "Serie A",
-      "Coppa Italia"
+      "Coppa Italia",
+      "UEFA Champions League"
     ],
     "esFilial": false,
     "clubMatriz": null,
@@ -2645,7 +2664,8 @@
     "estadio": "Stadio Diego Armando Maradona",
     "competiciones": [
       "Serie A",
-      "Coppa Italia"
+      "Coppa Italia",
+      "UEFA Champions League"
     ],
     "esFilial": false,
     "clubMatriz": null,
@@ -2705,7 +2725,8 @@
     "estadio": "Gewiss Stadium",
     "competiciones": [
       "Serie A",
-      "Coppa Italia"
+      "Coppa Italia",
+      "UEFA Champions League"
     ],
     "esFilial": false,
     "clubMatriz": null,
@@ -2735,7 +2756,8 @@
     "estadio": "Stadio Olimpico",
     "competiciones": [
       "Serie A",
-      "Coppa Italia"
+      "Coppa Italia",
+      "UEFA Europa League"
     ],
     "esFilial": false,
     "clubMatriz": null,
@@ -2765,7 +2787,8 @@
     "estadio": "Artemio Franchi",
     "competiciones": [
       "Serie A",
-      "Coppa Italia"
+      "Coppa Italia",
+      "UEFA Conference League"
     ],
     "esFilial": false,
     "clubMatriz": null,
@@ -2825,7 +2848,8 @@
     "estadio": "Renato Dall'Ara",
     "competiciones": [
       "Serie A",
-      "Coppa Italia"
+      "Coppa Italia",
+      "UEFA Europa League"
     ],
     "esFilial": false,
     "clubMatriz": null,
@@ -3785,7 +3809,8 @@
     "estadio": "Allianz Arena",
     "competiciones": [
       "Bundesliga",
-      "DFB-Pokal"
+      "DFB-Pokal",
+      "UEFA Champions League"
     ],
     "esFilial": false,
     "clubMatriz": null,
@@ -3815,7 +3840,8 @@
     "estadio": "Signal Iduna Park",
     "competiciones": [
       "Bundesliga",
-      "DFB-Pokal"
+      "DFB-Pokal",
+      "UEFA Champions League"
     ],
     "esFilial": false,
     "clubMatriz": null,
@@ -3845,7 +3871,8 @@
     "estadio": "BayArena",
     "competiciones": [
       "Bundesliga",
-      "DFB-Pokal"
+      "DFB-Pokal",
+      "UEFA Champions League"
     ],
     "esFilial": false,
     "clubMatriz": null,
@@ -3875,7 +3902,8 @@
     "estadio": "Deutsche Bank Park",
     "competiciones": [
       "Bundesliga",
-      "DFB-Pokal"
+      "DFB-Pokal",
+      "UEFA Champions League"
     ],
     "esFilial": false,
     "clubMatriz": null,
@@ -3935,7 +3963,8 @@
     "estadio": "MHPArena",
     "competiciones": [
       "Bundesliga",
-      "DFB-Pokal"
+      "DFB-Pokal",
+      "UEFA Europa League"
     ],
     "esFilial": false,
     "clubMatriz": null,
@@ -4055,7 +4084,8 @@
     "estadio": "Europa-Park Stadion",
     "competiciones": [
       "Bundesliga",
-      "DFB-Pokal"
+      "DFB-Pokal",
+      "UEFA Europa League"
     ],
     "esFilial": false,
     "clubMatriz": null,
@@ -4085,7 +4115,8 @@
     "estadio": "MEWA Arena",
     "competiciones": [
       "Bundesliga",
-      "DFB-Pokal"
+      "DFB-Pokal",
+      "UEFA Conference League"
     ],
     "esFilial": false,
     "clubMatriz": null,
@@ -4865,7 +4896,8 @@
     "estadio": "Parc_des_Princes",
     "competiciones": [
       "Ligue 1",
-      "Coupe de France"
+      "Coupe de France",
+      "UEFA Champions League"
     ],
     "esFilial": false,
     "clubMatriz": null,
@@ -4895,7 +4927,8 @@
     "estadio": "Stade_Velodrome",
     "competiciones": [
       "Ligue 1",
-      "Coupe de France"
+      "Coupe de France",
+      "UEFA Champions League"
     ],
     "esFilial": false,
     "clubMatriz": null,
@@ -4925,7 +4958,8 @@
     "estadio": "Stade_Louis_II",
     "competiciones": [
       "Ligue 1",
-      "Coupe de France"
+      "Coupe de France",
+      "UEFA Champions League"
     ],
     "esFilial": false,
     "clubMatriz": null,
@@ -4955,7 +4989,8 @@
     "estadio": "Stade_de_la_Meinau",
     "competiciones": [
       "Ligue 1",
-      "Coupe de France"
+      "Coupe de France",
+      "UEFA Conference League"
     ],
     "esFilial": false,
     "clubMatriz": null,
@@ -5015,7 +5050,8 @@
     "estadio": "Groupama_Stadium",
     "competiciones": [
       "Ligue 1",
-      "Coupe de France"
+      "Coupe de France",
+      "UEFA Europa League"
     ],
     "esFilial": false,
     "clubMatriz": null,
@@ -5045,7 +5081,8 @@
     "estadio": "Allianz_Riviera",
     "competiciones": [
       "Ligue 1",
-      "Coupe de France"
+      "Coupe de France",
+      "UEFA Europa League"
     ],
     "esFilial": false,
     "clubMatriz": null,
@@ -5945,7 +5982,8 @@
     "estadio": "Philips_Stadion",
     "competiciones": [
       "Eredivisie",
-      "KNVB Beker"
+      "KNVB Beker",
+      "UEFA Champions League"
     ],
     "esFilial": false,
     "clubMatriz": null,
@@ -5975,7 +6013,8 @@
     "estadio": "De_Kuip",
     "competiciones": [
       "Eredivisie",
-      "KNVB Beker"
+      "KNVB Beker",
+      "UEFA Europa League"
     ],
     "esFilial": false,
     "clubMatriz": null,
@@ -6005,7 +6044,8 @@
     "estadio": "Johan_Cruyff_Arena",
     "competiciones": [
       "Eredivisie",
-      "KNVB Beker"
+      "KNVB Beker",
+      "UEFA Champions League"
     ],
     "esFilial": false,
     "clubMatriz": null,
@@ -6035,7 +6075,8 @@
     "estadio": "AFAS_Stadion",
     "competiciones": [
       "Eredivisie",
-      "KNVB Beker"
+      "KNVB Beker",
+      "UEFA Conference League"
     ],
     "esFilial": false,
     "clubMatriz": null,
@@ -6065,7 +6106,8 @@
     "estadio": "Stadion_Galgenwaard",
     "competiciones": [
       "Eredivisie",
-      "KNVB Beker"
+      "KNVB Beker",
+      "UEFA Europa League"
     ],
     "esFilial": false,
     "clubMatriz": null,
@@ -7081,7 +7123,8 @@
     "estadio": "Estadio_Jose_Alvalade",
     "competiciones": [
       "Primeira Liga",
-      "Taça de Portugal"
+      "Taça de Portugal",
+      "UEFA Champions League"
     ],
     "esFilial": false,
     "clubMatriz": null,
@@ -7111,7 +7154,8 @@
     "estadio": "Estadio_do_Dragao",
     "competiciones": [
       "Primeira Liga",
-      "Taça de Portugal"
+      "Taça de Portugal",
+      "UEFA Europa League"
     ],
     "esFilial": false,
     "clubMatriz": null,
@@ -7141,7 +7185,8 @@
     "estadio": "Estadio_da_Luz",
     "competiciones": [
       "Primeira Liga",
-      "Taça de Portugal"
+      "Taça de Portugal",
+      "UEFA Champions League"
     ],
     "esFilial": false,
     "clubMatriz": null,
@@ -7171,7 +7216,8 @@
     "estadio": "Estadio_Municipal_de_Braga",
     "competiciones": [
       "Primeira Liga",
-      "Taça de Portugal"
+      "Taça de Portugal",
+      "UEFA Europa League"
     ],
     "esFilial": false,
     "clubMatriz": null,
@@ -7261,7 +7307,8 @@
     "estadio": "Estadio_de_Sao_Miguel",
     "competiciones": [
       "Primeira Liga",
-      "Taça de Portugal"
+      "Taça de Portugal",
+      "UEFA Conference League"
     ],
     "esFilial": false,
     "clubMatriz": null,
@@ -8158,7 +8205,8 @@
     "estadio": "Monumental",
     "competiciones": [
       "Liga Profesional Argentina",
-      "Copa Argentina"
+      "Copa Argentina",
+      "Copa Libertadores"
     ],
     "esFilial": false,
     "clubMatriz": null,
@@ -8218,7 +8266,8 @@
     "estadio": "Presidente Perón",
     "competiciones": [
       "Liga Profesional Argentina",
-      "Copa Argentina"
+      "Copa Argentina",
+      "Copa Libertadores"
     ],
     "esFilial": false,
     "clubMatriz": null,
@@ -8248,7 +8297,8 @@
     "estadio": "Estadio Libertadores de América",
     "competiciones": [
       "Liga Profesional Argentina",
-      "Copa Argentina"
+      "Copa Argentina",
+      "Copa Sudamericana"
     ],
     "esFilial": false,
     "clubMatriz": null,
@@ -8278,7 +8328,8 @@
     "estadio": "José Amalfitani",
     "competiciones": [
       "Liga Profesional Argentina",
-      "Copa Argentina"
+      "Copa Argentina",
+      "Copa Libertadores"
     ],
     "esFilial": false,
     "clubMatriz": null,
@@ -8308,7 +8359,8 @@
     "estadio": "Estadio Jorge Luis Hirschi",
     "competiciones": [
       "Liga Profesional Argentina",
-      "Copa Argentina"
+      "Copa Argentina",
+      "Copa Libertadores"
     ],
     "esFilial": false,
     "clubMatriz": null,
@@ -8338,7 +8390,8 @@
     "estadio": "Estadio Mario Alberto Kempes",
     "competiciones": [
       "Liga Profesional Argentina",
-      "Copa Argentina"
+      "Copa Argentina",
+      "Copa Libertadores"
     ],
     "esFilial": false,
     "clubMatriz": null,
@@ -8458,7 +8511,8 @@
     "estadio": "Estadio Ciudad de Lanús",
     "competiciones": [
       "Liga Profesional Argentina",
-      "Copa Argentina"
+      "Copa Argentina",
+      "Copa Sudamericana"
     ],
     "esFilial": false,
     "clubMatriz": null,
@@ -8518,7 +8572,8 @@
     "estadio": "Estadio Malvinas Argentinas",
     "competiciones": [
       "Liga Profesional Argentina",
-      "Copa Argentina"
+      "Copa Argentina",
+      "Copa Sudamericana"
     ],
     "esFilial": false,
     "clubMatriz": null,
@@ -8548,7 +8603,8 @@
     "estadio": "Estadio Tomás Adolfo Ducó",
     "competiciones": [
       "Liga Profesional Argentina",
-      "Copa Argentina"
+      "Copa Argentina",
+      "Copa Sudamericana"
     ],
     "esFilial": false,
     "clubMatriz": null,
@@ -8608,7 +8664,8 @@
     "estadio": "Estadio Norberto Tomaghello",
     "competiciones": [
       "Liga Profesional Argentina",
-      "Copa Argentina"
+      "Copa Argentina",
+      "Copa Sudamericana"
     ],
     "esFilial": false,
     "clubMatriz": null,
@@ -8698,7 +8755,8 @@
     "estadio": "Estadio 15 de Abril",
     "competiciones": [
       "Liga Profesional Argentina",
-      "Copa Argentina"
+      "Copa Argentina",
+      "Copa Sudamericana"
     ],
     "esFilial": false,
     "clubMatriz": null,
@@ -8818,7 +8876,8 @@
     "estadio": "Estadio Alfredo Terrera",
     "competiciones": [
       "Liga Profesional Argentina",
-      "Copa Argentina"
+      "Copa Argentina",
+      "Copa Libertadores"
     ],
     "esFilial": false,
     "clubMatriz": null,
@@ -8962,66 +9021,6 @@
     "generaFilial": true
   },
   {
-    "nombre": "CA Aldosivi",
-    "ciudad": "Mar del Plata",
-    "pais": "Argentina",
-    "estadio": "Estadio José María Minella",
-    "competiciones": [
-      "Liga Profesional Argentina",
-      "Copa Argentina"
-    ],
-    "esFilial": false,
-    "clubMatriz": null,
-    "presupuestoTraspasos": 0,
-    "presupuestoSalarios": 0,
-    "ingresos": {
-      "entradas": 0,
-      "television": 0,
-      "merchandising": 0
-    },
-    "plantilla": [],
-    "empleados": [],
-    "infraestructuras": {
-      "entrenamiento": 1,
-      "cantera": 1
-    },
-    "escudo": "CA_Aldosivi.png",
-    "popularidad": 0,
-    "reputacion": 0,
-    "historialTitulos": [],
-    "generaFilial": true
-  },
-  {
-    "nombre": "CA San Martín (San Juan)",
-    "ciudad": "San Juan",
-    "pais": "Argentina",
-    "estadio": "Estadio Hilario Sánchez",
-    "competiciones": [
-      "Liga Profesional Argentina",
-      "Copa Argentina"
-    ],
-    "esFilial": false,
-    "clubMatriz": null,
-    "presupuestoTraspasos": 0,
-    "presupuestoSalarios": 0,
-    "ingresos": {
-      "entradas": 0,
-      "television": 0,
-      "merchandising": 0
-    },
-    "plantilla": [],
-    "empleados": [],
-    "infraestructuras": {
-      "entrenamiento": 1,
-      "cantera": 1
-    },
-    "escudo": "CA_San_Martin_San_Juan.png",
-    "popularidad": 0,
-    "reputacion": 0,
-    "historialTitulos": [],
-    "generaFilial": true
-  },
-  {
     "nombre": "Club Deportivo Riestra",
     "ciudad": "Buenos Aires",
     "pais": "Argentina",
@@ -9058,7 +9057,8 @@
     "estadio": "Allianz Parque",
     "competiciones": [
       "Brasileirão Série A",
-      "Copa do Brasil"
+      "Copa do Brasil",
+      "Copa Libertadores"
     ],
     "esFilial": false,
     "clubMatriz": null,
@@ -9088,7 +9088,8 @@
     "estadio": "Maracaná",
     "competiciones": [
       "Brasileirão Série A",
-      "Copa do Brasil"
+      "Copa do Brasil",
+      "Copa Libertadores"
     ],
     "esFilial": false,
     "clubMatriz": null,
@@ -9118,7 +9119,8 @@
     "estadio": "Mineirão",
     "competiciones": [
       "Brasileirão Série A",
-      "Copa do Brasil"
+      "Copa do Brasil",
+      "Copa Sudamericana"
     ],
     "esFilial": false,
     "clubMatriz": null,
@@ -9148,7 +9150,8 @@
     "estadio": "Estádio Olímpico Nilton Santos",
     "competiciones": [
       "Brasileirão Série A",
-      "Copa do Brasil"
+      "Copa do Brasil",
+      "Copa Libertadores"
     ],
     "esFilial": false,
     "clubMatriz": null,
@@ -9178,7 +9181,8 @@
     "estadio": "São Januário",
     "competiciones": [
       "Brasileirão Série A",
-      "Copa do Brasil"
+      "Copa do Brasil",
+      "Copa Sudamericana"
     ],
     "esFilial": false,
     "clubMatriz": null,
@@ -9208,7 +9212,8 @@
     "estadio": "Neo Química Arena",
     "competiciones": [
       "Brasileirão Série A",
-      "Copa do Brasil"
+      "Copa do Brasil",
+      "Copa Sudamericana"
     ],
     "esFilial": false,
     "clubMatriz": null,
@@ -9238,7 +9243,8 @@
     "estadio": "Arena Fonte Nova",
     "competiciones": [
       "Brasileirão Série A",
-      "Copa do Brasil"
+      "Copa do Brasil",
+      "Copa Libertadores"
     ],
     "esFilial": false,
     "clubMatriz": null,
@@ -9268,7 +9274,8 @@
     "estadio": "Estádio Jornalista Mário Filho",
     "competiciones": [
       "Brasileirão Série A",
-      "Copa do Brasil"
+      "Copa do Brasil",
+      "Copa Sudamericana"
     ],
     "esFilial": false,
     "clubMatriz": null,
@@ -9328,7 +9335,8 @@
     "estadio": "Arena MRV",
     "competiciones": [
       "Brasileirão Série A",
-      "Copa do Brasil"
+      "Copa do Brasil",
+      "Copa Sudamericana"
     ],
     "esFilial": false,
     "clubMatriz": null,
@@ -9388,7 +9396,8 @@
     "estadio": "Arena do Grêmio",
     "competiciones": [
       "Brasileirão Série A",
-      "Copa do Brasil"
+      "Copa do Brasil",
+      "Copa Sudamericana"
     ],
     "esFilial": false,
     "clubMatriz": null,
@@ -9418,7 +9427,8 @@
     "estadio": "Morumbi",
     "competiciones": [
       "Brasileirão Série A",
-      "Copa do Brasil"
+      "Copa do Brasil",
+      "Copa Libertadores"
     ],
     "esFilial": false,
     "clubMatriz": null,
@@ -9448,7 +9458,8 @@
     "estadio": "Beira-Rio",
     "competiciones": [
       "Brasileirão Série A",
-      "Copa do Brasil"
+      "Copa do Brasil",
+      "Copa Libertadores"
     ],
     "esFilial": false,
     "clubMatriz": null,
@@ -9478,7 +9489,8 @@
     "estadio": "Estádio Governador Plácido Castelo",
     "competiciones": [
       "Brasileirão Série A",
-      "Copa do Brasil"
+      "Copa do Brasil",
+      "Copa Libertadores"
     ],
     "esFilial": false,
     "clubMatriz": null,
@@ -9568,7 +9580,8 @@
     "estadio": "Estádio Barradão",
     "competiciones": [
       "Brasileirão Série A",
-      "Copa do Brasil"
+      "Copa do Brasil",
+      "Copa Sudamericana"
     ],
     "esFilial": false,
     "clubMatriz": null,

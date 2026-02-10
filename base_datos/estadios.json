@@ -2360,22 +2360,6 @@
     "foto": "Estadio_Eva_Peron.png"
   },
   {
-    "nombre": "Estadio José María Minella",
-    "ciudad": "Mar del Plata",
-    "capacidad": 35180,
-    "anioConstruccion": 1978,
-    "estadoActual": "bueno",
-    "foto": "Estadio_Jose_María_Minella.png"
-  },
-  {
-    "nombre": "Estadio Hilario Sánchez",
-    "ciudad": "San Juan",
-    "capacidad": 18000,
-    "anioConstruccion": 1967,
-    "estadoActual": "regular",
-    "foto": "Estadio_Hilario_Sanchez.png"
-  },
-  {
     "nombre": "Estadio Guillermo Laza",
     "ciudad": "Buenos Aires",
     "capacidad": 3000,
@@ -2542,5 +2526,797 @@
     "anioConstruccion": 1972,
     "estadoActual": "regular",
     "foto": "Estadio_Alfredo_Jaconi.png"
+  },
+  {
+    "nombre": "Jan Breydelstadion",
+    "ciudad": "Brugge",
+    "capacidad": 29.062,
+    "anioConstruccion": 1975,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Ali Sami Yen Spor Kompleksi RAMS Park",
+    "ciudad": "İstanbul",
+    "capacidad": 53.978,
+    "anioConstruccion": 2011,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Fortuna Arena",
+    "ciudad": "Praha",
+    "capacidad": 19.370,
+    "anioConstruccion": 2008,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Celtic Park",
+    "ciudad": "Glasgow",
+    "capacidad": 60.411,
+    "anioConstruccion": 1892,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Stadion Wankdorf",
+    "ciudad": "Bern",
+    "capacidad": 31.500,
+    "anioConstruccion": 2005,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Arena Lviv",
+    "ciudad": "Shchaslyve village",
+    "capacidad": 34.725,
+    "anioConstruccion": 2011,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Red Bull Arena Salzburg",
+    "ciudad": "Wals-Siezenheim",
+    "capacidad": 30.188,
+    "anioConstruccion": 2003,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Rajko Mitić",
+    "ciudad": "Belgrade",
+    "capacidad": 51.755,
+    "anioConstruccion": 1963,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Maksimir",
+    "ciudad": "Zagreb",
+    "capacidad": 35.123,
+    "anioConstruccion": 1912,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Stadio Georgios Karaiskakis",
+    "ciudad": "Piraeus",
+    "capacidad": 33.345,
+    "anioConstruccion": 1895,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Lotto Park",
+    "ciudad": "Anderlecht",
+    "capacidad": 21.900,
+    "anioConstruccion": 1917,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Chobani Stadyumu FB Şükrü Saracoğlu Spor Kompleksi",
+    "ciudad": "İstanbul",
+    "capacidad": 47.430,
+    "anioConstruccion": 1908,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Merkur Arena",
+    "ciudad": "Graz",
+    "capacidad": 16.364,
+    "anioConstruccion": 1997,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Ibrox Stadium",
+    "ciudad": "Glasgow ",
+    "capacidad": 50.987,
+    "anioConstruccion": 1899,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Doosan Aréna",
+    "ciudad": "Pilsen",
+    "capacidad": 11.700,
+    "anioConstruccion": 1955,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Toumba Stadium",
+    "ciudad": "Thessaloniki",
+    "capacidad": 28.703,
+    "anioConstruccion": 1959,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Arena Națională",
+    "ciudad": "Bucharest",
+    "capacidad": 55.634,
+    "anioConstruccion": 2011,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "MCH Arena",
+    "ciudad": "Herning",
+    "capacidad": 11.809,
+    "anioConstruccion": 2004,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Aspmyra Stadion",
+    "ciudad": "Bodø",
+    "capacidad": 8.500,
+    "anioConstruccion": 1912,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Groupama Aréna",
+    "ciudad": "Budapest",
+    "capacidad": 23.698,
+    "anioConstruccion": 2014,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Bloomfield",
+    "ciudad": "Tel-Aviv",
+    "capacidad": 29.150,
+    "anioConstruccion": 1962,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Huvepharma Arena",
+    "ciudad": "Razgrad",
+    "capacidad": 10.423,
+    "anioConstruccion": 1954,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Eleda Stadion",
+    "ciudad": "Malmö",
+    "capacidad": 22.500,
+    "anioConstruccion": 2009,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Azersun Arena",
+    "ciudad": "Agdam",
+    "capacidad": 4.677,
+    "anioConstruccion": 2015,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Sheriff Main Arena",
+    "ciudad": "Tiraspol",
+    "capacidad": 12.746,
+    "anioConstruccion": 2002,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Stade de Genève",
+    "ciudad": "Carouge",
+    "capacidad": 30.084,
+    "anioConstruccion": 2003,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "St. Jakob-Park",
+    "ciudad": "Basel",
+    "capacidad": 38.512,
+    "anioConstruccion": 2001,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "epet Arena",
+    "ciudad": "Praha",
+    "capacidad": 35.123,
+    "anioConstruccion": 1912,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Aker Stadion",
+    "ciudad": "Molde",
+    "capacidad": 11.800,
+    "anioConstruccion": 1998,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Cegeka Arena",
+    "ciudad": "Genk",
+    "capacidad": 23.718,
+    "anioConstruccion": 1990,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Stadion Miejski im. Marszałka Józefa Piłsudskiego",
+    "ciudad": "Warszawa",
+    "capacidad": 31.103,
+    "anioConstruccion": 2011,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Raiffeisen Arena",
+    "ciudad": "Pasching",
+    "capacidad": 19.080,
+    "anioConstruccion": 2023,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "GSP Stadium",
+    "ciudad": "Nicosia",
+    "capacidad": 22.859,
+    "anioConstruccion": 1999,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "NFS - Tehelné Pole",
+    "ciudad": "Bratislava ",
+    "capacidad": 22.500,
+    "anioConstruccion": 1939,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Enea Poznań",
+    "ciudad": "Poznań",
+    "capacidad": 42.837,
+    "anioConstruccion": 2010,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Väre Areena",
+    "ciudad": "Kuopio",
+    "capacidad": 4.778,
+    "anioConstruccion": 1939,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Bijeli Brijeg",
+    "ciudad": "Mostar",
+    "capacidad": 15.000,
+    "anioConstruccion": 1958,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Tallaght Stadium",
+    "ciudad": "Dublin",
+    "capacidad": 10.500,
+    "anioConstruccion": 2009,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Pittodrie Stadium",
+    "ciudad": "Aberdeen",
+    "capacidad": 20.866,
+    "anioConstruccion": 1899,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Abovyan City Stadium",
+    "ciudad": "Yerevan",
+    "capacidad": 3.100,
+    "anioConstruccion": 1966,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Victoria Stadium",
+    "ciudad": "Gibraltar",
+    "capacidad": 5.000,
+    "anioConstruccion": 1971,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Stadion Rujevica",
+    "ciudad": "Rijeka",
+    "capacidad": 8.136,
+    "anioConstruccion": 2015,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Stadion Z'dežele",
+    "ciudad": "Celje",
+    "capacidad": 13.059,
+    "anioConstruccion": 2003,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "AEK Arena - Georgios Karapatakis",
+    "ciudad": "Larnaca",
+    "capacidad": 8.058,
+    "anioConstruccion": 2016,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Chorten Arena",
+    "ciudad": "Białystok",
+    "capacidad": 22.372,
+    "anioConstruccion": 1972,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Bravida Arena",
+    "ciudad": "Göteborg",
+    "capacidad": 6.316,
+    "anioConstruccion": 2015,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Junior Sport Stadium",
+    "ciudad": "Yerevan",
+    "capacidad": 1.188,
+    "anioConstruccion": 1987,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "FK Žalgiris namų stadionas",
+    "ciudad": "Vilnius",
+    "capacidad": 5.067,
+    "anioConstruccion": 2004,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Astana Arena",
+    "ciudad": "Nur-Sultan ",
+    "capacidad": 30.000,
+    "anioConstruccion": 2009,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Almaty Ortalyk Stadion",
+    "ciudad": "Almaty",
+    "capacidad": 23.804,
+    "anioConstruccion": 1958,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Stadion Stožice",
+    "ciudad": "Ljubljana",
+    "capacidad": 16.038,
+    "anioConstruccion": 2010,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Dr. Constantin Rădulescu",
+    "ciudad": "Cluj-Napoca",
+    "capacidad": 22.198,
+    "anioConstruccion": 1973,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Vasil Levski",
+    "ciudad": "Sofia",
+    "capacidad": 43.630,
+    "anioConstruccion": 1953,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "3Arena",
+    "ciudad": "Stockholm",
+    "capacidad": 30.000,
+    "anioConstruccion": 2013,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Skonto",
+    "ciudad": "Riga",
+    "capacidad": 7.000,
+    "anioConstruccion": 2000,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Estadi Comunal",
+    "ciudad": "Andorra la Vella",
+    "capacidad": 838,
+    "anioConstruccion": 1987,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Park Hall",
+    "ciudad": "Whittington",
+    "capacidad": 2.034,
+    "anioConstruccion": 1993,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Stadiumi me bari sintetik",
+    "ciudad": "Gjilan",
+    "capacidad": 1000,
+    "anioConstruccion": 1987,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Stadiumi i qytetit të Suharekës",
+    "ciudad": "Suhareka",
+    "capacidad": 2.000,
+    "anioConstruccion": 1987,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Víkingsvöllur",
+    "ciudad": "Reykjavík",
+    "capacidad": 1.449,
+    "anioConstruccion": 2004,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Við Djúpumýrar",
+    "ciudad": "Klaksvík",
+    "capacidad": 2.000,
+    "anioConstruccion": 1987,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Campeón del Siglo",
+    "ciudad": "Montevideo",
+    "capacidad": 40.700,
+    "anioConstruccion": 2016,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Gran Parque Central",
+    "ciudad": "Montevideo",
+    "capacidad": 37.000,
+    "anioConstruccion": 1900,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Estadio Luis Franzini",
+    "ciudad": "Montevideo",
+    "capacidad": 9.357,
+    "anioConstruccion": 1963,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Estadio Atanasio Girardot",
+    "ciudad": "Medellín",
+    "capacidad": 45.943,
+    "anioConstruccion": 1953,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Estadio Nemesio Camacho",
+    "ciudad": "Bogotá",
+    "capacidad": 36.343,
+    "anioConstruccion": 1938,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Metropolitano Roberto Meléndez",
+    "ciudad": "Barranquilla",
+    "capacidad": 46.692,
+    "anioConstruccion": 1986,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Monumental David Arellano",
+    "ciudad": "Santiago de Chile",
+    "capacidad": 43.667,
+    "anioConstruccion": 1975,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Nacional Julio Martínez Prádanos",
+    "ciudad": "Santiago de Chile",
+    "capacidad": 46.190,
+    "anioConstruccion": 1937,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Claro Arena - San Carlos de Apoquindo",
+    "ciudad": "Santiago de Chile",
+    "capacidad": 20.249,
+    "anioConstruccion": 1988,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Estadio Banco Guayaquil",
+    "ciudad": "Sangolquí",
+    "capacidad": 12.000,
+    "anioConstruccion": 2021,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Rodrigo Paz Delgado",
+    "ciudad": "Quito",
+    "capacidad": 45.575,
+    "anioConstruccion": 1997,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Monumental Banco Pichincha",
+    "ciudad": "Guayaquil",
+    "capacidad": 57.267,
+    "anioConstruccion": 1987,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Estadio General Pablo Rojas",
+    "ciudad": "Asunción",
+    "capacidad": 45.000,
+    "anioConstruccion": 2017,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Estadio La Huerta",
+    "ciudad": "Asunción",
+    "capacidad": 10.000,
+    "anioConstruccion": 2005,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Estadio Ueno Osvaldo Dominguez Dibb",
+    "ciudad": "Asunción",
+    "capacidad": 20.000,
+    "anioConstruccion": 1964,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Estadio Monumental de Lima",
+    "ciudad": "Lima",
+    "capacidad": 80.093,
+    "anioConstruccion": 2000,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Estadio Alejandro Villanueva",
+    "ciudad": "Lima",
+    "capacidad": 33.938,
+    "anioConstruccion": 1974,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Estadio Hernando Siles",
+    "ciudad": "La Paz",
+    "capacidad": 42.000,
+    "anioConstruccion": 1931,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Estadio Nemesio Camacho",
+    "ciudad": "Bogotá",
+    "capacidad": 36.343,
+    "anioConstruccion": 1938,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Estadio Olímpico Pascual Guerrero",
+    "ciudad": "Cali",
+    "capacidad": 42.300,
+    "anioConstruccion": 1937,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Estadio Manuel Murillo Toro",
+    "ciudad": "Ibagué",
+    "capacidad": 28.100,
+    "anioConstruccion": 1955,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Estadio George Capwell",
+    "ciudad": "Guayaquil",
+    "capacidad": 40.000,
+    "anioConstruccion": 1945,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Olímpico Atahualpa",
+    "ciudad": "Quito",
+    "capacidad": 39.861,
+    "anioConstruccion": 1951,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Estadio 9 de Mayo",
+    "ciudad": "Quito",
+    "capacidad": 16.456,
+    "anioConstruccion": 1987,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Municipal de La Cisterna",
+    "ciudad": "Santiago",
+    "capacidad": 8.000,
+    "anioConstruccion": 1988,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Francisco Sánchez Rumoroso",
+    "ciudad": "Coquimbo",
+    "capacidad": 17.750,
+    "anioConstruccion": 1970,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Sausalito",
+    "ciudad": "Viña del Mar",
+    "capacidad": 19.200,
+    "anioConstruccion": 1929,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Estadio Rogelio Livieres",
+    "ciudad": "Asunción",
+    "capacidad": 8.000,
+    "anioConstruccion": 1987,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Estadio Arsenio Erico",
+    "ciudad": "Asunción",
+    "capacidad": 7.500,
+    "anioConstruccion": 1904,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Estadio Feliciano Cáceres",
+    "ciudad": "Luque",
+    "capacidad": 26.974,
+    "anioConstruccion": 1999,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Estadio Alberto Gallardo",
+    "ciudad": "Lima",
+    "capacidad": 18.000,
+    "anioConstruccion": 1960,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Estadio Monumental de la UNSA",
+    "ciudad": "Arequipa",
+    "capacidad": 40.370,
+    "anioConstruccion": 1993,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Estadio Garcilaso de la Vega",
+    "ciudad": "Cusco",
+    "capacidad": 42.056,
+    "anioConstruccion": 1950,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Estadio Belvedere",
+    "ciudad": "Montevideo",
+    "capacidad": 6.589,
+    "anioConstruccion": 1910,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Estadio Campeones Olímpicos de Florida",
+    "ciudad": "Montevideo",
+    "capacidad": 5.124,
+    "anioConstruccion": 1987,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Estadio Municipal El Alto",
+    "ciudad": "El Alto",
+    "capacidad": 25.000,
+    "anioConstruccion": 2017,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Estadio Ramón Tahuichi Aguilera",
+    "ciudad": "Santa Cruz de la Sierra",
+    "capacidad": 38.000,
+    "anioConstruccion": 1939,
+    "estadoActual": "bueno",
+    "foto": ""
+  },
+  {
+    "nombre": "Estadio Polideportivo de Pueblo Nuevo",
+    "ciudad": "San Cristóbal",
+    "capacidad": 38.755,
+    "anioConstruccion": 1976,
+    "estadoActual": "bueno",
+    "foto": ""
   }
 ]

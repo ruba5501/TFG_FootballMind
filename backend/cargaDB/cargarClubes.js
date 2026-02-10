@@ -8,13 +8,18 @@ async function cargarClubes(partidaId, estadios, competiciones, nombrePartida) {
   try {
     const dataPath = path.join(__dirname, '../../base_datos/clubes.json');
     const clubesData = JSON.parse(fs.readFileSync(dataPath, 'utf8'));
+    //
+    const extrasPath = path.join(__dirname, '../../base_datos/clubes_extras.json');
+    const extrasData = JSON.parse(fs.readFileSync(extrasPath, 'utf8'));
 
+    const todosLosClubesJson = [...clubesData, ...extrasData];
+    //
     const estadioMap = {}; 
     const compMap = {};
     estadios.forEach(e => estadioMap[e.nombre] = e._id);
     competiciones.forEach(c => compMap[c.nombre] = c._id);
 
-    const clubesParaInsertar = clubesData.map(club => {
+    const clubesParaInsertar = todosLosClubesJson.map(club => {
         const idsCompeticionesReales = (club.competiciones || [])
             .map(name => compMap[name])
             .filter(id => id);
