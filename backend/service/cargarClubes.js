@@ -56,7 +56,7 @@ async function cargarClubes(partidaId, estadios, competiciones, nombrePartida) {
     const bulkUpdateClubes = [];
     const bulkUpdateComps = [];
 
-    for (const clubJson of clubesData) {
+    for (const clubJson of todosLosClubesJson) {
         const clubInsertadoId = nombreToIdMap[clubJson.nombre].id;
 
         // Víncular Club y Filial

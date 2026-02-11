@@ -26,6 +26,10 @@ const partidaSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   },
+  fechaActual: { 
+    type: Date, 
+    default: new Date(2025, 6, 1)
+  },
   ultimaActualizacion: {
     type: Date,
     default: Date.now

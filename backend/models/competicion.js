@@ -11,7 +11,7 @@ const competicionSchema = new mongoose.Schema({
   pais: { type: String, default: null }, // null si es internacional
   tipo: {
     type: String,
-    enum: ['liga', 'copa', 'internacional'],
+    enum: ['liga', 'copa', 'internacional_europa', 'internacional_america'],
     required: true
   },
   logo: { type: String, trim: true, default: null },

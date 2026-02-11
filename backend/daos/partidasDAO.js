@@ -1,6 +1,10 @@
 const Partida = require('../models/partida');
 const Jugador = require('../models/jugador');
 const Empleado = require('../models/empleado');
+const Club = require('../models/club');
+const Competicion = require('../models/competicion');
+const Estadio = require('../models/estadio');
+const Partido = require('../models/partido');
 
 class PartidaDAO {
   async crearPartida(usuarioId, nombrePartida, clubSeleccionado, entrenadorId, _id) {
@@ -37,6 +41,10 @@ class PartidaDAO {
   async eliminarPartida(id) {
     await Jugador.deleteMany({ partidaId: id });
     await Empleado.deleteMany({ partidaId: id });
+    await Club.deleteMany({ partidaId: id });
+    await Competicion.deleteMany({ partidaId: id });
+    await Estadio.deleteMany({ partidaId: id });
+    await Partido.deleteMany({ partidaId: id });
     
     return await Partida.findByIdAndDelete(id);
   }

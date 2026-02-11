@@ -9,7 +9,7 @@ const partidoSchema = new mongoose.Schema({
     },
     competicionId: { type: mongoose.Schema.Types.ObjectId, ref: 'Competicion', required: true },
   
-    tipo: { type: String, enum: ['LIGA', 'ELIMINATORIA'], default: 'LIGA' },
+    tipo: { type: String, enum: ['LIGA', 'ELIMINATORIA', 'FINAL'], default: 'LIGA' },
     jornada: { type: Number, required: true }, // para liga poner de 1 a el num jornadas y para copa poner un numero cualquiera pero luego saberlo para saber si es octavos, cuartos...
   
     equipoLocal: { type: mongoose.Schema.Types.ObjectId, ref: 'Club', required: true },
@@ -21,3 +21,5 @@ const partidoSchema = new mongoose.Schema({
     jugado: { type: Boolean, default: false },
     fecha: { type: Date, required: true } 
 });
+
+module.exports = mongoose.model('Partido', partidoSchema);

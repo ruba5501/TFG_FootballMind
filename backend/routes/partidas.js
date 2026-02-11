@@ -12,11 +12,12 @@ const Competicion = require('../models/competicion');
 const Club = require('../models/club');
 const Partida = require('../models/partida');
 
-const cargarEstadios = require('../cargaDB/cargarEstadios'); 
-const cargarCompeticiones = require('../cargaDB/cargarCompeticiones');
-const cargarClubes = require('../cargaDB/cargarClubes');
-const generarJugadores = require('../cargaDB/cargarJugadores');
-const generarEmpleados = require('../cargaDB/cargarEmpleados');
+const cargarEstadios = require('../service/cargarEstadios'); 
+const cargarCompeticiones = require('../service/cargarCompeticiones');
+const cargarClubes = require('../service/cargarClubes');
+const generarJugadores = require('../service/cargarJugadores');
+const generarEmpleados = require('../service/cargarEmpleados');
+const generarCalendario = require('../service/generarCalendario');
 const { requireLogin } = require('../middleware/autenticacion');
 
 const atributosDefault = {
@@ -178,6 +179,7 @@ partidaRouter.get('/crearPartida/final', requireLogin, async (req, res) => {
 
     await generarJugadores(partidaId, clubes, datos.nombrePartida);
     await generarEmpleados(partidaId, clubes, datos.nombrePartida);
+    await generarCalendario(partidaId);
 
 
     req.session.crearPartida = null;

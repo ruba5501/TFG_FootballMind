@@ -1,0 +1,56 @@
+<%- include('partials/head', {title: 'Calendario'}) %>
+<header>
+  <%- include('partials/navbar') %>
+</header>
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-9">
+            <div class="calendar-header d-flex justify-content-between align-items-center mb-3">
+                <% 
+                    let prevMes = calendario.mes === 0 ? 11 : calendario.mes - 1;
+                    let prevAnio = calendario.mes === 0 ? calendario.anio - 1 : calendario.anio;
+                    let nextMes = calendario.mes === 11 ? 0 : calendario.mes + 1;
+                    let nextAnio = calendario.mes === 11 ? calendario.anio + 1 : calendario.anio;
+                %>
+                <a href="?mes=<%= prevMes %>&anio=<%= prevAnio %>" class="btn btn-dark">&lt;</a>
+                <h2 class="text-capitalize"><%= calendario.nombreMes %> <%= calendario.anio %></h2>
+                <a href="?mes=<%= nextMes %>&anio=<%= nextAnio %>" class="btn btn-dark">&gt;</a>
+            </div>
+            
+            <div class="calendar-grid">
+                <div class="day-name">Lun</div><div class="day-name">Mar</div><div class="day-name">Mié</div>
+                <div class="day-name">Jue</div><div class="day-name">Vie</div><div class="day-name">Sáb</div>
+                <div class="day-name">Dom</div>
+
+                <% for(let x = 0; x < calendario.offset; x++) { %>
+                    <div class="calendar-day other-month"></div>
+                <% } %>
+
+                <% for(let d = 1; d <= calendario.diasEnMes; d++) { 
+                    let esHoy = d === partida.fechaActual.getDate() && calendario.mes === partida.fechaActual.getMonth();
+                    let partidoHoy = partidos.find(p => p.fecha.getDate() === d);
+                %>
+                    <div class="calendar-day <%= esHoy ? 'today' : '' %>">
+                        <span class="fw-bold"><%= d %></span>
+                        
+                        <% if (partidoHoy) { 
+                            let esLocal = partidoHoy.equipoLocal._id.toString() === clubUsuario._id.toString();
+                            let rival = esLocal ? partidoHoy.equipoVisitante : partidoHoy.equipoLocal;
+                            let claseComp = partidoHoy.competicionId.tipo === 'LIGA' ? 'bg-liga' : 'bg-internacional';
+                        %>
+                            <div class="match-tag <%= claseComp %> text-center mt-1">
+                                <div class="small fw-bold"><%= esLocal ? '(Local)' : '(Visitante)' %></div>
+                                <img src="/img/escudos/<%= rival.escudo %>" width="25">
+                                <div style="font-size: 0.6rem;"><%= rival.nombre %></div>
+                            </div>
+                        <% } %>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <%- include('partials/proximoPartido', { partidos, clubUsuario }) %>
+        </div>
+    </div>
+</div>

@@ -28,7 +28,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "FC Barcelona",
@@ -59,7 +60,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Atlético de Madrid",
@@ -90,7 +92,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Athletic Club",
@@ -121,7 +124,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Sevilla FC",
@@ -151,7 +155,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Real Betis",
@@ -182,7 +187,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Real Sociedad",
@@ -212,7 +218,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Villarreal CF",
@@ -243,7 +250,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Valencia CF",
@@ -273,7 +281,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "CA Osasuna",
@@ -303,7 +312,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Celta de Vigo",
@@ -334,7 +344,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Rayo Vallecano",
@@ -365,7 +376,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Deportivo Alavés",
@@ -395,7 +407,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "RCD Espanyol",
@@ -425,7 +438,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Elche CF",
@@ -455,7 +469,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Getafe CF",
@@ -485,7 +500,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "RCD Mallorca",
@@ -515,7 +531,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Levante UD",
@@ -545,7 +562,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Real Oviedo",
@@ -575,7 +593,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Girona FC",
@@ -605,7 +624,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "UD Almería",
@@ -635,7 +655,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "RC Deportivo de La Coruña",
@@ -665,7 +686,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "UD Las Palmas",
@@ -695,7 +717,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "Real Racing Club",
@@ -725,7 +748,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "Real Valladolid CF",
@@ -755,7 +779,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "Real Sporting de Gijón",
@@ -785,7 +810,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "CD Leganés",
@@ -815,7 +841,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "Real Zaragoza",
@@ -845,7 +872,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "Granada CF",
@@ -875,7 +903,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "CD Mirandés",
@@ -905,7 +934,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "Cádiz CF",
@@ -935,7 +965,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "Burgos CF",
@@ -965,7 +996,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "SD Eibar",
@@ -995,7 +1027,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "Málaga CF",
@@ -1025,7 +1058,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "Cultural Leonesa",
@@ -1055,7 +1089,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "CD Castellón",
@@ -1085,7 +1120,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "Córdoba CF",
@@ -1115,7 +1151,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "Albacete Balompié",
@@ -1145,7 +1182,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "FC Andorra",
@@ -1175,7 +1213,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "SD Huesca",
@@ -1205,7 +1244,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "AD Ceuta FC",
@@ -1235,7 +1275,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "Real Sociedad B",
@@ -1264,7 +1305,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": false
+    "generaFilial": false,
+    "division": 2
   },
   {
     "nombre": "Arsenal FC",
@@ -1295,7 +1337,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Manchester City",
@@ -1326,7 +1369,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Chelsea FC",
@@ -1357,7 +1401,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Liverpool FC",
@@ -1388,7 +1433,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Tottenham Hotspur",
@@ -1419,7 +1465,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Manchester United",
@@ -1449,7 +1496,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Newcastle United",
@@ -1480,7 +1528,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Nottingham Forest",
@@ -1511,7 +1560,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Aston Villa",
@@ -1542,7 +1592,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Brighton & Hove Albion",
@@ -1572,7 +1623,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Crystal Palace",
@@ -1603,7 +1655,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "AFC Bournemouth",
@@ -1633,7 +1686,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Brentford FC",
@@ -1663,7 +1717,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Everton FC",
@@ -1693,7 +1748,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "West Ham United",
@@ -1723,7 +1779,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Sunderland AFC",
@@ -1753,7 +1810,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Fulham FC",
@@ -1783,7 +1841,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Wolverhampton Wanderers",
@@ -1813,7 +1872,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Leeds United",
@@ -1843,7 +1903,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Burnley FC",
@@ -1873,7 +1934,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Ipswich Town",
@@ -1903,7 +1965,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "Southampton FC",
@@ -1933,7 +1996,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "Leicester City",
@@ -1963,7 +2027,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "Coventry City",
@@ -1993,7 +2058,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "Sheffield United",
@@ -2023,7 +2089,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "Middlesbrough FC",
@@ -2053,7 +2120,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "Norwich City",
@@ -2083,7 +2151,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "Birmingham City",
@@ -2113,7 +2182,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "West Bromwich Albion",
@@ -2143,7 +2213,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "Bristol City",
@@ -2173,7 +2244,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "Swansea City",
@@ -2203,7 +2275,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "Stoke City",
@@ -2233,7 +2306,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "Watford FC",
@@ -2263,7 +2337,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "Hull City",
@@ -2293,7 +2368,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "Millwall FC",
@@ -2323,7 +2399,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "Wrexham AFC",
@@ -2353,7 +2430,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "Derby County",
@@ -2383,7 +2461,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "Queens Park Rangers",
@@ -2413,7 +2492,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "Preston North End",
@@ -2443,7 +2523,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "Portsmouth FC",
@@ -2473,7 +2554,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "Blackburn Rovers",
@@ -2503,7 +2585,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "Oxford United",
@@ -2533,7 +2616,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "Charlton Athletic",
@@ -2563,7 +2647,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "Sheffield Wednesday",
@@ -2593,7 +2678,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "Inter de Milán",
@@ -2624,7 +2710,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Juventus de Turín",
@@ -2655,7 +2742,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "SSC Nápoles",
@@ -2686,7 +2774,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "AC Milan",
@@ -2716,7 +2805,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Atalanta de Bérgamo",
@@ -2747,7 +2837,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "AS Roma",
@@ -2778,7 +2869,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Fiorentina",
@@ -2809,7 +2901,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Como 1907",
@@ -2839,7 +2932,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Bolonia",
@@ -2870,7 +2964,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "SS Lazio",
@@ -2900,7 +2995,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Parma",
@@ -2930,7 +3026,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Torino FC",
@@ -2960,7 +3057,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Udinese",
@@ -2990,7 +3088,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "US Sassuolo",
@@ -3020,7 +3119,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Genoa",
@@ -3050,7 +3150,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Cagliari",
@@ -3080,7 +3181,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Pisa Sporting Club",
@@ -3110,7 +3212,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Hellas Verona",
@@ -3140,7 +3243,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "US Cremonese",
@@ -3170,7 +3274,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "US Lecce",
@@ -3200,7 +3305,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Venezia FC",
@@ -3230,7 +3336,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "AC Monza",
@@ -3260,7 +3367,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "Empoli FC",
@@ -3290,7 +3398,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "Palermo FC",
@@ -3320,7 +3429,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "Spezia",
@@ -3350,7 +3460,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "US Catanzaro",
@@ -3380,7 +3491,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "Cesena FC",
@@ -3410,7 +3522,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "Frosinone Calcio",
@@ -3440,7 +3553,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "Modena FC",
@@ -3470,7 +3584,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "UC Sampdoria",
@@ -3500,7 +3615,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "SS Juve Stabia",
@@ -3530,7 +3646,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "AC Reggiana 1919",
@@ -3560,7 +3677,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "SSC Bari",
@@ -3590,7 +3708,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "Carrarese Calcio 1908",
@@ -3620,7 +3739,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "Delfino Pescara 1936",
@@ -3650,7 +3770,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "US Avellino 1912",
@@ -3680,7 +3801,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "Mantova 1911",
@@ -3710,7 +3832,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "FC Südtirol",
@@ -3740,7 +3863,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "Calcio Padova",
@@ -3770,7 +3894,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "Virtus Entella",
@@ -3800,7 +3925,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "Bayern Múnich",
@@ -3831,7 +3957,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Borussia Dortmund",
@@ -3862,7 +3989,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Bayer 04 Leverkusen",
@@ -3893,7 +4021,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Eintracht Fráncfort",
@@ -3924,7 +4053,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "RB Leipzig",
@@ -3954,7 +4084,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "VfB Stuttgart",
@@ -3985,7 +4116,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "VfL Wolfsburgo",
@@ -4015,7 +4147,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "SV Werder Bremen",
@@ -4045,7 +4178,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "TSG 1899 Hoffenheim",
@@ -4075,7 +4209,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "SC Friburgo",
@@ -4106,7 +4241,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "1.FSV Mainz 05",
@@ -4137,7 +4273,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Borussia Mönchengladbach",
@@ -4167,7 +4304,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "FC Augsburgo",
@@ -4197,7 +4335,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "1.FC Unión Berlín",
@@ -4227,7 +4366,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Hamburgo SV",
@@ -4257,7 +4397,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "FC Colonia",
@@ -4287,7 +4428,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "FC St. Pauli",
@@ -4317,7 +4459,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "1.FC Heidenheim 1846",
@@ -4347,7 +4490,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Hertha Berlín",
@@ -4377,7 +4521,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "Holstein Kiel",
@@ -4407,7 +4552,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "VfL Bochum",
@@ -4437,7 +4583,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "1. FC Núremberg",
@@ -4467,7 +4614,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "Hannover 96",
@@ -4497,7 +4645,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "Fortuna Düsseldorf",
@@ -4527,7 +4676,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "SC Paderborn 07",
@@ -4557,7 +4707,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "FC Schalke 04",
@@ -4587,7 +4738,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "1.FC Magdeburg",
@@ -4617,7 +4769,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "1.FC Kaiserslautern",
@@ -4647,7 +4800,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "SV Darmstadt 98",
@@ -4677,7 +4831,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "Karlsruher SC",
@@ -4707,7 +4862,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "SV 07 Elversberg",
@@ -4737,7 +4893,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "SpVgg Greuther Fürth",
@@ -4767,7 +4924,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "Eintracht Braunschweig",
@@ -4797,7 +4955,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "Preußen Münster",
@@ -4827,7 +4986,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "Arminia Bielefeld",
@@ -4857,7 +5017,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "SG Dynamo Dresden",
@@ -4887,7 +5048,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "Paris Saint-Germain FC",
@@ -4918,7 +5080,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Olympique de Marsella",
@@ -4949,7 +5112,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "AS Mónaco",
@@ -4980,7 +5144,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Racing Club de Estrasburgo",
@@ -5011,7 +5176,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "LOSC Lille",
@@ -5041,7 +5207,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Olympique de Lyon",
@@ -5072,7 +5239,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "OGC Niza",
@@ -5103,7 +5271,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Stade Rennais FC",
@@ -5133,7 +5302,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Paris FC",
@@ -5163,7 +5333,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Toulouse FC",
@@ -5193,7 +5364,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Stade Brestois 29",
@@ -5223,7 +5395,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "RC Lens",
@@ -5253,7 +5426,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "FC Nantes",
@@ -5283,7 +5457,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "AJ Auxerre",
@@ -5313,7 +5488,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "FC Lorient",
@@ -5343,7 +5519,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "FC Metz",
@@ -5373,7 +5550,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Le Havre AC",
@@ -5403,7 +5581,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Angers SCO",
@@ -5433,7 +5612,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "AS Saint-Étienne",
@@ -5463,7 +5643,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "Stade de Reims",
@@ -5493,7 +5674,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "ESTAC Troyes",
@@ -5523,7 +5705,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "Montpellier HSC",
@@ -5553,7 +5736,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "USL Dunkerque",
@@ -5583,7 +5767,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "Amiens SC",
@@ -5613,7 +5798,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "EA Guingamp",
@@ -5643,7 +5829,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "Red Star FC",
@@ -5673,7 +5860,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "Pau FC",
@@ -5703,7 +5891,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "Grenoble Foot 38",
@@ -5733,7 +5922,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "SC Bastia",
@@ -5763,7 +5953,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "Rodez AF",
@@ -5793,7 +5984,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "Clermont Foot 63",
@@ -5823,7 +6015,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "AS Nancy-Lorraine",
@@ -5853,7 +6046,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "FC Annecy",
@@ -5883,7 +6077,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "Stade Lavallois",
@@ -5913,7 +6108,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "Le Mans FC",
@@ -5943,7 +6139,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "US Boulogne",
@@ -5973,7 +6170,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "PSV Eindhoven",
@@ -6004,7 +6202,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Feyenoord",
@@ -6035,7 +6234,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Ajax de Ámsterdam",
@@ -6066,7 +6266,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "AZ Alkmaar",
@@ -6097,7 +6298,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "FC Utrecht",
@@ -6128,7 +6330,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "FC Twente Enschede",
@@ -6158,7 +6361,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "SC Heerenveen",
@@ -6188,7 +6392,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "NEC Nijmegen",
@@ -6218,7 +6423,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "FC Groningen",
@@ -6248,7 +6454,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Go Ahead Eagles Deventer",
@@ -6278,7 +6485,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Sparta Rotterdam",
@@ -6308,7 +6516,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "PEC Zwolle",
@@ -6338,7 +6547,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Fortuna Sittard",
@@ -6368,7 +6578,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Excelsior Rotterdam",
@@ -6398,7 +6609,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "NAC Breda",
@@ -6428,7 +6640,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Heracles Almelo",
@@ -6458,7 +6671,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "FC Volendam",
@@ -6488,7 +6702,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "SC Telstar",
@@ -6518,7 +6733,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Ajax Amsterdam U21",
@@ -6547,7 +6763,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": false
+    "generaFilial": false,
+    "division": 2
   },
   {
     "nombre": "Willem II Tilburg",
@@ -6577,7 +6794,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "PSV Eindhoven U21",
@@ -6606,7 +6824,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": false
+    "generaFilial": false,
+    "division": 2
   },
   {
     "nombre": "FC Dordrecht",
@@ -6636,7 +6855,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "Almere City FC",
@@ -6666,7 +6886,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "RKC Waalwijk",
@@ -6696,7 +6917,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "SC Cambuur Leeuwarden",
@@ -6726,7 +6948,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "ADO Den Haag",
@@ -6756,7 +6979,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "Roda JC Kerkrade",
@@ -6786,7 +7010,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "FC Utrecht U21",
@@ -6815,7 +7040,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": false
+    "generaFilial": false,
+    "division": 2
   },
   {
     "nombre": "FC Emmen",
@@ -6845,7 +7071,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "De Graafschap Doetinchem",
@@ -6875,7 +7102,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "FC Den Bosch",
@@ -6905,7 +7133,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "Helmond Sport",
@@ -6935,7 +7164,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "MVV Maastricht",
@@ -6965,7 +7195,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "AZ Alkmaar U21",
@@ -6994,7 +7225,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": false
+    "generaFilial": false,
+    "division": 2
   },
   {
     "nombre": "TOP Oss",
@@ -7024,7 +7256,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "VVV-Venlo",
@@ -7054,7 +7287,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "FC Eindhoven",
@@ -7084,7 +7318,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "Vitesse Arnhem",
@@ -7114,7 +7349,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "Sporting de Lisboa",
@@ -7145,7 +7381,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "FC Oporto",
@@ -7176,7 +7413,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "SL Benfica",
@@ -7207,7 +7445,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "SC Braga",
@@ -7238,7 +7477,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "FC Famalicão",
@@ -7268,7 +7508,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Rio Ave FC",
@@ -7298,7 +7539,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "CD Santa Clara",
@@ -7329,7 +7571,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "GD Estoril Praia",
@@ -7359,7 +7602,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "FC Alverca",
@@ -7389,7 +7633,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Gil Vicente FC",
@@ -7419,7 +7664,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Casa Pia AC",
@@ -7449,7 +7695,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Moreirense FC",
@@ -7479,7 +7726,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Vitória Guimarães SC",
@@ -7509,7 +7757,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "FC Arouca",
@@ -7539,7 +7788,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "CD Tondela",
@@ -7569,7 +7819,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "CD Nacional",
@@ -7599,7 +7850,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Avs Futebol",
@@ -7629,7 +7881,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "CF Estrela Amadora",
@@ -7659,7 +7912,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "FC Porto B",
@@ -7688,7 +7942,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": false
+    "generaFilial": false,
+    "division": 2
   },
   {
     "nombre": "Sporting CP B",
@@ -7717,7 +7972,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": false
+    "generaFilial": false,
+    "division": 2
   },
   {
     "nombre": "UD Leiria",
@@ -7747,7 +8003,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "CS Marítimo",
@@ -7777,7 +8034,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "Académico Viseu FC",
@@ -7807,7 +8065,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "SL Benfica B",
@@ -7836,7 +8095,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": false
+    "generaFilial": false,
+    "division": 2
   },
   {
     "nombre": "GD Chaves",
@@ -7866,7 +8126,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "SC União Torreense",
@@ -7896,7 +8157,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "SC Farense",
@@ -7926,7 +8188,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "FC Penafiel",
@@ -7956,7 +8219,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "FC Vizela",
@@ -7986,7 +8250,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "Portimonense SAD",
@@ -8016,7 +8281,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "FC Felgueiras 1932",
@@ -8046,7 +8312,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "Leixões SC",
@@ -8076,7 +8343,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "FC Paços de Ferreira",
@@ -8106,7 +8374,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "CD Feirense",
@@ -8136,7 +8405,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "UD Oliveirense",
@@ -8166,7 +8436,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "Lusitânia FC Lourosa",
@@ -8196,7 +8467,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 2
   },
   {
     "nombre": "CA River Plate",
@@ -8227,7 +8499,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "CA Boca Juniors",
@@ -8257,7 +8530,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Racing Club",
@@ -8288,7 +8562,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "CA Independiente",
@@ -8319,7 +8594,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "CA Vélez Sarsfield",
@@ -8350,7 +8626,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Club Estudiantes de La Plata",
@@ -8381,7 +8658,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "CA Talleres",
@@ -8412,7 +8690,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "CA Rosario Central",
@@ -8442,7 +8721,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "AA Argentinos Juniors",
@@ -8472,7 +8752,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "CA San Lorenzo de Almagro",
@@ -8502,7 +8783,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "CA Lanús",
@@ -8533,7 +8815,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "CA Belgrano",
@@ -8563,7 +8846,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "CD Godoy Cruz Antonio Tomba",
@@ -8594,7 +8878,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "CA Huracán",
@@ -8625,7 +8910,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "CA Tigre",
@@ -8655,7 +8941,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "CSD Defensa y Justicia",
@@ -8686,7 +8973,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "CA Platense",
@@ -8716,7 +9004,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Instituto ACC",
@@ -8746,7 +9035,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "CA Unión (Santa Fe)",
@@ -8777,7 +9067,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "CS Independiente Rivadavia",
@@ -8807,7 +9098,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "CA Barracas Central",
@@ -8837,7 +9129,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "CA Newell's Old Boys",
@@ -8867,7 +9160,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "CA Central Córdoba (SdE)",
@@ -8898,7 +9192,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "CA Banfield",
@@ -8928,7 +9223,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Club de Gimnasia y Esgrima La Plata",
@@ -8958,7 +9254,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Club Atlético Tucumán",
@@ -8988,7 +9285,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "CA Sarmiento (Junín)",
@@ -9018,7 +9316,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Club Deportivo Riestra",
@@ -9048,7 +9347,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "SE Palmeiras",
@@ -9079,7 +9379,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "CR Flamengo",
@@ -9110,7 +9411,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Cruzeiro Esporte Clube",
@@ -9141,7 +9443,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Botafogo de Futebol e Regatas",
@@ -9172,7 +9475,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Clube de Regatas Vasco da Gama",
@@ -9203,7 +9507,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "SC Corinthians",
@@ -9234,7 +9539,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Esporte Clube Bahia",
@@ -9265,7 +9571,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Fluminense Football Club",
@@ -9296,7 +9603,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Red Bull Bragantino",
@@ -9326,7 +9634,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Clube Atlético Mineiro",
@@ -9357,7 +9666,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Santos FC",
@@ -9387,7 +9697,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Grêmio Foot-Ball Porto Alegrense",
@@ -9418,7 +9729,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "São Paulo FC",
@@ -9449,7 +9761,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Sport Club Internacional",
@@ -9480,7 +9793,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Fortaleza Esporte Clube",
@@ -9511,7 +9825,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Sport Club do Recife",
@@ -9541,7 +9856,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Ceará Sporting Club",
@@ -9571,7 +9887,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Esporte Clube Vitória",
@@ -9602,7 +9919,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Mirassol Futebol Clube (SP)",
@@ -9632,7 +9950,8 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   },
   {
     "nombre": "Esporte Clube Juventude",
@@ -9662,6 +9981,7 @@
     "popularidad": 0,
     "reputacion": 0,
     "historialTitulos": [],
-    "generaFilial": true
+    "generaFilial": true,
+    "division": 1
   }
 ]

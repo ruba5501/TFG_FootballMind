@@ -12,7 +12,8 @@ const clubSchema = new mongoose.Schema({
   pais: { type: String, required: true, trim: true },
   estadio: { type: mongoose.Schema.Types.ObjectId, ref: 'Estadio', required: false },
   competiciones: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Competicion', required: true }],
-
+  division: { type: Number, default: 1 },
+  
   esFilial: { type: Boolean, default: false },
   clubMatriz: { type: mongoose.Schema.Types.ObjectId, ref: 'Club', default: null },
 
