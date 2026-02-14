@@ -3,28 +3,180 @@ const Club = require('../models/club');
 const Partida = require('../models/partida');
 const Competicion = require('../models/competicion');
 
+function obtenerFechaRealista(fechaBase, tipoCompeticion, nombreCompeticion = '', indicePartido = 0, esUltimaJornada = false, jornada = 0, totalPartidos = 10) {
+    const nuevaFecha = new Date(fechaBase);
+    const nombre = nombreCompeticion.toLowerCase();
+
+    // EUROPA
+    if (tipoCompeticion === 'internacional_europa') {
+        const esChampions = nombre.includes('champions');
+        const esEuropa = nombre.includes('europa');
+        const esConference = nombre.includes('conference');
+
+        // ULTIMA JORNADA DE LIGA 
+        if (esUltimaJornada && jornada > 0) {
+            if (esChampions) {
+                while(nuevaFecha.getDay() !== 3) nuevaFecha.setDate(nuevaFecha.getDate() + 1);
+            } else {
+                while(nuevaFecha.getDay() !== 4) nuevaFecha.setDate(nuevaFecha.getDate() + 1);
+            }
+            nuevaFecha.setHours(21, 0, 0);
+            return nuevaFecha;
+        }
+        if (jornada <= 8) {
+            if (esChampions) {
+                // Martes y Miércoles con 2 partidos de tarde cada dia
+                const diaExtra = (indicePartido > 8) ? 1 : 0;
+                nuevaFecha.setDate(nuevaFecha.getDate() + diaExtra);
+                const esTurnoTarde = (indicePartido === 0 || indicePartido === 1 || indicePartido === 9 || indicePartido === 10);
+                nuevaFecha.setHours(esTurnoTarde ? 18 : 21, esTurnoTarde ? 45 : 0, 0);
+            } 
+            else if (esEuropa || esConference) {
+                // Jueves mitad por la tarde, mitad por la noche
+                nuevaFecha.setDate(nuevaFecha.getDate() + 2);
+                const esTurnoTarde = (indicePartido < 9); 
+                nuevaFecha.setHours(esTurnoTarde ? 18 : 21, esTurnoTarde ? 45 : 0, 0);
+            }
+        } 
+        // FASES ELIMINATORIAS
+        else {
+            if (esChampions) {
+                const diaExtra = (indicePartido % 2);
+                nuevaFecha.setDate(nuevaFecha.getDate() + diaExtra);
+                
+                if (jornada >= 13) { // 9, 10, 11 y 12 son Playoffs y Octavos
+                    nuevaFecha.setHours(21, 0, 0);
+                } else {
+                    const esTurnoTarde = (indicePartido === 0);
+                    nuevaFecha.setHours(esTurnoTarde ? 18 : 21, esTurnoTarde ? 45 : 0, 0);
+                }
+            } else {
+                nuevaFecha.setDate(nuevaFecha.getDate() + 2);
+                const limitePrime = esEuropa ? 13 : 15;
+                if (jornada >= limitePrime) {
+                    nuevaFecha.setHours(21, 0, 0);
+                } else {
+                    const esTurnoTarde = (indicePartido % 2 === 0);
+                    nuevaFecha.setHours(esTurnoTarde ? 18 : 21, esTurnoTarde ? 45 : 0, 0);
+                }
+            }
+        }
+    }
+    //SUDAMERICA
+    else if (tipoCompeticion === 'internacional_america') {
+        const diaExtra = (indicePartido % 3);
+        nuevaFecha.setDate(nuevaFecha.getDate() + diaExtra);
+        nuevaFecha.setHours(indicePartido % 2 === 0 ? 19 : 21, 0, 0);
+    }
+    //COPAS NACIONALES
+    else if (tipoCompeticion === 'copa') {
+        const diaExtra = (indicePartido % 3);
+        nuevaFecha.setDate(nuevaFecha.getDate() + diaExtra);
+        
+        if (jornada > 4) {
+            nuevaFecha.setHours(21, 0, 0);
+        } else {
+            nuevaFecha.setHours(indicePartido % 2 === 0 ? 19 : 21, 0, 0);
+        }
+    }
+    // LIGAS
+    else if (tipoCompeticion === 'liga') {
+        if (esUltimaJornada) {
+            const diaActual = nuevaFecha.getDay();
+            if (diaActual !== 0) {
+                const diasHastaDomingo = (7 - diaActual) % 7;
+                nuevaFecha.setDate(nuevaFecha.getDate() + diasHastaDomingo);
+            }
+            
+            nuevaFecha.setHours(18, 0, 0, 0);
+        } 
+        else {
+            const pct = indicePartido / (totalPartidos - 1);
+
+        // VIERNES (Primer partido de la lista)
+        if (pct === 0) {
+            nuevaFecha.setHours(21, 0, 0); 
+        } 
+        // LUNES (Último partido de la lista)
+        else if (pct === 1) {
+            nuevaFecha.setDate(nuevaFecha.getDate() + 3);
+            nuevaFecha.setHours(21, 0, 0);
+        } 
+        // SABADO (Partidos en la primera mitad del resto)
+        else if (pct > 0 && pct < 0.5) {
+            nuevaFecha.setDate(nuevaFecha.getDate() + 1); 
+            const hora = 14 + Math.floor((indicePartido - 1) * (8 / (totalPartidos / 2)));
+            nuevaFecha.setHours(hora, 0, 0);
+        } 
+        // DOMINGO (Partidos en la segunda mitad del resto)
+        else {
+            nuevaFecha.setDate(nuevaFecha.getDate() + 2);
+            const hora = 12 + Math.floor((indicePartido - (totalPartidos / 2)) * (9 / (totalPartidos / 2)));
+            nuevaFecha.setHours(hora, 0, 0);
+        }
+        }
+     } else {
+        nuevaFecha.setHours(21, 0, 0);
+    }
+    return nuevaFecha;
+}
+
+async function obtenerCampeonesVigentes(partidaId, anioActual, anioInicio) {
+    if (anioActual === anioInicio) {
+        return { champions: 'Paris Saint-Germain FC', europaLeague: 'Tottenham Hotspur', conference: 'Chelsea FC' };
+    }
+
+    const buscarGanador = async (nombreComp) => {
+        const comp = await Competicion.findOne({ nombre: new RegExp(nombreComp, 'i') });
+        if (!comp) return null;
+
+        const final = await Partido.findOne({
+            partidaId,
+            competicionId: comp._id,
+            tipo: 'FINAL',
+            jugado: true
+        }).sort({ fecha: -1 });
+
+        if (!final) return null;
+
+        const ganadorId = final.golesLocal > final.golesVisitante 
+            ? final.equipoLocal 
+            : final.equipoVisitante;
+
+        const club = await Club.findById(ganadorId);
+        return club ? club.nombre : null;
+    };
+
+    return {
+        champions: await buscarGanador('Champions League'),
+        europaLeague: await buscarGanador('Europa League'),
+        conference: await buscarGanador('Conference League')
+    };
+}
+
 async function generarCalendario(partidaId) {
     try {
+        const partida = await Partida.findById(partidaId);
+        const anioActual = partida.fechaActual.getFullYear();
+        const anioInicioSimulacion = 2025; 
+        const campeonesVigentes = await obtenerCampeonesVigentes(partidaId, anioActual, anioInicioSimulacion);
         await Partido.deleteMany({ partidaId: partidaId });
         console.log("Limpiando partidos antiguos...");
-
-        const partida = await Partida.findById(partidaId);
-        const anioInicio = partida.fechaActual.getFullYear();
 
         const competiciones = await Competicion.find({});
         for (const comp of competiciones) {
             switch (comp.tipo) {
                 case 'liga':
-                    await generarLiga(partidaId, comp, anioInicio);
+                    await generarLiga(partidaId, comp, anioActual);
                     break;
                 case 'internacional_america':
-                    await generarFaseGrupos(partidaId, comp, anioInicio);
+                    await generarFaseSudamerica(partidaId, comp, anioActual);
                     break;
                 case 'internacional_europa':
-                    await generarFaseSuiza(partidaId, comp, anioInicio);
+                    await generarFaseEuropa(partidaId, comp, anioActual, campeonesVigentes);
                     break;
                 case 'copa':
-                    await generarRondaInicialCopa(partidaId, comp, anioInicio);
+                    await generarRondaInicialCopa(partidaId, comp, anioActual);
                     break;
                 default:
                     console.warn(`Tipo de competición desconocido: ${comp.tipo} en ${comp.nombre}`);
@@ -40,83 +192,218 @@ async function generarCalendario(partidaId) {
 }
 
 async function generarLiga(partidaId, competicion, anioInicio) {
-    const equipos = await Club.find({ partidaId, competiciones: competicion._id });
-    if (equipos.length % 2 !== 0) equipos.push({ nombre: 'DESCANSO', _id: null });
+    let equipos = await Club.find({ partidaId, competiciones: competicion._id });
+    if (equipos.length % 2 !== 0) {
+        equipos.push({ nombre: 'DESCANSO', _id: null });
+    }
+    const compsInternacionales = await Competicion.find({ 
+        tipo: { $in: ['internacional_europa', 'internacional_america'] } 
+    }).select('_id');
+
+    const idsInternacionales = compsInternacionales.map(c => c._id.toString());
+
+    const equiposInternacionalesIds = equipos
+        .filter(e => e.competiciones.some(cId => idsInternacionales.includes(cId.toString())))
+        .map(e => e._id.toString());
 
     const numEquipos = equipos.length;
-    const numJornadas = numEquipos - 1;
-    let partidos = [];
-    let fechaBase = new Date(anioInicio, 7, 15);
+    const numJornadasVuelta = numEquipos - 1;
+    const numJornadasTotal = numJornadasVuelta * 2;
+    let partidosIda = [];
 
-    for (let j = 0; j < numJornadas; j++) {
+    // Generar Ida (Round Robin)
+    let poolIda = [...equipos];
+    for (let j = 0; j < numJornadasVuelta; j++) {
         for (let i = 0; i < numEquipos / 2; i++) {
-            const local = equipos[(j + i) % (numEquipos - 1)];
-            const visitante = (i === 0) ? equipos[numEquipos - 1] : equipos[(numEquipos - 1 - i + j) % (numEquipos - 1)];
-
+            const local = poolIda[i];
+            const visitante = poolIda[numEquipos - 1 - i];
             if (local._id && visitante._id) {
-                partidos.push(crearObjeto(partidaId, competicion._id, j + 1, local._id, visitante._id, fechaBase, 'LIGA'));
-                
-                let fechaVuelta = new Date(fechaBase);
-                fechaVuelta.setMonth(fechaVuelta.getMonth() + 5);
-                partidos.push(crearObjeto(partidaId, competicion._id, j + 1 + numJornadas, visitante._id, local._id, fechaVuelta, 'LIGA'));
+                partidosIda.push({ 
+                    local: local._id, 
+                    visitante: visitante._id, 
+                    jornadaOriginal: j + 1 
+                });
             }
         }
-        fechaBase.setDate(fechaBase.getDate() + 7);
+        poolIda.splice(1, 0, poolIda.pop());
     }
-    await Partido.insertMany(partidos);
+
+    let jornadasVuelta = Array.from({length: numJornadasVuelta}, (_, i) => i + 1 + numJornadasVuelta);
+    jornadasVuelta.sort(() => Math.random() - 0.5);
+
+    let partidosVuelta = [];
+    for (let j = 0; j < numJornadasVuelta; j++) {
+        const jornadaDestino = jornadasVuelta[j];
+        const partidosDeEstaRonda = partidosIda.filter(p => p.jornadaOriginal === (j + 1));
+        
+        partidosDeEstaRonda.forEach(p => {
+            partidosVuelta.push({
+                local: p.visitante,
+                visitante: p.local,
+                jornada: jornadaDestino
+            });
+        });
+    }
+
+    partidosIda.forEach(p => p.jornada = p.jornadaOriginal);
+
+    const todosLosPartidos = [...partidosIda, ...partidosVuelta];
+
+    let listaFinal = [];
+    let fechaInicioAgosto = new Date(anioInicio, 7, 16);
+    while(fechaInicioAgosto.getDay() !== 5) {
+        fechaInicioAgosto.setDate(fechaInicioAgosto.getDate() + 1);
+    }
+
+    for (let j = 1; j <= numJornadasTotal; j++) {
+        const partidosDeLaJornada = todosLosPartidos.filter(p => p.jornada === j);
+        
+        let protegidos = [];
+        let libres = [];
+
+        partidosDeLaJornada.forEach(p => {
+            const esLocalInt = equiposInternacionalesIds.includes(p.local.toString());
+            const esVisInt = equiposInternacionalesIds.includes(p.visitante.toString());
+
+            if (esLocalInt || esVisInt) {
+                protegidos.push(p);
+            } else {
+                libres.push(p);
+            }
+        });
+
+        protegidos.sort(() => Math.random() - 0.5);
+        libres.sort(() => Math.random() - 0.5);
+
+        let jornadaOrdenada = [];
+
+        if (libres.length >= 2) {
+            jornadaOrdenada.push(libres.pop()); 
+            jornadaOrdenada.push(...protegidos); 
+            jornadaOrdenada.push(...libres);  
+        } else {
+            jornadaOrdenada = [...protegidos, ...libres].sort(() => Math.random() - 0.5);
+        }
+
+        const totalPartidosJornada = jornadaOrdenada.length;
+        jornadaOrdenada.forEach((p, i) => {
+            let fechaJornadaBase = new Date(fechaInicioAgosto);
+            fechaJornadaBase.setDate(fechaInicioAgosto.getDate() + (j - 1) * 7);
+
+            const fechaReal = obtenerFechaRealista(
+                new Date(fechaJornadaBase), 
+                'liga', 
+                competicion.nombre, 
+                i, 
+                (j === numJornadasTotal), 
+                j, 
+                totalPartidosJornada
+            );
+
+            listaFinal.push(crearObjeto(
+                partidaId, 
+                competicion._id, 
+                j, 
+                p.local, 
+                p.visitante, 
+                fechaReal, 
+                'LIGA'
+            ));
+        });
+    }
+
+    await Partido.insertMany(listaFinal);
+    console.log(`[${competicion.nombre}] Generados ${listaFinal.length} partidos.`);
 }
 
 async function generarRondaInicialCopa(partidaId, competicion, anioInicio) {
-    const equipos = await Club.find({ 
-            partidaId, 
-            competiciones: competicion._id, 
-            esFilial: false,
-            pais: competicion.pais
-        }).sort({ division: 1, reputacion: -1 });    
-    const N = equipos.length;
-    const OBJETIVO = 32;
+    const equiposRaw = await Club.find({ 
+        partidaId, 
+        competiciones: competicion._id, 
+        esFilial: false, 
+        pais: competicion.pais 
+    });
+
+    if (equiposRaw.length === 0) return;
+
+    const tieneHistorial = equiposRaw.some(e => e.statsTemporada?.length > 0);
+    let equiposOrdenados = [...equiposRaw].sort((a, b) => {
+        if (!tieneHistorial) {
+            if (a.division !== b.division) return a.division - b.division;
+            return b.reputacion - a.reputacion;
+        }
+        else {
+            const statsA = a.statsTemporada[0]?.puntos || 0; 
+            const statsB = b.statsTemporada[0]?.puntos || 0;
+            return statsB - statsA; 
+        }
+    });
+
+    const N = equiposOrdenados.length;
+    
+    let OBJETIVO = 32;
+    if (N < 32) OBJETIVO = 16;
 
     if (N > OBJETIVO) {
         const numParaEliminar = N - OBJETIVO;
         const numEquiposEnPrevia = numParaEliminar * 2;
-        const participantesPrevia = equipos.slice(N - numEquiposEnPrevia);
-        const clasificadosDirectos = equipos.slice(0, N - numEquiposEnPrevia);
+        
+        const participantesPrevia = equiposOrdenados.slice(N - numEquiposEnPrevia);
         
         let partidosParaInsertar = [];
         let fecha = new Date(anioInicio, 8, 10);
 
-        const sorteoPrevia = participantesPrevia.sort(() => Math.random() - 0.5);
-
-        for (let i = 0; i < sorteoPrevia.length; i += 2) {
-            if (sorteoPrevia[i+1]) {
-                partidosParaInsertar.push(crearObjeto(
-                    partidaId, 
-                    competicion._id, 
-                    0,
-                    sorteoPrevia[i]._id, 
-                    sorteoPrevia[i+1]._id, 
-                    fecha, 
-                    'ELIMINATORIA'
-                ));
+        const equiposSorteados = [...participantesPrevia].sort(() => Math.random() - 0.5);
+        let enfrentamientos = [];
+        for (let i = 0; i < equiposSorteados.length; i += 2) {
+            if (equiposSorteados[i+1]) {
+                enfrentamientos.push({ loc: equiposSorteados[i], vis: equiposSorteados[i+1] });
             }
         }
+        enfrentamientos.sort(() => Math.random() - 0.5);
 
-        if (partidosParaInsertar.length > 0) {
-            await Partido.insertMany(partidosParaInsertar);
+        for (let i = 0; i < enfrentamientos.length; i++) {
+            const p = enfrentamientos[i];
+            const fechaPartido = obtenerFechaRealista(fecha, 'copa', competicion.nombre, i, false, 0);
+            partidosParaInsertar.push(crearObjeto(
+                partidaId, 
+                competicion._id, 
+                0, 
+                p.loc._id,
+                p.vis._id, 
+                fechaPartido, 
+                'ELIMINATORIA'
+            ));
         }
+
+        await Partido.insertMany(partidosParaInsertar);
+        console.log(`[${competicion.nombre}] Generados ${partidosParaInsertar.length} partidos.`);
     }
 }
 
-async function generarFaseGrupos(partidaId, competicion, anioInicio) {
+async function generarFaseSudamerica(partidaId, competicion, anioInicio) {
     const equiposConsultados = await Club.find({ partidaId, competiciones: competicion._id });
-    const equipos = equiposConsultados.sort(() => Math.random() - 0.5);
+    let bolsaEquipos = [...equiposConsultados].sort(() => Math.random() - 0.5);
 
-    let partidos = [];
-    let fechaInicio = new Date(anioInicio, 2, 5); // Marzo
+    let todosLosPartidosTemporales = []; 
+    let fechaInicio = new Date(anioInicio, 2, 5);
 
     for (let g = 0; g < 8; g++) {
-        const grupo = equipos.slice(g * 4, (g + 1) * 4);
-        if (grupo.length < 4) continue;
+        let grupo = [];
+        let intentosGrupo = 0;
+
+        while (grupo.length < 4 && bolsaEquipos.length > 0) {
+            const candidato = bolsaEquipos.pop();
+            const yaHayPais = grupo.some(e => e.pais === candidato.pais);
+            if (!yaHayPais|| intentosGrupo > 50) {
+                grupo.push(candidato);
+                intentosGrupo = 0;
+            }
+            else {
+                bolsaEquipos.unshift(candidato);
+                intentosGrupo++;
+            }
+        }
 
         const enfrentamientos = [
             { j: 1, loc: 0, vis: 1 }, { j: 1, loc: 2, vis: 3 },
@@ -128,81 +415,644 @@ async function generarFaseGrupos(partidaId, competicion, anioInicio) {
         ];
 
         enfrentamientos.forEach(e => {
-            let fechaPartido = new Date(fechaInicio);
-            fechaPartido.setDate(fechaPartido.getDate() + (e.j - 1) * 14); // Una jornada cada 2 semanas
+            if (grupo[e.loc] && grupo[e.vis]) {
+                todosLosPartidosTemporales.push({
+                    jornada: e.j,
+                    local: grupo[e.loc]._id,
+                    visitante: grupo[e.vis]._id
+                });
+            }
+        });
+    }
+
+    todosLosPartidosTemporales.sort(() => Math.random() - 0.5);
+
+    let listaFinal = [];
+    let contadoresHorario = {};
+
+    for (const p of todosLosPartidosTemporales) {
+        if (!contadoresHorario[p.jornada]) contadoresHorario[p.jornada] = 0;
+
+        let fechaJornada = new Date(fechaInicio);
+        fechaJornada.setDate(fechaInicio.getDate() + (p.jornada - 1) * 14);
+
+        const fechaPartido = obtenerFechaRealista(
+            new Date(fechaJornada), 
+            'internacional_america', 
+            competicion.nombre, 
+            contadoresHorario[p.jornada], 
+            false, 
+            0
+        );
+
+        listaFinal.push(crearObjeto(
+            partidaId, competicion._id, p.jornada, p.local, p.visitante, fechaPartido, 'LIGA'
+        ));
+
+        contadoresHorario[p.jornada]++;
+    }
+
+    await Partido.insertMany(listaFinal);
+    console.log(`[${competicion.nombre}] Generados ${listaFinal.length} partidos.`);
+}
+
+function esEnfrentamientoValido(hA, hB, bRivalIdx, bAIdx, limites, historial) {
+    if (hA.id === hB.id) return false;
+    if (hA.rivales.has(hB.id)) return false;
+    if (hA.pais === hB.pais) return false;
+    
+    if (hA.cuposBombo[bRivalIdx] >= limites.porBombo) return false;
+    if (hB.cuposBombo[bAIdx] >= limites.porBombo) return false;
+    
+    // Límite de 2 por país (Heurística rápida)
+    let pA = 0, pB = 0;
+    for (let rId of hA.rivales) if (historial[rId].pais === hB.pais) pA++;
+    if (pA >= 2) return false;
+    for (let rId of hB.rivales) if (historial[rId].pais === hA.pais) pB++;
+    if (pB >= 2) return false;
+
+    return true;
+}
+
+
+// El motor de Backtracking
+function ejecutarSorteoRecursivo(historial, bombos, limites, control) {
+    control.iteraciones++;
+    if (control.iteraciones > 50000) return false; 
+
+    const equipos = Object.values(historial);
+    const numBombos = bombos.length;
+    const totalRivales = numBombos * limites.porBombo;
+    
+    // Buscar equipos que aun necesiten partidos
+    const equiposIncompletos = equipos
+    .filter(e => e.rivales.size < totalRivales)
+    .sort((a, b) => {
+        const contarPais = (p) => equipos.filter(e => e.pais === p).length;
+        return contarPais(b.pais) - contarPais(a.pais) || b.rivales.size - a.rivales.size;
+    });
+
+    if (equiposIncompletos.length === 0) return true; 
+
+    const hA = equiposIncompletos[0]; 
+    const bAIdx = hA.bomboPertenece;
+
+    // Buscar en que bombo le faltan rivales
+    let bRivalIdx = -1;
+    for (let i = 0; i < numBombos; i++) {
+        if (hA.cuposBombo[i] < limites.porBombo) {
+            bRivalIdx = i;
+            break;
+        }
+    }
+
+    if (bRivalIdx === -1) return false;
+
+    let candidatos = bombos[bRivalIdx]
+        .map(c => historial[c._id.toString()])
+        .filter(hB => esEnfrentamientoValido(hA, hB, bRivalIdx, bAIdx, limites, historial));
+
+    candidatos.sort(() => Math.random() - 0.5);
+
+    for (let hB of candidatos) {
+        hA.rivales.add(hB.id);
+        hB.rivales.add(hA.id);
+        hA.cuposBombo[bRivalIdx]++;
+        hB.cuposBombo[bAIdx]++;
+
+        if (ejecutarSorteoRecursivo(historial, bombos, limites, control)) return true;
+
+        // BACKTRACK
+        hA.rivales.delete(hB.id);
+        hB.rivales.delete(hA.id);
+        hA.cuposBombo[bRivalIdx]--;
+        hB.cuposBombo[bAIdx]--;
+    }
+    return false;
+}
+
+function equilibrarLocalias(historial, limites) {
+    const equipos = Object.values(historial);
+    if (equipos.length === 0) return []; // Seguridad por si el historial llega vacío
+
+    const partidos = [];
+    const procesados = new Set();
+    const balance = {};
+    
+    // CORRECCIÓN AQUÍ: Accedemos al primer equipo de la lista [0]
+    const numBombos = equipos[0].cuposBombo.length;
+    const totalPartidosPorEquipo = numBombos * limites.porBombo;
+    const maxLocalesTotales = totalPartidosPorEquipo / 2;
+
+    equipos.forEach(h => {
+        balance[h.id] = { 
+            totalL: 0, 
+            totalV: 0, 
+            porBombo: Array.from({length: numBombos}, () => ({ L: 0, V: 0 })) 
+        };
+    });
+
+    const maxPorBomboL = Math.ceil(limites.porBombo / 2);
+
+    equipos.forEach(hA => {
+        hA.rivales.forEach(idB => {
+            const pair = [hA.id, idB].sort().join('-');
+            if (procesados.has(pair)) return;
+
+            const hB = historial[idB];
+            if (!hB) return; // Seguridad extra
+
+            const bA = hA.bomboPertenece;
+            const bB = hB.bomboPertenece;
+
+            let local, visita;
+            
+            const hAPuedeSerLocal = balance[hA.id].totalL < maxLocalesTotales && 
+                                   balance[hA.id].porBombo[bB].L < maxPorBomboL &&
+                                   balance[hB.id].totalV < maxLocalesTotales;
+
+            if (hAPuedeSerLocal) {
+                local = hA.id; visita = hB.id;
+            } else {
+                local = hB.id; visita = hA.id;
+            }
+
+            balance[local].totalL++;
+            balance[local].porBombo[historial[visita].bomboPertenece].L++;
+            balance[visita].totalV++;
+            balance[visita].porBombo[historial[local].bomboPertenece].V++;
+            
+            partidos.push({ loc: local, vis: visita });
+            procesados.add(pair);
+        });
+    });
+    return partidos;
+}
+
+function asignarJornadas(partidos, maxJornadas, partidaId, compId, anio) {
+    partidos.sort(() => Math.random() - 0.5);
+    const resultado = [];
+    const conteoPorJornada = {};
+    const nombreComp = compId.nombre || "";
+
+    for (const p of partidos) {
+        let jornadaAsignada = false;
+        
+        for (let j = 1; j <= maxJornadas; j++) {
+            const ocupado = resultado.some(r => 
+                r.jornada === j && (r.equipoLocal === p.loc || r.equipoVisitante === p.loc || r.equipoLocal === p.vis || r.equipoVisitante === p.vis)
+            );
+
+            if (!ocupado) {
+                if (!conteoPorJornada[j]) conteoPorJornada[j] = 0;
+                
+                const fechaBase = new Date(anio, 8, 15 + (j * 7));
+                const fechaFinal = obtenerFechaRealista(fechaBase, 'internacional_europa', nombreComp, conteoPorJornada[j], j === maxJornadas, j);
+
+                resultado.push({
+                    partidaId, competicionId: compId._id, jornada: j,
+                    equipoLocal: p.loc, equipoVisitante: p.vis,
+                    fecha: fechaFinal, estado: 'LIGA'
+                });
+
+                conteoPorJornada[j]++;
+                jornadaAsignada = true;
+                break;
+            }
+        }
+
+        if (!jornadaAsignada) {
+            let mejorJornada = 1;
+            let minPartidos = Infinity;
+            for(let j=1; j<=maxJornadas; j++) {
+                if((conteoPorJornada[j] || 0) < minPartidos) {
+                    minPartidos = conteoPorJornada[j] || 0;
+                    mejorJornada = j;
+                }
+            }
+
+            if (!conteoPorJornada[mejorJornada]) conteoPorJornada[mejorJornada] = 0;
+            const fechaBase = new Date(anio, 8, 15 + (mejorJornada * 7));
+            const fechaFinal = obtenerFechaRealista(fechaBase, 'internacional_europa', nombreComp, conteoPorJornada[mejorJornada], mejorJornada === maxJornadas, mejorJornada);
+
+            resultado.push({
+                partidaId, competicionId: compId._id, jornada: mejorJornada,
+                equipoLocal: p.loc, equipoVisitante: p.vis,
+                fecha: fechaFinal, estado: 'LIGA'
+            });
+            conteoPorJornada[mejorJornada]++;
+        }
+    }
+    return resultado;
+}
+
+async function generarFaseEuropa(partidaId, competicion, anioInicio, campeonesVigentes) {
+    const nombreComp = competicion.nombre.toLowerCase();
+    const esChampions = nombreComp.includes('champions');
+    const esEuropa = nombreComp.includes('europa');
+    const esConference = nombreComp.includes('conference');
+
+    const numBombos = esConference ? 6 : 4;
+    const jornadasTotales = esConference ? 6 : 8;
+    const limites = { porBombo: esConference ? 1 : 2 };
+
+    let equipos = await Club.find({ partidaId, competiciones: competicion._id });
+    
+    let bombo1Forzados = [];
+
+    if (esChampions) {
+       const idxChampions = equipos.findIndex(e => e.nombre === campeonesVigentes.champions);
+        if (idxChampions !== -1) {
+            const [equipo] = equipos.splice(idxChampions, 1);
+            bombo1Forzados.push(equipo);
+        }
+    } 
+    equipos.sort((a, b) => b.reputacion - a.reputacion);
+
+    const tamanoBombo = 36 / numBombos;
+    let bombos = Array.from({ length: numBombos }, () => []);
+
+    bombos[0] = [...bombo1Forzados, ...equipos.splice(0, tamanoBombo - bombo1Forzados.length)];
+
+    for (let i = 1; i < numBombos; i++) {
+        bombos[i] = equipos.splice(0, tamanoBombo);
+    }
+
+    /*bombos.forEach((bombo, i) => {
+        bombo.forEach(equipo => {
+            console.log(`bombo:[${i + 1}] [${equipo.nombre}]`);
+        });
+    });*/
+
+    const historial = {};
+    bombos.forEach((bombo, bIdx) => {
+        bombo.forEach(e => {
+            historial[e._id.toString()] = {
+                id: e._id.toString(),
+                pais: e.pais,
+                bomboPertenece: bIdx,
+                rivales: new Set(),
+                cuposBombo: Array.from({ length: numBombos }, () => ({ total: 0, L: 0, V: 0 })),
+                partidosReferencia: []
+            };
+        });
+    });
+
+    let exito = false;
+    let historialFinal = null;
+    let intentosGlobales = 0;
+
+    while (!exito && intentosGlobales < 1000) {
+        intentosGlobales++;
+        let hIntento = {};
+        bombos.forEach((b, idx) => b.forEach(e => {
+            hIntento[e._id.toString()] = {
+                id: e._id.toString(), pais: e.pais, bomboPertenece: idx,
+                rivales: new Set(),
+                cuposBombo: new Array(numBombos).fill(0)
+            };
+        }));
+
+        if (ejecutarSorteoRecursivo(hIntento, bombos, limites, { iteraciones: 0 })) {
+            historialFinal = hIntento;
+            exito = true;
+        }
+    }
+
+    if (exito && historialFinal) {
+        const partidosFinales = equilibrarLocalias(historialFinal, limites);
+        const partidosDB = asignarJornadas(partidosFinales, jornadasTotales, partidaId, competicion._id, anioInicio);
+        
+        if (partidosDB.length > 0) {
+            await Partido.insertMany(partidosDB);
+            console.log(`[${competicion.nombre}] Generados ${partidosDB.length} partidos.`);
+        }
+    } else {
+        console.error(`[${competicion.nombre}] No se pudo generar un sorteo válido tras varios intentos.`);
+    }
+}
+
+//ESTAS FUNCIONES DE AQUI PARA ABAJO NO SE SI ESTAN DEL TODO BIEN, HAY QUE COMPROBAR CUANDO SE TENGA LA LOGICA DE SIMULACION
+// OJO CON LAS FECHAS
+//ESTA FUNCION ES SOLO PARA LOS DIECISEISAVOS
+async function generarDieciseisavosEuropa(partidaId, competicion, tablaPosiciones, fechaUltimaJornada) {
+    const bloquesPlayoff = [
+        { nombre: 'A', cabezas: [tablaPosiciones[8], tablaPosiciones[9]], rivales: [tablaPosiciones[22], tablaPosiciones[23]] }, // (9-10) vs (23-24)
+        { nombre: 'B', cabezas: [tablaPosiciones[10], tablaPosiciones[11]], rivales: [tablaPosiciones[20], tablaPosiciones[21]] }, // (11-12) vs (21-22)
+        { nombre: 'C', cabezas: [tablaPosiciones[12], tablaPosiciones[13]], rivales: [tablaPosiciones[18], tablaPosiciones[19]] }, // (13-14) vs (19-20)
+        { nombre: 'D', cabezas: [tablaPosiciones[14], tablaPosiciones[15]], rivales: [tablaPosiciones[16], tablaPosiciones[17]] }  // (15-16) vs (17-18)
+    ];
+    
+    let partidosParaInsertar = [];
+    let fechaBase = new Date(fechaUltimaJornada);
+
+    bloquesPlayoff.forEach((bloque, bloqueIdx) => {
+        let cabezasMezclados = [...bloque.cabezas].sort(() => Math.random() - 0.5);
+        let rivalesMezclados = [...bloque.rivales].sort(() => Math.random() - 0.5);
+
+        for (let i = 0; i < 2; i++) {
+            const cabeza = cabezasMezclados[i];
+            const rival = rivalesMezclados[i];
+            const fechaIda = obtenerFechaRealista(fechaBase, 'internacional_europa', competicion.nombre, i + bloqueIdx * 2, false, 9);
+            const llaveId = `${bloque.nombre}${i + 1}`;
+            // IDA: El peor juega primero en casa
+            partidosParaInsertar.push(crearObjeto(
+                partidaId, 
+                competicion._id, 
+                'PLAYOFF_IDA', 
+                rival.clubId, 
+                cabeza.clubId, 
+                fechaIda, 
+                'ELIMINATORIA',
+                llaveId
+            ));
+
+            // VUELTA: El mejor cierra en casa
+            let fechaVuelta = new Date(fechaIda);
+            fechaVuelta.setDate(fechaVuelta.getDate() + 7);
+            partidosParaInsertar.push(crearObjeto(
+                partidaId, 
+                competicion._id, 
+                'PLAYOFF_VUELTA', 
+                cabeza.clubId, 
+                rival.clubId, 
+                fechaVuelta, 
+                'ELIMINATORIA',
+                llaveId
+            ));
+        }
+    });
+
+    await Partido.insertMany(partidosParaInsertar);
+}
+
+//ESTA ES PARA GENERAR LOS EMPAREJAMIENTOS DE OCTAVOS
+async function generarOctavosEuropa(partidaId, competicion, tablaPosiciones, ganadoresPlayoff, fechaUltimaJornada) {
+    // ganadoresPlayoff es un objeto: { 'A1': id, 'A2': id, 'B1': id, ... }
+    let partidosParaInsertar = [];
+    let fechaBase = new Date(fechaUltimaJornada);
+
+    const rutas = [
+        { bloqueCerrado: [0, 1], llavesPO: ['D1', 'D2'], idRuta: 'R1' }, // 1º/2º vs Ganadores Bloque D
+        { bloqueCerrado: [2, 3], llavesPO: ['C1', 'C2'], idRuta: 'R2' }, // 3º/4º vs Ganadores Bloque C
+        { bloqueCerrado: [4, 5], llavesPO: ['B1', 'B2'], idRuta: 'R3' }, // 5º/6º vs Ganadores Bloque B
+        { bloqueCerrado: [6, 7], llavesPO: ['A1', 'A2'], idRuta: 'R4' }  // 7º/8º vs Ganadores Bloque A
+    ];
+
+    rutas.forEach((ruta) => {
+        let cabezas = [tablaPosiciones[ruta.bloqueCerrado[0]], tablaPosiciones[ruta.bloqueCerrado[1]]].sort(() => Math.random() - 0.5);
+        let rivales = [ganadoresPlayoff[ruta.llavesPO[0]], ganadoresPlayoff[ruta.llavesPO[1]]].sort(() => Math.random() - 0.5);
+
+        for (let i = 0; i < 2; i++) {
+            const cabeza = cabezas[i];
+            const rivalId = rivales[i];
+            const subRutaId = `${ruta.idRuta}_${i + 1}`;
+
+            const fechaIda = obtenerFechaRealista(fechaBase, 'internacional_europa', competicion.nombre, i, false, 11);
+            
+            partidosParaInsertar.push(crearObjeto(
+                partidaId, 
+                competicion._id, 
+                'OCTAVOS_IDA', 
+                rivalId, 
+                cabeza.clubId, 
+                fechaIda, 
+                'ELIMINATORIA', 
+                subRutaId
+            ));
+
+            let fechaVuelta = new Date(fechaIda);
+            fechaVuelta.setDate(fechaVuelta.getDate() + 7);
+            partidosParaInsertar.push(crearObjeto(
+                partidaId, 
+                competicion._id, 
+                'OCTAVOS_VUELTA', 
+                cabeza.clubId, 
+                rivalId, 
+                fechaVuelta, 
+                'ELIMINATORIA', 
+                subRutaId
+            ));
+        }
+    });
+
+    await Partido.insertMany(partidosParaInsertar);
+}
+
+//ESTA ES YA PARA EL RESTO DE RONDAS CON EL CUADRO FINAL YA DEFINIDO
+async function generarCuadroFinalEuropa(partidaId, competicion, ganadoresRondaAnterior, faseNombre, fechaBase) {
+    let partidosParaInsertar = [];
+    let emparejamientos = [];
+
+    if (faseNombre === 'CUARTOS') {
+        // ganadoresRondaAnterior viene indexado por R1_1, R1_2, etc. (de los Octavos)
+        emparejamientos = [
+            { t1: ganadoresRondaAnterior['R1_1'], t2: ganadoresRondaAnterior['R4_1'], ruta: 'SEM_1' },
+            { t1: ganadoresRondaAnterior['R1_2'], t2: ganadoresRondaAnterior['R4_2'], ruta: 'SEM_1' },
+            { t1: ganadoresRondaAnterior['R2_1'], t2: ganadoresRondaAnterior['R3_1'], ruta: 'SEM_2' },
+            { t1: ganadoresRondaAnterior['R2_2'], t2: ganadoresRondaAnterior['R3_2'], ruta: 'SEM_2' }
+        ];
+    } else if (faseNombre === 'SEMIFINAL') {
+        // ganadoresRondaAnterior viene como { 'SEM_1': [id, id], 'SEM_2': [id, id] }
+        Object.keys(ganadoresRondaAnterior).forEach((rutaId) => {
+            const equipos = ganadoresRondaAnterior[rutaId].sort(() => Math.random() - 0.5);
+            emparejamientos.push({ 
+                t1: equipos[0], 
+                t2: equipos[1], 
+                ruta: 'FINAL'
+            });
+        });
+    } else if (faseNombre === 'FINAL') {
+        return await Partido.create(crearObjeto(
+            partidaId, competicion._id, 'FINAL', 
+            ganadoresRondaAnterior[0], ganadoresRondaAnterior[1], fechaBase, 'FINAL_UNICA'
+        ));
+    }
+
+    emparejamientos.forEach((cruce, i) => {
+        const numJornada = faseNombre === 'CUARTOS' ? 13 : (faseNombre === 'SEMIFINAL' ? 15 : 17);
+        const fechaIda = obtenerFechaRealista(fechaBase, 'internacional_europa', competicion.nombre, i, numJornada);
+        partidosParaInsertar.push(crearObjeto(
+            partidaId, 
+            competicion._id, 
+            `${faseNombre}_IDA`, 
+            cruce.t2, 
+            cruce.t1, 
+            fechaIda, 
+            'ELIMINATORIA',
+            cruce.ruta
+        ));
+        
+        let fechaVuelta = new Date(fechaIda);
+        fechaVuelta.setDate(fechaVuelta.getDate() + 7);
+        partidosParaInsertar.push(crearObjeto(
+            partidaId, 
+            competicion._id, 
+            `${faseNombre}_VUELTA`, 
+            cruce.t1, 
+            cruce.t2, 
+            fechaVuelta, 
+            'ELIMINATORIA', 
+            cruce.ruta
+        ));
+    });
+
+    await Partido.insertMany(partidosParaInsertar);
+}
+
+//ESTA ES PARA CREAR COMO UNOS DIECISEISAVOS QUE ENFRENTA LOS 3 DE LIBERTADORES CONTRAS LOS 2 DE SUDAMERICANA
+async function generarPlayoffsSudamericana(partidaId, compSudamericanaId, resultadosLib, resultadosSud, fechaUltimaJornada) {
+
+    let partidos = [];
+    let fechaBase = new Date(fechaUltimaJornada);
+
+   
+    const bombosSud = [...resultadosSud].sort(() => Math.random() - 0.5);
+    const bombosLib = [...resultadosLib].sort(() => Math.random() - 0.5);
+
+    for (let i = 0; i < 8; i++) {
+        const localId = bombosSud[i].clubId;
+        const visitanteId = bombosLib[i].clubId;
+
+        const llaveId = `PO_SUD_${i + 1}`;
+        const fechaIda = obtenerFechaRealista(fechaBase, 'internacional_america', 'sudamericana', i);
+        
+        // Ida y Vuelta
+        partidos.push(crearObjeto(
+            partidaId, 
+            compSudamericanaId, 
+            'PO_IDA', 
+            localId, 
+            visitanteId, 
+            fechaIda, 
+            'ELIMINATORIA',
+            llaveId
+        ));
+        
+        let fechaVuelta = new Date(fechaIda);
+        fechaVuelta.setDate(fechaVuelta.getDate() + 7);
+        partidos.push(crearObjeto(
+            partidaId, 
+            compSudamericanaId, 
+            'PO_VUELTA', 
+            visitanteId, 
+            localId, 
+            fechaVuelta, 
+            'ELIMINATORIA',
+            llaveId
+        ));
+    }
+
+    await Partido.insertMany(partidos);
+}
+
+//ESTA ES YA CUANDO HAN ACABDO LOS "DIECISEISAVOS" HACER LAS SIGUIENTES RONDAS QUE ES IGUAL PARA LIBERTADORES COMO PARA SUDAMERICANA
+async function generarRondaEliminatoriaSudamerica(partidaId, competicionId, equiposGanadores, jornadaNombre, fechaBase) {
+    let partidos = [];
+    
+    let bolsa = [...equiposGanadores].sort(() => Math.random() - 0.5);
+
+    if (jornadaNombre.toUpperCase() === 'FINAL') {
+        partidos.push(crearObjeto(
+            partidaId, 
+            competicionId, 
+            'FINAL', 
+            bolsa[0], 
+            bolsa[1], 
+            fechaBase, 
+            'FINAL_UNICA'
+        ));
+    } 
+    else {
+        for (let i = 0; i < bolsa.length; i += 2) {
+            if (bolsa[i+1]) {
+                const fechaIda = obtenerFechaRealista(fechaBase, 'internacional_america', '', i/2);
+                
+                partidos.push(crearObjeto(
+                    partidaId, 
+                    competicionId, 
+                    `${jornadaNombre}_IDA`, 
+                    bolsa[i], 
+                    bolsa[i+1], 
+                    fechaIda, 
+                    'ELIMINATORIA'
+                ));
+
+                let fechaVuelta = new Date(fechaIda);
+                fechaVuelta.setDate(fechaVuelta.getDate() + 7);
+                partidos.push(crearObjeto(
+                    partidaId, 
+                    competicionId, 
+                    `${jornadaNombre}_VUELTA`, 
+                    bolsa[i+1], 
+                    bolsa[i], 
+                    fechaVuelta, 
+                    'ELIMINATORIA'
+                ));
+            }
+        }
+    }
+
+    await Partido.insertMany(partidos);
+}
+
+//ESTA ES PARA LAS RONDAD DE COPA
+async function generarSiguienteRondaCopa(partidaId, competicion, equiposGanadores, jornadaNombre, fechaUltimaJornada, numJornada) {
+    let bolsa = [...equiposGanadores].sort(() => Math.random() - 0.5);
+    let partidos = [];
+    let fechaBase = new Date(fechaUltimaJornada); 
+
+    const nombreComp = competicion.nombre.toLowerCase();
+    const esSemifinal = jornadaNombre.toLowerCase().includes('semifinal');
+    const esFinal = jornadaNombre.toLowerCase().includes('final') && !esSemifinal;
+
+    let tieneVuelta = false;
+    if (esSemifinal) {
+        // Países con Semis a doble partido
+        const paisesDobleSemi = ['españa', 'italia', 'portugal', 'paises bajos', 'brasil'];
+        tieneVuelta = paisesDobleSemi.some(p => nombreComp.includes(p));
+    } else if (esFinal) {
+        // Brasil tiene la final a doble partido
+        tieneVuelta = nombreComp.includes('brasil');
+    }
+    const semanasIntervalo = (esSemifinal && !nombreComp.includes('brasil')) ? 3 : 1;
+
+    for (let i = 0; i < bolsa.length; i += 2) {
+        if (bolsa[i+1]) {
+            const fechaIda = obtenerFechaRealista(fechaBase, 'copa', competicion.nombre, i/2, numJornada);
+            const nombreJornadaIda = esSemifinal ? `${jornadaNombre}_IDA` : jornadaNombre;
 
             partidos.push(crearObjeto(
                 partidaId, 
                 competicion._id, 
-                e.j,
-                grupo[e.loc]._id, 
-                grupo[e.vis]._id, 
-                fechaPartido, 
-                'LIGA' 
+                nombreJornadaIda, 
+                bolsa[i], 
+                bolsa[i+1], 
+                fechaIda, 
+                tieneVuelta ? 'ELIMINATORIA' : 'FINAL'
             ));
-        });
+
+            if (tieneVuelta) {
+                let fechaVuelta = new Date(fechaIda);
+                fechaVuelta.setDate(fechaVuelta.getDate() + (semanasIntervalo * 7));
+
+                partidos.push(crearObjeto(
+                    partidaId, 
+                    competicion._id, 
+                    `${jornadaNombre}_VUELTA`, 
+                    bolsa[i+1], 
+                    bolsa[i], 
+                    fechaVuelta, 
+                    'ELIMINATORIA'
+                ));
+            }
+        }
     }
-    
-    if (partidos.length > 0) {
-        await Partido.insertMany(partidos);
-    }
+    await Partido.insertMany(partidos);
 }
 
-async function generarFaseSuiza(partidaId, competicion, anioInicio) {
-    const equipos = await Club.find({ partidaId, competiciones: competicion._id }).sort({ reputacion: -1 });
-
-    if (equipos.length < 36) {
-        console.warn(`Competición ${competicion.nombre} no tiene suficientes equipos (36 necesarios).`);
-        return;
-    }
-
-    const bombos = [
-        equipos.slice(0, 9),   // Bombo 1
-        equipos.slice(9, 18),  // Bombo 2
-        equipos.slice(18, 27), // Bombo 3
-        equipos.slice(27, 36)  // Bombo 4
-    ];
-
-    let partidosMap = new Set();
-    let partidosParaInsertar = [];
-    let fechaBase = new Date(anioInicio, 8, 15); 
-
-    equipos.forEach(equipo => {
-        bombos.forEach((bombo, indiceBombo) => {
-            const rivalesDisponibles = bombo
-                .filter(r => r._id.toString() !== equipo._id.toString())
-                .sort(() => Math.random() - 0.5)
-                .slice(0, 2);
-
-            rivalesDisponibles.forEach(rival => {
-                const IDs = [equipo._id.toString(), rival._id.toString()].sort();
-                const partidoKey = `${IDs[0]}-${IDs[1]}`;
-
-                if (!partidosMap.has(partidoKey)) {
-                    partidosMap.add(partidoKey);
-                    
-                    const esLocal = equipo._id.toString() < rival._id.toString();
-                    
-                    partidosParaInsertar.push(crearObjeto(
-                        partidaId, 
-                        competicion._id, 
-                        1,
-                        esLocal ? equipo._id : rival._id, 
-                        esLocal ? rival._id : equipo._id, 
-                        fechaBase, 
-                        'LIGA'
-                    ));
-                }
-            });
-        });
-    });
-
-    if (partidosParaInsertar.length > 0) {
-        await Partido.insertMany(partidosParaInsertar);
-    }
-}
-
-function crearObjeto(partidaId, compId, jornada, localId, visitanteId, fecha, tipo) {
+//ESTA ES FUNCION AUXILIAR PARA CREAR EL PARTIDO (ESTA SI QUE ESTA BIEN SEGURO)
+function crearObjeto(partidaId, compId, jornada, localId, visitanteId, fecha, tipo, llave = null) {
     return {
         partidaId,
         competicionId: compId,
@@ -211,8 +1061,8 @@ function crearObjeto(partidaId, compId, jornada, localId, visitanteId, fecha, ti
         equipoLocal: localId,
         equipoVisitante: visitanteId,
         fecha: new Date(fecha),
-        jugado: false
+        jugado: false,
+        llave: llave
     };
 }
-
 module.exports = generarCalendario;

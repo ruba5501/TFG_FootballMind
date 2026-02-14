@@ -10,7 +10,8 @@ const partidoSchema = new mongoose.Schema({
     competicionId: { type: mongoose.Schema.Types.ObjectId, ref: 'Competicion', required: true },
   
     tipo: { type: String, enum: ['LIGA', 'ELIMINATORIA', 'FINAL'], default: 'LIGA' },
-    jornada: { type: Number, required: true }, // para liga poner de 1 a el num jornadas y para copa poner un numero cualquiera pero luego saberlo para saber si es octavos, cuartos...
+    jornada: { type: Number, required: true }, // para liga poner de 1 a el num jornadas, para copa (octavos = 5 e ir subiendo), 
+    // para internacional europea (jornadas de liga de 1 a 8 y dieciseisavos = 9 y 10 (ida y vuelta) y subiendo) y para internacional sudamericana da igual por ahora
   
     equipoLocal: { type: mongoose.Schema.Types.ObjectId, ref: 'Club', required: true },
     equipoVisitante: { type: mongoose.Schema.Types.ObjectId, ref: 'Club', required: true },
