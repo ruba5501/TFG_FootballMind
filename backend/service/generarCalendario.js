@@ -2,6 +2,50 @@ const Partido = require('../models/partido');
 const Club = require('../models/club');
 const Partida = require('../models/partida');
 const Competicion = require('../models/competicion');
+const { spawn } = require('child_process');
+const path = require('path');
+const fs = require('fs');
+
+function llamarOrTools(equipos, enfrentamientos) {
+    return new Promise((resolve, reject) => {
+        const scriptPath = path.resolve(__dirname, 'sorteo_uefa.py'); 
+
+        if (!fs.existsSync(scriptPath)) {
+            return reject(`ERROR: El archivo ${scriptPath} no existe.`);
+        }
+
+        const pythonExecutable = process.platform === "win32" ? "python" : "python3";
+        const pythonProcess = spawn(pythonExecutable, [scriptPath]);
+        
+        pythonProcess.stdin.write(JSON.stringify({ equipos, enfrentamientos }));
+        pythonProcess.stdin.end();
+
+        let dataString = '';
+        let errorString = '';
+
+        pythonProcess.stdout.on('data', (data) => { dataString += data.toString(); });
+        pythonProcess.stderr.on('data', (data) => { errorString += data.toString(); });
+
+        pythonProcess.on('error', (err) => {
+            reject(`Fallo al iniciar el proceso de Python: ${err.message}`);
+        });
+
+        pythonProcess.on('close', (code) => {
+            if (errorString) console.error("Python reportó (stderr):", errorString);
+
+            if (code !== 0) {
+                return reject(`Python cerró con código ${code}. Error: ${errorString}`);
+            }
+
+            try {
+                if (!dataString.trim()) throw new Error("Salida vacía");
+                resolve(JSON.parse(dataString.trim()));
+            } catch (e) {
+                reject(`Error procesando JSON. Respuesta original: ${dataString}`);
+            }
+        });
+    });
+}
 
 function obtenerFechaRealista(fechaBase, tipoCompeticion, nombreCompeticion = '', indicePartido = 0, esUltimaJornada = false, jornada = 0, totalPartidos = 10) {
     const nuevaFecha = new Date(fechaBase);
@@ -12,30 +56,48 @@ function obtenerFechaRealista(fechaBase, tipoCompeticion, nombreCompeticion = ''
         const esChampions = nombre.includes('champions');
         const esEuropa = nombre.includes('europa');
         const esConference = nombre.includes('conference');
-
-        // ULTIMA JORNADA DE LIGA 
-        if (esUltimaJornada && jornada > 0) {
-            if (esChampions) {
-                while(nuevaFecha.getDay() !== 3) nuevaFecha.setDate(nuevaFecha.getDate() + 1);
-            } else {
-                while(nuevaFecha.getDay() !== 4) nuevaFecha.setDate(nuevaFecha.getDate() + 1);
-            }
-            nuevaFecha.setHours(21, 0, 0);
-            return nuevaFecha;
+        // ULTIMA JORNADA DE LIGA EUROPA
+        if (esUltimaJornada) {
+            // Champions: Miércoles, Europa/Conf: Jueves 
+            nuevaFecha.setDate(nuevaFecha.getDate() + (esChampions ? 2 : 3));
+            nuevaFecha.setHours(21, 0, 0, 0); 
         }
-        if (jornada <= 8) {
+        // PRIMERA JORNADA DE LIGA EUROPA
+        else if (jornada === 1) {
             if (esChampions) {
-                // Martes y Miércoles con 2 partidos de tarde cada dia
-                const diaExtra = (indicePartido > 8) ? 1 : 0;
-                nuevaFecha.setDate(nuevaFecha.getDate() + diaExtra);
-                const esTurnoTarde = (indicePartido === 0 || indicePartido === 1 || indicePartido === 9 || indicePartido === 10);
-                nuevaFecha.setHours(esTurnoTarde ? 18 : 21, esTurnoTarde ? 45 : 0, 0);
-            } 
-            else if (esEuropa || esConference) {
-                // Jueves mitad por la tarde, mitad por la noche
-                nuevaFecha.setDate(nuevaFecha.getDate() + 2);
-                const esTurnoTarde = (indicePartido < 9); 
-                nuevaFecha.setHours(esTurnoTarde ? 18 : 21, esTurnoTarde ? 45 : 0, 0);
+                //martes, miercoles y jueves con dos partidos a las 18:45 cada dia y el resto 21:00
+                if (indicePartido < 6) nuevaFecha.setDate(nuevaFecha.getDate() + 1); 
+                else if (indicePartido < 12) nuevaFecha.setDate(nuevaFecha.getDate() + 2); 
+                else nuevaFecha.setDate(nuevaFecha.getDate() + 3); 
+                
+                const esTurnoTarde = (indicePartido % 6 < 2);
+                nuevaFecha.setHours(esTurnoTarde ? 18 : 21, esTurnoTarde ? 45 : 0, 0, 0);
+            } else if (esEuropa) {
+                //miercoles y jueves con dos partidos 18:45 y el resto 21:00
+                const esMiercoles = (indicePartido < 9);
+                nuevaFecha.setDate(nuevaFecha.getDate() + (esMiercoles ? 2 : 3)); 
+                
+                const esTurnoTarde = (esMiercoles ? indicePartido < 2 : (indicePartido >= 9 && indicePartido < 11));
+                nuevaFecha.setHours(esTurnoTarde ? 18 : 21, esTurnoTarde ? 45 : 0, 0, 0);
+            } else {
+                //jueves con mitad 18:45 y mitad 21:00
+                nuevaFecha.setDate(nuevaFecha.getDate() + 3);
+                
+                const esTurnoTarde = (indicePartido < 9);
+                nuevaFecha.setHours(esTurnoTarde ? 18 : 21, esTurnoTarde ? 45 : 0, 0, 0);
+            }
+        } 
+        else if (jornada <= (nombre.includes('conference') ? 6 : 8)) {
+            if (esChampions) {
+                // Martes (mitad martes y mitad miercoles con 2 y 2 partidos por la tarde)
+                nuevaFecha.setDate(nuevaFecha.getDate() + (indicePartido < 9 ? 1 : 2));
+                const esTarde = (indicePartido % 9 < 2);
+                nuevaFecha.setHours(esTarde ? 18 : 21, esTarde ? 45 : 0, 0, 0);
+            } else {
+                // Jueves para Europa y Conference (mitad tarde, mitad noche)
+                nuevaFecha.setDate(nuevaFecha.getDate() + 3);
+                const esTarde = (indicePartido < 9);
+                nuevaFecha.setHours(esTarde ? 18 : 21, esTarde ? 45 : 0, 0, 0);
             }
         } 
         // FASES ELIMINATORIAS
@@ -118,6 +180,7 @@ function obtenerFechaRealista(fechaBase, tipoCompeticion, nombreCompeticion = ''
      } else {
         nuevaFecha.setHours(21, 0, 0);
     }
+    nuevaFecha.setSeconds(0, 0);
     return nuevaFecha;
 }
 
@@ -478,7 +541,7 @@ function esEnfrentamientoValido(hA, hB, bRivalIdx, bAIdx, limites, historial) {
 // El motor de Backtracking
 function ejecutarSorteoRecursivo(historial, bombos, limites, control) {
     control.iteraciones++;
-    if (control.iteraciones > 50000) return false; 
+    if (control.iteraciones > 5000) return false; 
 
     const equipos = Object.values(historial);
     const numBombos = bombos.length;
@@ -533,117 +596,99 @@ function ejecutarSorteoRecursivo(historial, bombos, limites, control) {
 
 function equilibrarLocalias(historial, limites) {
     const equipos = Object.values(historial);
-    if (equipos.length === 0) return []; // Seguridad por si el historial llega vacío
-
+    if (!equipos || equipos.length === 0 || !equipos[0].cuposBombo) {
+        return [];
+    }
     const partidos = [];
     const procesados = new Set();
     const balance = {};
     
-    // CORRECCIÓN AQUÍ: Accedemos al primer equipo de la lista [0]
     const numBombos = equipos[0].cuposBombo.length;
-    const totalPartidosPorEquipo = numBombos * limites.porBombo;
-    const maxLocalesTotales = totalPartidosPorEquipo / 2;
+    const maxL = (numBombos * limites.porBombo) / 2;
 
     equipos.forEach(h => {
-        balance[h.id] = { 
-            totalL: 0, 
-            totalV: 0, 
-            porBombo: Array.from({length: numBombos}, () => ({ L: 0, V: 0 })) 
-        };
+        balance[h.id] = { totalL: 0, totalV: 0, porBombo: Array.from({length: numBombos}, () => ({ L: 0, V: 0 })) };
     });
 
-    const maxPorBomboL = Math.ceil(limites.porBombo / 2);
-
+    const listaCruces = [];
     equipos.forEach(hA => {
         hA.rivales.forEach(idB => {
             const pair = [hA.id, idB].sort().join('-');
-            if (procesados.has(pair)) return;
-
-            const hB = historial[idB];
-            if (!hB) return; // Seguridad extra
-
-            const bA = hA.bomboPertenece;
-            const bB = hB.bomboPertenece;
-
-            let local, visita;
-            
-            const hAPuedeSerLocal = balance[hA.id].totalL < maxLocalesTotales && 
-                                   balance[hA.id].porBombo[bB].L < maxPorBomboL &&
-                                   balance[hB.id].totalV < maxLocalesTotales;
-
-            if (hAPuedeSerLocal) {
-                local = hA.id; visita = hB.id;
-            } else {
-                local = hB.id; visita = hA.id;
+            if (!procesados.has(pair)) {
+                listaCruces.push({ a: hA.id, b: idB });
+                procesados.add(pair);
             }
-
-            balance[local].totalL++;
-            balance[local].porBombo[historial[visita].bomboPertenece].L++;
-            balance[visita].totalV++;
-            balance[visita].porBombo[historial[local].bomboPertenece].V++;
-            
-            partidos.push({ loc: local, vis: visita });
-            procesados.add(pair);
         });
+    });
+
+    listaCruces.forEach(({ a, b }) => {
+        const hA = historial[a];
+        const hB = historial[b];
+        const bA = hA.bomboPertenece;
+        const bB = hB.bomboPertenece;
+
+        let local, visita;
+
+        const aPuedeL = balance[a].totalL < maxL && balance[a].porBombo[bB].L < (limites.porBombo / 2);
+        const bPuedeV = balance[b].totalV < maxL && balance[b].porBombo[bA].V < (limites.porBombo / 2);
+
+        if (aPuedeL && bPuedeV) {
+            local = a; visita = b;
+        } else {
+            local = b; visita = a;
+        }
+
+        balance[local].totalL++;
+        balance[local].porBombo[historial[visita].bomboPertenece].L++;
+        balance[visita].totalV++;
+        balance[visita].porBombo[historial[local].bomboPertenece].V++;
+        partidos.push({ loc: local, vis: visita });
     });
     return partidos;
 }
 
-function asignarJornadas(partidos, maxJornadas, partidaId, compId, anio) {
-    partidos.sort(() => Math.random() - 0.5);
-    const resultado = [];
-    const conteoPorJornada = {};
-    const nombreComp = compId.nombre || "";
+function asignarJornadas(partidosConJornada, competicion, anio, partidaId) {
+    const nombre = (competicion.nombre || "").toLowerCase();
+    const resultadoFinal = [];
+    const conteoJornada = {}; 
 
-    for (const p of partidos) {
-        let jornadaAsignada = false;
-        
-        for (let j = 1; j <= maxJornadas; j++) {
-            const ocupado = resultado.some(r => 
-                r.jornada === j && (r.equipoLocal === p.loc || r.equipoVisitante === p.loc || r.equipoLocal === p.vis || r.equipoVisitante === p.vis)
-            );
+    const calendarios = {
+        ucl: [0, 2, 5, 7, 10, 12, 18, 19], 
+        uel: [1, 2, 5, 7, 10, 12, 18, 19],
+        uec: [2, 5, 7, 10, 12, 13]
+    };
 
-            if (!ocupado) {
-                if (!conteoPorJornada[j]) conteoPorJornada[j] = 0;
-                
-                const fechaBase = new Date(anio, 8, 15 + (j * 7));
-                const fechaFinal = obtenerFechaRealista(fechaBase, 'internacional_europa', nombreComp, conteoPorJornada[j], j === maxJornadas, j);
+    let miCalendario = calendarios.uec;
+    if (nombre.includes('champions')) miCalendario = calendarios.ucl;
+    else if (nombre.includes('europa')) miCalendario = calendarios.uel;
 
-                resultado.push({
-                    partidaId, competicionId: compId._id, jornada: j,
-                    equipoLocal: p.loc, equipoVisitante: p.vis,
-                    fecha: fechaFinal, estado: 'LIGA'
-                });
+    const maxJ = nombre.includes('conference') ? 6 : 8;
 
-                conteoPorJornada[j]++;
-                jornadaAsignada = true;
-                break;
-            }
-        }
+    let fechaBaseSept = new Date(anio, 8, 15);
+    while (fechaBaseSept.getDay() !== 1) fechaBaseSept.setDate(fechaBaseSept.getDate() + 1);
 
-        if (!jornadaAsignada) {
-            let mejorJornada = 1;
-            let minPartidos = Infinity;
-            for(let j=1; j<=maxJornadas; j++) {
-                if((conteoPorJornada[j] || 0) < minPartidos) {
-                    minPartidos = conteoPorJornada[j] || 0;
-                    mejorJornada = j;
-                }
-            }
+    for (const p of partidosConJornada) {
+        const j = p.jornada;
+        if (!conteoJornada[j]) conteoJornada[j] = 0;
 
-            if (!conteoPorJornada[mejorJornada]) conteoPorJornada[mejorJornada] = 0;
-            const fechaBase = new Date(anio, 8, 15 + (mejorJornada * 7));
-            const fechaFinal = obtenerFechaRealista(fechaBase, 'internacional_europa', nombreComp, conteoPorJornada[mejorJornada], mejorJornada === maxJornadas, mejorJornada);
+        const offset = miCalendario[j - 1] !== undefined ? miCalendario[j - 1] : (j * 2);
+        let fechaLunes = new Date(fechaBaseSept);
+        fechaLunes.setDate(fechaBaseSept.getDate() + (offset * 7));
 
-            resultado.push({
-                partidaId, competicionId: compId._id, jornada: mejorJornada,
-                equipoLocal: p.loc, equipoVisitante: p.vis,
-                fecha: fechaFinal, estado: 'LIGA'
-            });
-            conteoPorJornada[mejorJornada]++;
-        }
+        const fechaFinal = obtenerFechaRealista(fechaLunes, 'internacional_europa', nombre, conteoJornada[j], j === maxJ, j);
+
+        resultadoFinal.push({
+            partidaId: partidaId,
+            competicionId: competicion._id,
+            jornada: j,
+            equipoLocal: p.loc,
+            equipoVisitante: p.vis,
+            fecha: fechaFinal,
+            tipo: 'LIGA' 
+        });
+        conteoJornada[j]++;
     }
-    return resultado;
+    return resultadoFinal;
 }
 
 async function generarFaseEuropa(partidaId, competicion, anioInicio, campeonesVigentes) {
@@ -677,12 +722,6 @@ async function generarFaseEuropa(partidaId, competicion, anioInicio, campeonesVi
     for (let i = 1; i < numBombos; i++) {
         bombos[i] = equipos.splice(0, tamanoBombo);
     }
-
-    /*bombos.forEach((bombo, i) => {
-        bombo.forEach(equipo => {
-            console.log(`bombo:[${i + 1}] [${equipo.nombre}]`);
-        });
-    });*/
 
     const historial = {};
     bombos.forEach((bombo, bIdx) => {
@@ -721,11 +760,26 @@ async function generarFaseEuropa(partidaId, competicion, anioInicio, campeonesVi
 
     if (exito && historialFinal) {
         const partidosFinales = equilibrarLocalias(historialFinal, limites);
-        const partidosDB = asignarJornadas(partidosFinales, jornadasTotales, partidaId, competicion._id, anioInicio);
+        const equiposSimplificados = Object.values(historialFinal).map(e => ({ 
+            id: e.id, 
+            pais: e.pais 
+        }));
         
-        if (partidosDB.length > 0) {
-            await Partido.insertMany(partidosDB);
-            console.log(`[${competicion.nombre}] Generados ${partidosDB.length} partidos.`);
+        try {
+            const partidosConJornada = await llamarOrTools(equiposSimplificados, partidosFinales);
+            
+            if (partidosConJornada && partidosConJornada.length > 0) {
+                const partidosDB = asignarJornadas(partidosConJornada, competicion, anioInicio, partidaId);
+                
+                if (partidosDB.length > 0) {
+                    await Partido.insertMany(partidosDB);
+                    console.log(`[${competicion.nombre}] ${partidosDB.length} partidos generados con OR-Tools.`);
+                }
+            } else {
+                console.error(`[${competicion.nombre}] OR-Tools no pudo encontrar una solución de calendario.`);
+            }
+        } catch (error) {
+            console.error(`[${competicion.nombre}] Error en el puente con Python:`, error);
         }
     } else {
         console.error(`[${competicion.nombre}] No se pudo generar un sorteo válido tras varios intentos.`);
@@ -997,6 +1051,7 @@ async function generarRondaEliminatoriaSudamerica(partidaId, competicionId, equi
 }
 
 //ESTA ES PARA LAS RONDAD DE COPA
+//INTENTAR CUADRAR LAS FECHAS PARA QUE SEA ENTRE MEDIADOS DE DICIEMBRE Y MEDIADOS DE ENERO QUE ES EL PARON DE EUROPA
 async function generarSiguienteRondaCopa(partidaId, competicion, equiposGanadores, jornadaNombre, fechaUltimaJornada, numJornada) {
     let bolsa = [...equiposGanadores].sort(() => Math.random() - 0.5);
     let partidos = [];

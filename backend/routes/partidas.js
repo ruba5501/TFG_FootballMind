@@ -180,7 +180,7 @@ partidaRouter.get('/crearPartida/final', requireLogin, async (req, res) => {
     await generarJugadores(partidaId, clubes, datos.nombrePartida);
     await generarEmpleados(partidaId, clubes, datos.nombrePartida);
     await generarCalendario(partidaId);
-
+    req.setTimeout(0);
 
     req.session.crearPartida = null;
 
