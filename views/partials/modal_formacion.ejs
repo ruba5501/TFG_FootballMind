@@ -23,57 +23,51 @@
                             <% }) %>
                         </select>
                     </div>
-                    </form>
+                    <div class="mb-3">
+                        <label class="form-label text-info small fw-bold">FALTAS IZQUIERDA</label>
+                        <select name="penaltis" class="form-select bg-secondary text-white border-0">
+                            <% clubUsuario.plantilla.forEach(j => { %>
+                                <option value="<%= j._id %>" <%= (clubUsuario.tactica && clubUsuario.tactica.faltasIzquierda == j._id.toString()) ? 'selected' : '' %>><%= j.nombre %></option>
+                            <% }) %>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-info small fw-bold">FALTAS DERECHA</label>
+                        <select name="penaltis" class="form-select bg-secondary text-white border-0">
+                            <% clubUsuario.plantilla.forEach(j => { %>
+                                <option value="<%= j._id %>" <%= (clubUsuario.tactica && clubUsuario.tactica.faltasDerecha == j._id.toString()) ? 'selected' : '' %>><%= j.nombre %></option>
+                            <% }) %>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-info small fw-bold">FALTAS LEJANAS</label>
+                        <select name="penaltis" class="form-select bg-secondary text-white border-0">
+                            <% clubUsuario.plantilla.forEach(j => { %>
+                                <option value="<%= j._id %>" <%= (clubUsuario.tactica && clubUsuario.tactica.faltasLejanas == j._id.toString()) ? 'selected' : '' %>><%= j.nombre %></option>
+                            <% }) %>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-info small fw-bold">CORNER IZQUIERDO</label>
+                        <select name="penaltis" class="form-select bg-secondary text-white border-0">
+                            <% clubUsuario.plantilla.forEach(j => { %>
+                                <option value="<%= j._id %>" <%= (clubUsuario.tactica && clubUsuario.tactica.cornersIzquierda == j._id.toString()) ? 'selected' : '' %>><%= j.nombre %></option>
+                            <% }) %>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-info small fw-bold">CORNER DERECHO</label>
+                        <select name="penaltis" class="form-select bg-secondary text-white border-0">
+                            <% clubUsuario.plantilla.forEach(j => { %>
+                                <option value="<%= j._id %>" <%= (clubUsuario.tactica && clubUsuario.tactica.cornersDerecha == j._id.toString()) ? 'selected' : '' %>><%= j.nombre %></option>
+                            <% }) %>
+                        </select>
+                    </div>
+                </form>
             </div>
             <div class="modal-footer border-secondary">
                 <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Cerrar</button>
                 <button type="button" class="btn btn-primary" onclick="GestorTactico.guardarRoles('<%= clubUsuario._id %>')">Guardar Roles</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="modal fade" id="modalCantera" tabindex="-1" aria-labelledby="modalCanteraLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content bg-dark text-white border-success">
-            <div class="modal-header border-secondary">
-                <h5 class="modal-title" id="modalCanteraLabel"><i class="bi bi-mortarboard"></i> Academia y Filial</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <% if (filial) { %>
-                    <p class="small text-muted">Selecciona un jugador del <strong><%= filial.nombre %></strong> para subirlo al primer equipo.</p>
-                    <div class="table-responsive">
-                        <table class="table table-dark table-hover border-secondary">
-                            <thead>
-                                <tr>
-                                    <th>Jugador</th>
-                                    <th>Pos</th>
-                                    <th>Media</th>
-                                    <th>Acción</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <% filial.plantilla.forEach(j => { %>
-                                    <tr>
-                                        <td><%= j.nombre %></td>
-                                        <td><span class="badge bg-secondary"><%= j.posicion %></span></td>
-                                        <td><%= j.media %></td>
-                                        <td>
-                                            <button class="btn btn-sm btn-success" onclick="GestorTactico.subirCanterano('<%= j._id %>')">
-                                                Subir
-                                            </button>
-                                        </td>
-                                    </tr>
-                                <% }) %>
-                            </tbody>
-                        </table>
-                    </div>
-                <% } else { %>
-                    <div class="text-center py-4">
-                        <p class="text-warning">No tienes un club filial asociado.</p>
-                    </div>
-                <% } %>
             </div>
         </div>
     </div>

@@ -45,8 +45,7 @@ clubRouter.get('/formacion/:partidaId', requireLogin, async (req, res) => {
         }
 
         const clubUsuario = await clubesDAO.buscarClubPorId(partida.clubSeleccionado);
-
-        const filial = await Club.findOne({ clubMatriz: clubUsuario._id }).populate('plantilla');
+        const filial = await clubesDAO.buscarFilialPorId(clubUsuario._id);
 
         res.render('formacion', {
             partida,

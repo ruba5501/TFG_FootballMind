@@ -28,6 +28,17 @@ class ClubsDAO {
     };
   }
 
+  async buscarFilialPorId(id) {
+    const club = await Club.findOne({"clubMatriz": id})
+      .populate({path: 'plantilla',})
+
+    if (!club) return null;
+
+    return {
+      ...club.toObject()
+    };
+  }
+
   async actualizarAlineacion(clubId, nuevoOrdenIds) {
     return await Club.findByIdAndUpdate(
       clubId, 

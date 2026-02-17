@@ -1,0 +1,54 @@
+
+<div class="modal fade" id="modalCantera" tabindex="-1" aria-labelledby="modalCanteraLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content bg-dark text-white border-success">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title" id="modalCanteraLabel"><i class="bi bi-mortarboard"></i> Academia y Filial</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <% if (filial) { %>
+                    <p class="small text-muted">Selecciona un jugador del <strong><%= filial.nombre %></strong> para subirlo al primer equipo.</p>
+                    <div class="table-responsive">
+                        <table class="table table-dark table-hover border-secondary">
+                            <thead>
+                                <tr>
+                                    <th>Jugador</th>
+                                    <th>Principal</th>
+                                    <th>Secundarias</th>
+                                    <th>Media</th>
+                                    <th>potencial</th>
+                                    <th>Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% filial.plantilla.forEach(j => { %>
+                                    <tr>
+                                        <td><%= j.nombre %></td>
+                                        <td><%= j.posicionPrincipal %></td>
+                                        <td>
+                                            <span class="badge bg-secondary">
+                                                <%= j.posicionesSecundarias.join(' / ') %>
+                                            </span>
+                                        </td>
+                                        <td><%= j.valoracion %></td>
+                                        <td><%= j.potencial %></td>
+                                        <td>
+                                            <button class="btn btn-sm btn-success" onclick="GestorTactico.subirCanterano('<%= j._id %>')">
+                                                Subir
+                                            </button>
+                                        </td>
+                                    </tr>
+                                <% }) %>
+                            </tbody>
+                        </table>
+                    </div>
+                <% } else { %>
+                    <div class="text-center py-4">
+                        <p class="text-warning">No tienes un club filial asociado.</p>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</div>

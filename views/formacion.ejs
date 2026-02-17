@@ -1,6 +1,8 @@
-<%- include('partials/head') %>
-<%- include('partials/navbar') %>
+<%- include('partials/head', {title: 'Formacion'}) %>
 
+<header>
+  <%- include('partials/navbar') %>
+</header>
 <div class="container-fluid mt-4">
     <div class="row">
         <div class="col-lg-8">
@@ -29,7 +31,7 @@
                     <h5 class="mb-0 text-center">Gestión de Plantilla</h5>
                 </div>
                 
-                <div class="p-2 bg-primary text-white small fw-bold">TITULARES (Top 11)</div>
+                <div class="p-2 bg-primary text-white small fw-bold">TITULARES</div>
                 <ul id="lista-titulares" class="list-group list-group-flush sortable-list">
                     <% clubUsuario.plantilla.slice(0, 11).forEach((j, index) => { %>
                         <% const esCanterano = filial && filial.plantilla.some(p => p._id.toString() === j._id.toString()) %>
@@ -37,6 +39,7 @@
                             <span class="badge bg-secondary me-2"><%= index + 1 %></span>
                             <div class="flex-grow-1">
                                 <strong><%= j.nombre %></strong> 
+                                <strong><%= j.posicionPrincipal %></strong> 
                                 <% if (esCanterano) { %><span class="badge bg-info text-dark" style="font-size: 0.6rem;">CANTERA</span><% } %>
                                 <br><small class="text-muted"><%= j.posicion %></small>
                             </div>
@@ -50,7 +53,8 @@
                         <% const esCanterano = filial && filial.plantilla.some(p => p._id.toString() === j._id.toString()) %>
                         <li class="list-group-item bg-dark text-white border-secondary d-flex align-items-center" data-id="<%= j._id %>">
                             <div class="flex-grow-1">
-                                <%= j.nombre %> (<%= j.posicion %>)
+                                <%= j.nombre %> 
+                                <%= j.posicionPrincipal %>
                                 <% if (esCanterano) { %><span class="badge bg-info text-dark ms-2" style="font-size: 0.6rem;">CANTERA</span><% } %>
                             </div>
                         </li>
@@ -63,7 +67,8 @@
                         <% const esCanterano = filial && filial.plantilla.some(p => p._id.toString() === j._id.toString()) %>
                         <li class="list-group-item bg-dark text-white border-secondary opacity-50 d-flex align-items-center" data-id="<%= j._id %>">
                             <div class="flex-grow-1">
-                                <%= j.nombre %> (<%= j.posicion %>)
+                                <%= j.nombre %>
+                                <%= j.posicionPrincipal %>
                                 <% if (esCanterano) { %><span class="badge bg-info text-dark ms-2" style="font-size: 0.6rem;">CANTERA</span><% } %>
                             </div>
                         </li>
@@ -75,6 +80,7 @@
 </div>
 
 <%- include('partials/modal_formacion') %>
+<%- include('partials/modal_subir_cantera') %>
 
 <script src="/js/formacion.js"></script>
 
