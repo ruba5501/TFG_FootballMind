@@ -1,0 +1,97 @@
+<%- include('partials/head') %>
+<%- include('partials/navbar') %>
+
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card bg-dark border-secondary">
+                <div class="card-body p-0">
+                    <div id="campo-futbol" class="pitch">
+                        </div>
+                </div>
+                <div class="card-footer d-flex justify-content-center gap-2">
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalRoles">
+                        <i class="bi bi-person-badge"></i> Roles y Capitán
+                    </button>
+                    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalCantera">
+                        <i class="bi bi-mortarboard"></i> Cantera
+                    </button>
+                    <button class="btn btn-warning" onclick="guardarTodo()">
+                        <i class="bi bi-save"></i> Guardar Todo
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card bg-dark text-white border-secondary" style="max-height: 80vh; overflow-y: auto;">
+                <div class="card-header bg-secondary">
+                    <h5 class="mb-0 text-center">Gestión de Plantilla</h5>
+                </div>
+                
+                <div class="p-2 bg-primary text-white small fw-bold">TITULARES (Top 11)</div>
+                <ul id="lista-titulares" class="list-group list-group-flush sortable-list">
+                    <% clubUsuario.plantilla.slice(0, 11).forEach((j, index) => { %>
+                        <% const esCanterano = filial && filial.plantilla.some(p => p._id.toString() === j._id.toString()) %>
+                        <li class="list-group-item bg-dark text-white border-secondary d-flex align-items-center" data-id="<%= j._id %>">
+                            <span class="badge bg-secondary me-2"><%= index + 1 %></span>
+                            <div class="flex-grow-1">
+                                <strong><%= j.nombre %></strong> 
+                                <% if (esCanterano) { %><span class="badge bg-info text-dark" style="font-size: 0.6rem;">CANTERA</span><% } %>
+                                <br><small class="text-muted"><%= j.posicion %></small>
+                            </div>
+                            </li>
+                    <% }) %>
+                </ul>
+
+                <div class="p-2 bg-info text-dark small fw-bold">SUPLENTES</div>
+                <ul id="lista-suplentes" class="list-group list-group-flush sortable-list">
+                    <% clubUsuario.plantilla.slice(11, 24).forEach(j => { %>
+                        <% const esCanterano = filial && filial.plantilla.some(p => p._id.toString() === j._id.toString()) %>
+                        <li class="list-group-item bg-dark text-white border-secondary d-flex align-items-center" data-id="<%= j._id %>">
+                            <div class="flex-grow-1">
+                                <%= j.nombre %> (<%= j.posicion %>)
+                                <% if (esCanterano) { %><span class="badge bg-info text-dark ms-2" style="font-size: 0.6rem;">CANTERA</span><% } %>
+                            </div>
+                        </li>
+                    <% }) %>
+                </ul>
+
+                <div class="p-2 bg-secondary text-white small fw-bold">RESERVAS</div>
+                <ul id="lista-reservas" class="list-group list-group-flush sortable-list">
+                    <% clubUsuario.plantilla.slice(24).forEach(j => { %>
+                        <% const esCanterano = filial && filial.plantilla.some(p => p._id.toString() === j._id.toString()) %>
+                        <li class="list-group-item bg-dark text-white border-secondary opacity-50 d-flex align-items-center" data-id="<%= j._id %>">
+                            <div class="flex-grow-1">
+                                <%= j.nombre %> (<%= j.posicion %>)
+                                <% if (esCanterano) { %><span class="badge bg-info text-dark ms-2" style="font-size: 0.6rem;">CANTERA</span><% } %>
+                            </div>
+                        </li>
+                    <% }) %>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('partials/modal_formacion') %>
+
+<script src="/js/formacion.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const formacionInicial = '<%= clubUsuario.tactica.formacion %>';
+        const clubId = '<%= clubUsuario._id %>';
+
+        if (typeof GestorTactico !== 'undefined') {
+            GestorTactico.dibujarAlineacion(formacionInicial);
+        }
+    });
+
+    function guardarTodo() {
+        const clubId = '<%= clubUsuario._id %>';
+        if (typeof GestorTactico !== 'undefined') {
+            GestorTactico.guardarCambios(clubId);
+        }
+    }
+</script>

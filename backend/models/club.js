@@ -56,7 +56,17 @@ const clubSchema = new mongoose.Schema({
       puntos: { type: Number, default: 0 },
       eliminado: { type: Boolean, default: false }
     }
-  ] 
+  ],
+  tactica: {
+    formacion: { type: String, default: '4-3-3' },
+    capitan: { type: mongoose.Schema.Types.ObjectId, ref: 'Jugador', default: null },
+    penaltis: { type: mongoose.Schema.Types.ObjectId, ref: 'Jugador', default: null },
+    faltasIzquierda: { type: mongoose.Schema.Types.ObjectId, ref: 'Jugador', default: null },
+    faltasDerecha: { type: mongoose.Schema.Types.ObjectId, ref: 'Jugador', default: null },
+    faltasLejanas: { type: mongoose.Schema.Types.ObjectId, ref: 'Jugador', default: null },
+    cornersIzquierda: { type: mongoose.Schema.Types.ObjectId, ref: 'Jugador', default: null },
+    cornersDerecha: { type: mongoose.Schema.Types.ObjectId, ref: 'Jugador', default: null }
+  }
 }, { 
     collection: 'clubes' 
 }
