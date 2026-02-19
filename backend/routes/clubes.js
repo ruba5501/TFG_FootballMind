@@ -4,6 +4,7 @@ const partidasDAO = require('../daos/partidasDAO');
 const clubesDAO = require('../daos/clubesDAO');
 const Club = require('../models/club');
 const { requireLogin } = require('../middleware/autenticacion');
+const { FORMACIONES } = require('../service/cargarFormaciones');
 
 clubRouter.post('/clubes', async (req, res) => {
   try {
@@ -51,6 +52,7 @@ clubRouter.get('/formacion/:partidaId', requireLogin, async (req, res) => {
             partida,
             clubUsuario,
             filial,
+            formaciones: FORMACIONES
         });
     } catch (err) {
         console.error(err);

@@ -105,11 +105,11 @@ const generarDatosUniversales = (clubes) => {
         else if (CLUBES_MEDIO_ALTO.includes(n)) rango = { rep: [74, 79], pop: [70, 83], ppto: [5000000, 12000000] };
         else if (CLUBES_MEDIO.includes(n)) rango = { rep: [68, 73], pop: [70, 83], ppto: [4000000, 8000000] };
         else if (CLUBES_MEDIO_BAJO.includes(n)) rango = { rep: [63, 67], pop: [65, 80], ppto: [2500000, 4000000] };
-        else if (CLUBES_BAJO.includes(n)) rango = { rep: [52, 62], pop: [53, 71], ppto: [700000, 2000000] };
-        else if (CLUBES_MUY_BAJO.includes(n)) rango = { rep: [47, 51], pop: [40, 60], ppto: [200000, 600000] };
+        else if (CLUBES_BAJO.includes(n)) rango = { rep: [58, 62], pop: [53, 71], ppto: [700000, 2000000] };
+        else if (CLUBES_MUY_BAJO.includes(n)) rango = { rep: [52, 57], pop: [40, 60], ppto: [200000, 600000] };
 
         if (club.esFilial && compiteEnLiga) {
-            rango = { rep: [52, 60], pop: [45, 55], ppto: [0, 0] }; 
+            rango = { rep: [52, 62], pop: [50, 60], ppto: [0, 0] }; 
         }
 
         if (esSudamericano) {
@@ -123,12 +123,37 @@ const generarDatosUniversales = (clubes) => {
         
         const pptoFinal = redondearPresupuesto(pptoRaw);
         const nivelInfra = rep > 87 ? 5 : (rep > 76 ? 4 : (rep > 62 ? 3 : (rep > 48 ? 2 : 1)));
+        let nivelCantera;
+        const azarCantera = Math.random();
+        if (rep >= 90) {
+            if (azarCantera > 0.10) nivelCantera = 5;
+            else nivelCantera = 4;
+        }
+        else if (rep > 85) {
+            if (azarCantera > 0.80) nivelCantera = 5;
+            else if (azarCantera > 0.60) nivelCantera = 4;
+            else if (azarCantera > 0.10) nivelCantera = 3;
+            else nivelCantera = 2;
+        } else if (rep > 70) { 
+            if (azarCantera > 0.90) nivelCantera = 5;
+            else if (azarCantera > 0.75) nivelCantera = 4;
+            else if (azarCantera > 0.35) nivelCantera = 3;
+            else if (azarCantera > 0.05) nivelCantera = 2;
+            else nivelCantera = 1;
+        } else {
+            if (azarCantera > 0.95) nivelCantera = 5;
+            else if (azarCantera > 0.85) nivelCantera = 4;
+            else if (azarCantera > 0.65) nivelCantera = 3;
+            else if (azarCantera > 0.25) nivelCantera = 2;
+            else nivelCantera = 1;
+        }
+        nivelCantera = Math.max(1, nivelCantera || 1);
 
         return {
             ...club,
             presupuestoTraspasos: pptoFinal,
             presupuestoSalarios: redondearPresupuesto(pptoFinal * 1.5),
-            infraestructuras: { entrenamiento: nivelInfra, cantera: nivelInfra },
+            infraestructuras: { entrenamiento: nivelInfra, cantera: nivelCantera },
             popularidad: pop,
             reputacion: rep,
             statsTemporada: []
@@ -141,8 +166,9 @@ const generarDatosUniversales = (clubes) => {
            const yaTieneFilial = base.some(c => c.clubMatriz === club.nombre && c.esFilial);
 
             if (!yaTieneFilial) {
-                let repFilial = Math.floor(club.reputacion * 0.6); 
-                repFilial = Math.max(35, Math.min(65, repFilial));
+                const tablaRep = { 1: 48, 2: 52, 3: 57, 4: 62, 5: 67 };
+                let repFilial = tablaRep[club.infraestructuras.cantera] + (Math.floor(Math.random() * 5) - 2);
+                repFilial = Math.max(48, Math.min(70, repFilial));
                 
                 nuevosFiliales.push({
                     nombre: club.nombre + " B",
@@ -159,7 +185,7 @@ const generarDatosUniversales = (clubes) => {
                     empleados: [],
                     infraestructuras: { ...club.infraestructuras }, 
                     escudo: club.escudo,
-                    popularidad: Math.floor(club.popularidad * 0.4),
+                    popularidad: Math.floor(club.popularidad * 0.7),
                     reputacion: repFilial,
                     historialTitulos: [],
                     statsTemporada: []

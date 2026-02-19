@@ -210,9 +210,10 @@
 /* Icono del jugador en el campo */
 .player-node {
     position: absolute;
-    width: 50px;
+    width: 60px;
     text-align: center;
     transition: all 0.5s ease; /* Para que al cambiar formación se "muevan" */
+    transform: translate(-50%, -50%);
 }
 
 .player-node .circle {

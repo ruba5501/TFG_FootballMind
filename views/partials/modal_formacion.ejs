@@ -1,68 +1,87 @@
+
 <div class="modal fade" id="modalRoles" tabindex="-1" aria-labelledby="modalRolesLabel" aria-hidden="true">
     <div class="modal-dialog modal-md">
         <div class="modal-content bg-dark text-white border-primary">
             <div class="modal-header border-secondary">
-                <h5 class="modal-title" id="modalRolesLabel"><i class="bi bi-person-badge"></i> Roles del Equipo</h5>
+                <h5 class="modal-title" id="modalRolesLabel"><i class="bi bi-person-badge"></i> Configuración de Especialistas</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <form id="formRoles">
+                    
                     <div class="mb-3">
-                        <label class="form-label text-warning small fw-bold">CAPITÁN</label>
+                        <label class="form-label text-warning small fw-bold text-uppercase">Capitán</label>
                         <select name="capitan" class="form-select bg-secondary text-white border-0">
+                            <option value="">-- Seleccionar Capitán --</option>
                             <% clubUsuario.plantilla.forEach(j => { %>
-                                <option value="<%= j._id %>" <%= (clubUsuario.tactica && clubUsuario.tactica.capitan == j._id.toString()) ? 'selected' : '' %>><%= j.nombre %></option>
+                                <option value="<%= j._id %>" <%= (clubUsuario.tactica && clubUsuario.tactica.capitan == j._id.toString()) ? 'selected' : '' %>>
+                                    <%= j.nombre %> ➔ (lider: <%= j.atributos.mental.liderazgo %> | motivacion: <%= j.atributos.mental.motivacion %> | BajoPresion: <%= j.atributos.mental.composturaBajoPresion %>)
+                                </option>
                             <% }) %>
                         </select>
                     </div>
+
                     <div class="mb-3">
-                        <label class="form-label text-info small fw-bold">PENALTIS</label>
+                        <label class="form-label text-info small fw-bold text-uppercase">Lanzador de Penaltis</label>
                         <select name="penaltis" class="form-select bg-secondary text-white border-0">
+                            <option value="">-- Seleccionar Lanzador --</option>
                             <% clubUsuario.plantilla.forEach(j => { %>
-                                <option value="<%= j._id %>" <%= (clubUsuario.tactica && clubUsuario.tactica.penaltis == j._id.toString()) ? 'selected' : '' %>><%= j.nombre %></option>
+                                <option value="<%= j._id %>" <%= (clubUsuario.tactica && clubUsuario.tactica.penaltis == j._id.toString()) ? 'selected' : '' %>>
+                                    <%= j.nombre %> ➔ (Penalti: <%= j.atributos.tiro.lanzamientoPenaltis %> | Potencia: <%= j.atributos.tiro.potenciaTiro %>)
+                                </option>
                             <% }) %>
                         </select>
                     </div>
+
+                    <% 
+                        const faltas = [
+                            { label: 'Faltas Izquierda', name: 'faltasIzquierda', field: 'faltasIzquierda' },
+                            { label: 'Faltas Derecha', name: 'faltasDerecha', field: 'faltasDerecha' }
+                        ];
+                        faltas.forEach(f => { %>
+                            <div class="mb-3">
+                                <label class="form-label text-info small fw-bold text-uppercase"><%= f.label %></label>
+                                <select name="<%= f.name %>" class="form-select bg-secondary text-white border-0">
+                                    <option value="">-- Seleccionar Lanzador --</option>
+                                    <% clubUsuario.plantilla.forEach(j => { %>
+                                        <option value="<%= j._id %>" <%= (clubUsuario.tactica && clubUsuario.tactica[f.field] == j._id.toString()) ? 'selected' : '' %>>
+                                            <%= j.nombre %> ➔ (Faltas: <%= j.atributos.tiro.lanzamientoFaltas %> <!---| Efecto: <%= j.atributos.pase.efecto %>---> | Potencia: <%= j.atributos.tiro.potenciaTiro %>)
+                                        </option>
+                                    <% }) %>
+                                </select>
+                            </div>
+                        <% }) %>
                     <div class="mb-3">
-                        <label class="form-label text-info small fw-bold">FALTAS IZQUIERDA</label>
+                        <label class="form-label text-info small fw-bold text-uppercase">Lanzador de Faltas Lejanas</label>
                         <select name="penaltis" class="form-select bg-secondary text-white border-0">
+                            <option value="">-- Seleccionar Lanzador --</option>
                             <% clubUsuario.plantilla.forEach(j => { %>
-                                <option value="<%= j._id %>" <%= (clubUsuario.tactica && clubUsuario.tactica.faltasIzquierda == j._id.toString()) ? 'selected' : '' %>><%= j.nombre %></option>
+                                <option value="<%= j._id %>" <%= (clubUsuario.tactica && clubUsuario.tactica.penaltis == j._id.toString()) ? 'selected' : '' %>>
+                                    <%= j.nombre %> ➔ (Faltas: <%= j.atributos.tiro.lanzamientoFaltas %> | Potencia: <%= j.atributos.tiro.potenciaTiro %> | tiroLejos: <%= j.atributos.tiro.tiroLejano %>)
+                                </option>
                             <% }) %>
                         </select>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label text-info small fw-bold">FALTAS DERECHA</label>
-                        <select name="penaltis" class="form-select bg-secondary text-white border-0">
-                            <% clubUsuario.plantilla.forEach(j => { %>
-                                <option value="<%= j._id %>" <%= (clubUsuario.tactica && clubUsuario.tactica.faltasDerecha == j._id.toString()) ? 'selected' : '' %>><%= j.nombre %></option>
-                            <% }) %>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label text-info small fw-bold">FALTAS LEJANAS</label>
-                        <select name="penaltis" class="form-select bg-secondary text-white border-0">
-                            <% clubUsuario.plantilla.forEach(j => { %>
-                                <option value="<%= j._id %>" <%= (clubUsuario.tactica && clubUsuario.tactica.faltasLejanas == j._id.toString()) ? 'selected' : '' %>><%= j.nombre %></option>
-                            <% }) %>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label text-info small fw-bold">CORNER IZQUIERDO</label>
-                        <select name="penaltis" class="form-select bg-secondary text-white border-0">
-                            <% clubUsuario.plantilla.forEach(j => { %>
-                                <option value="<%= j._id %>" <%= (clubUsuario.tactica && clubUsuario.tactica.cornersIzquierda == j._id.toString()) ? 'selected' : '' %>><%= j.nombre %></option>
-                            <% }) %>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label text-info small fw-bold">CORNER DERECHO</label>
-                        <select name="penaltis" class="form-select bg-secondary text-white border-0">
-                            <% clubUsuario.plantilla.forEach(j => { %>
-                                <option value="<%= j._id %>" <%= (clubUsuario.tactica && clubUsuario.tactica.cornersDerecha == j._id.toString()) ? 'selected' : '' %>><%= j.nombre %></option>
-                            <% }) %>
-                        </select>
-                    </div>
+                    <% 
+                        const corners = [
+                            { label: 'Córner Izquierdo', name: 'cornersIzquierda', field: 'cornersIzquierda' },
+                            { label: 'Córner Derecho', name: 'cornersDerecha', field: 'cornersDerecha' }
+                        ];
+                        corners.forEach(c => { 
+                    %>
+                        <div class="mb-3">
+                            <label class="form-label text-info small fw-bold text-uppercase"><%= c.label %></label>
+                            <select name="<%= c.name %>" class="form-select bg-secondary text-white border-0">
+                                <option value="">-- Seleccionar Lanzador --</option>
+                                <% clubUsuario.plantilla.forEach(j => { %>
+                                    <option value="<%= j._id %>" <%= (clubUsuario.tactica && clubUsuario.tactica[c.field] == j._id.toString()) ? 'selected' : '' %>>
+                                        <%= j.nombre %> ➔ (Centros: <%= j.atributos.pase.centros %>  <!---| Efecto: <%= j.atributos.pase.efecto %>--->)
+                                    </option>
+                                <% }) %>
+                            </select>
+                        </div>
+                    <% }) %>
+
                 </form>
             </div>
             <div class="modal-footer border-secondary">

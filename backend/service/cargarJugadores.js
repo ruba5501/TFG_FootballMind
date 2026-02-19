@@ -41,74 +41,133 @@ const RANKING_PAISES = {
 
 async function generarJugadoresNuevaPartida(partidaId, listaClubes, nombrePartida) {
     try {
+        const { FORMACIONES } = require('./cargarFormaciones');
         const clubes = listaClubes;
         
         let todosLosJugadores = [];
         let operacionesClubes = []; 
         let contadorTotal = 0;
 
+        const PESOS_FORMACIONES = {
+            '4-4-2': 13, '4-3-3': 13, '4-3-3 (defensivo)': 10, '4-3-3 (falso 9)': 10,
+            '4-2-3-1': 13, '4-2-3-1 (defensivo)': 10, '4-1-2-1-2': 7,
+            '5-3-2': 7, '5-2-1-2': 7, '3-5-2': 5, '3-2-2-3': 5
+        };
+
+        const MAPA_FLEXIBLE = {
+            'EI': ['EI', 'MI', 'SD'],
+            'ED': ['ED', 'MD', 'SD'],
+            'MI': ['MI', 'EI', 'MC'],
+            'MD': ['MD', 'ED', 'MC'],
+            'MCO': ['MCO', 'SD', 'MC'],
+            'SD': ['SD', 'DC', 'MCO'],
+            'MCD': ['MCD', 'MC'],
+            'MC': ['MC', 'MCD', 'MCO']
+        };
+
         for (const club of clubes) {
             const rep = club.reputacion;
             const repMatriz = (club.esFilial && club.clubMatriz) ? club.clubMatriz.reputacion : rep;
             
-            let titulares = ['POR', 'DFC', 'DFC', 'LI', 'LD'];
-            const azarCentro = Math.random();
-            if (azarCentro > 0.7) {
-                titulares.push('MCD', 'MC', 'MC');    
-            } else if (azarCentro > 0.4) {
-                titulares.push('MCD', 'MC', 'MCO');   
-            } else if (azarCentro > 0.15) {
-                titulares.push('MC', 'MC', 'MCO');    
-            } else {
-                titulares.push('MCD', 'MCD', 'MCO'); 
-            }
-            titulares.push(Math.random() > 0.5 ? 'EI' : 'MI');
-            titulares.push(Math.random() > 0.5 ? 'ED' : 'MD');
-            const azarFinal = Math.random();
-            if (azarFinal > 0.4) {
-                titulares.push('DC');                 
-            } else if (azarFinal > 0.15) {
-                titulares.push('SD');                
-            } else {
-                const comodinTactico = ['DFC', 'MCO', 'MC', 'DC']; 
-                titulares.push(comodinTactico[Math.floor(Math.random() * comodinTactico.length)]);
-            }
+            const nombreTactica = obtenerFormacionAleatoria(PESOS_FORMACIONES);
+            const tacticaInfo = FORMACIONES[nombreTactica];
+
+            let titulares = tacticaInfo.posiciones.map(pos => {
+                if (Math.random() > 0.7 && MAPA_FLEXIBLE[pos]) {
+                    const opciones = MAPA_FLEXIBLE[pos];
+                    return opciones[Math.floor(Math.random() * opciones.length)];
+                }
+                return pos;
+            });
 
             let extras = ['POR', 'POR'];
-            const poolDef = ['DFC', 'LI', 'LD'];
-            const poolMed = ['MCD', 'MC', 'MCO'];
-            const poolBan = ['EI', 'ED', 'MI', 'MD'];
-            const poolDel = ['DC', 'SD'];
+            const poolDef = titulares.filter(p => ['DFC', 'LI', 'LD'].includes(p));
+            const poolMed = titulares.filter(p => ['MC', 'MCD', 'MCO', 'MD', 'MI'].includes(p));
+            const poolDel = titulares.filter(p => ['DC', 'SD', 'EI', 'ED'].includes(p));
 
             for(let i=0; i<4; i++){
-                extras.push(poolDef[Math.floor(Math.random() * poolDef.length)]);
+                extras.push(poolDef[Math.floor(Math.random() * poolDef.length)]|| 'DFC');
+            }
+            for(let i=0; i<4; i++) {
+                extras.push(poolMed[Math.floor(Math.random() * poolMed.length)]|| 'MC');
             }
             for(let i=0; i<3; i++) {
-                extras.push(poolMed[Math.floor(Math.random() * poolMed.length)]);
-            }
-            for(let i=0; i<2; i++) {
-                extras.push(poolBan[Math.floor(Math.random() * poolBan.length)]);
-            }
-            for(let i=0; i<2; i++) {
-                extras.push(poolDel[Math.floor(Math.random() * poolDel.length)]);
+                extras.push(poolDel[Math.floor(Math.random() * poolDel.length)]|| 'DC');
             }
             const numRelleno = Math.floor(Math.random() * 5);
             for(let i=0; i < numRelleno; i++) {
-                const posicionAzar = POSICIONES_EXTRAS[Math.floor(Math.random() * POSICIONES_EXTRAS.length)];
-                extras.push(posicionAzar);
+                extras.push(POSICIONES_EXTRAS[Math.floor(Math.random() * POSICIONES_EXTRAS.length)]);
             }
 
             let plantillaBase = [...titulares, ...extras];
             let indicesTitulares = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-            let indicesEstrellas = indicesTitulares.sort(() => Math.random() - 0.5).slice(0, 4);
+            let delanteros = [];
+            let medios = [];
+            let otros = [];
+            indicesTitulares.forEach(idx => {
+                const pos = titulares[idx];
+                if (['DC', 'EI', 'ED', 'SD'].includes(pos)){
+                    delanteros.push(idx);
+                }
+                else if (['MC', 'MCD', 'MCO'].includes(pos)) {
+                    medios.push(idx);
+                }
+                else {
+                    otros.push(idx);
+                }
+            });
+
+            delanteros.sort(() => Math.random() - 0.5);
+            medios.sort(() => Math.random() - 0.5);
+            otros.sort(() => Math.random() - 0.5);
+
+            let estrellasFinales = [];
+            estrellasFinales.push(...delanteros.slice(0, 2));
+
+            let faltan = 4 - estrellasFinales.length;
+            if(faltan >= 3){
+                if(faltan==4) {
+                    estrellasFinales.push(...medios.slice(0, 2));
+                }
+                else{
+                    estrellasFinales.push(...medios.slice(0, 1));
+                }
+            }
+
+            faltan = 4 - estrellasFinales.length;
+            estrellasFinales.push(...otros.slice(0, faltan));
+
+            let indicesEstrellas = estrellasFinales;
 
             let jugadoresDelClub = [];
             let dorsalesOcupados = [];
+            let idsTitulares = [];
+            let idsSuplentes = [];
+            let idsReservas = [];
 
             const competicionesDelClub = club.competiciones || [];
-
+            const AFINIDADES = {
+                'DFC': ['MCD', 'LD', 'LI'],
+                'LI': ['LD', 'MI', 'DFC'],
+                'LD': ['LI', 'MD', 'DFC'],
+                'MCD': ['MC', 'DFC'],
+                'MC': ['MCO', 'MCD'],
+                'MCO': ['MC', 'SD', 'MI', 'MD'],
+                'MI': ['EI', 'LI', 'MD'],
+                'MD': ['ED', 'LD', 'MI'],
+                'EI': ['MI', 'ED', 'DC'],
+                'ED': ['MD', 'EI', 'DC'],
+                'SD': ['DC', 'MCO', 'EI', 'ED'],
+                'DC': ['SD']
+            };
             for (let i = 0; i < plantillaBase.length; i++) {
                 const posicion = plantillaBase[i];
+                let secundarias = [];
+                if (Math.random() > 0.2 && AFINIDADES[posicion]) {
+                    secundarias = AFINIDADES[posicion]
+                        .sort(() => 0.5 - Math.random())
+                        .slice(0, Math.floor(Math.random() * 2) + 1);
+                }
                 let rolContrato = 'suplente';
                 let rolInterno = 'ROTACION';
 
@@ -120,17 +179,24 @@ async function generarJugadoresNuevaPartida(partidaId, listaClubes, nombrePartid
                     rolContrato = 'importante'; 
                     rolInterno = 'TITULAR'; 
                 } 
-                else if (i > 19) { 
+                else if (i > 22) { 
                     rolContrato = club.esFilial ? 'promesa' : 'reserva'; 
                     rolInterno = 'RESERVA'; 
                 }
 
                 const arquetipo = ARQUETIPOS[posicion][Math.floor(Math.random() * ARQUETIPOS[posicion].length)];
                 const edad = generarEdad(rolInterno, club.esFilial, posicion);
-                const ratings = calcularRatings(rolInterno, rep, repMatriz, club.esFilial, edad);
+                const ratings = calcularRatings(rolInterno, rep, repMatriz, club.esFilial, edad, club.infraestructuras.cantera);
                 const fisico = generarFisico(posicion, arquetipo);
                 const { nombreCompleto, nacionalidad } = obtenerIdentidad(club.pais, rep, false, ratings.ca);      
                 const idJugador = new mongoose.Types.ObjectId();
+                if (i < 11) {
+                    idsTitulares.push(idJugador);
+                } else if (i < 23) { 
+                    idsSuplentes.push(idJugador);
+                } else {
+                    idsReservas.push(idJugador);
+                }
 
                 jugadoresDelClub.push({
                     _id: idJugador,
@@ -142,6 +208,7 @@ async function generarJugadoresNuevaPartida(partidaId, listaClubes, nombrePartid
                     peso: fisico.peso,    
                     nacionalidad: nacionalidad,
                     posicionPrincipal: posicion,
+                    posicionesSecundarias: secundarias,
                     piernaBuena: Math.random() > 0.2 ? 'derecha' : 'izquierda',
                     piernaMala: Math.floor(Math.random() * 5) + 1,
                     versatilidad: Math.floor(Math.random() * 5) + 1,
@@ -178,10 +245,35 @@ async function generarJugadoresNuevaPartida(partidaId, listaClubes, nombrePartid
                 const { rolInterno, ...jugadorParaInsertar } = jugador;
                 todosLosJugadores.push(jugadorParaInsertar);
             }
+            const titularesFinal = jugadoresDelClub.filter(j => idsTitulares.includes(j._id));
+            const capitan = titularesFinal.sort((a, b) => b.atributos.mental.liderazgo - a.atributos.mental.liderazgo)[0]?._id;
+            const lanzadorPenaltis = titularesFinal.sort((a, b) => b.atributos.tiro.lanzamientoPenaltis - a.atributos.tiro.lanzamientoPenaltis)[0]?._id;
+            const lanzadorFaltas = titularesFinal.sort((a, b) => b.atributos.tiro.lanzamientoFaltas - a.atributos.tiro.lanzamientoFaltas)[0]?._id;
+            const lanzadorFaltasLejanas = titularesFinal.sort((a, b) => b.atributos.tiro.tiroLejano - a.atributos.tiro.tiroLejano)[0]?._id;
+            const lanzadorCorners = titularesFinal.sort((a, b) => b.atributos.pase.centros - a.atributos.pase.centros)[0]?._id;
+
+            //const formacion = seleccionarFormacion(titulares);
+
+            const tacticaActualizada = {
+                formacion: nombreTactica,
+                titulares: idsTitulares,
+                suplentes: idsSuplentes,
+                reservas: idsReservas,
+                capitan: titularesFinal.sort((a, b) => b.atributos.mental.liderazgo - a.atributos.mental.liderazgo)[0]?._id || idsTitulares[0],
+                penaltis: titularesFinal.sort((a, b) => b.atributos.tiro.lanzamientoPenaltis - a.atributos.tiro.lanzamientoPenaltis)[0]?._id || idsTitulares[10],
+                faltasIzquierda: titularesFinal.sort((a, b) => b.atributos.tiro.lanzamientoFaltas - a.atributos.tiro.lanzamientoFaltas)[0]?._id || idsTitulares[7],
+                faltasDerecha: titularesFinal.sort((a, b) => b.atributos.tiro.lanzamientoFaltas - a.atributos.tiro.lanzamientoFaltas)[0]?._id || idsTitulares[7],
+                faltasLejanas: titularesFinal.sort((a, b) => b.atributos.tiro.tiroLejano - a.atributos.tiro.tiroLejano)[0]?._id || idsTitulares[7],
+                cornersIzquierda: titularesFinal.sort((a, b) => b.atributos.pase.centros - a.atributos.pase.centros)[0]?._id || idsTitulares[7],
+                cornersDerecha: titularesFinal.sort((a, b) => b.atributos.pase.centros - a.atributos.pase.centros)[0]?._id || idsTitulares[7]
+            };
             operacionesClubes.push({
                 updateOne: {
                     filter: { _id: club._id },
-                    update: { $set: { plantilla: idsJugadoresFinales } }
+                    update: { $set: { 
+                        plantilla: idsJugadoresFinales,
+                        tactica: tacticaActualizada
+                    } }
                 }
             });
             contadorTotal += jugadoresDelClub.length;
@@ -195,6 +287,17 @@ async function generarJugadoresNuevaPartida(partidaId, listaClubes, nombrePartid
         console.log(`Se han añadido ${contadorTotal} jugadores para partida ${nombrePartida}.`);
         return true;
     } catch (err) { console.error(err); throw err; }
+}
+        
+function obtenerFormacionAleatoria(PESOS_FORMACIONES){
+    const opciones = Object.keys(PESOS_FORMACIONES);
+    const totalPeso = Object.values(PESOS_FORMACIONES).reduce((a, b) => a + b, 0);
+    let random = Math.random() * totalPeso;
+    for (const nombre of opciones) {
+        if (random < PESOS_FORMACIONES[nombre]) return nombre;
+        random -= PESOS_FORMACIONES[nombre];
+    }
+    return '4-4-2';
 }
 
 function generarFisico(pos, arquetipo) {
@@ -218,10 +321,17 @@ function generarFisico(pos, arquetipo) {
     return { altura, peso };
 }
 
-function calcularRatings(rol, rep, repMatriz, esFilial, edad) {
+function calcularRatings(rol, rep, repMatriz, esFilial, edad, nivelCantera) {
     let ca;
+    let azarExcepcion = Math.random();
     if (esFilial) {
-        ca = (repMatriz * 0.50) + (Math.random() * 12 + 10);
+        const basePorReputacion = (rep * 0.88) + 2;
+        const margen= (Math.random() * 8);
+        
+        ca = basePorReputacion + margen;
+        if (azarExcepcion > 0.90) { 
+            ca = repMatriz - (Math.random() * 4 + 4);
+        }
     } else {
        if (rol === 'ESTRELLA') {
             if (rep >= 90) { 
@@ -276,39 +386,32 @@ function calcularRatings(rol, rep, repMatriz, esFilial, edad) {
     
     let pa;
     if (esFilial) {
-        const factorAcademia = repMatriz / 100; 
-        const azar = Math.random();
-
-        if (azar > (1 - (0.02 + factorAcademia * 0.04))) { 
-            pa = 91 + (Math.random() * 8); 
-        } 
-        else if (azar > (1 - (0.10 + factorAcademia * 0.15))) {
-            pa = 86 + (Math.random() * 4.5); 
-        } 
-        else if (azar > (1 - (0.25 + factorAcademia * 0.25))) {
-            pa = 80 + (Math.random() * 5); 
-        }
-        else {
-            const sueloPotencial = (repMatriz * 0.78) + 10; 
-            pa = sueloPotencial + (Math.random() * 6);
+        const probCrackMundial = 0.01 + (nivelCantera * 0.02);
+        if (Math.random() < probCrackMundial) {
+            pa = 88 + (Math.random() * 11); 
+        } else if (azarExcepcion > 0.80) {
+            pa = 80 + (Math.random() * 8);
+        } else {
+            pa = ca + 10 + (nivelCantera * 2) + (Math.random() * 10); 
         }
     } else {
         let distanciaAlTop = 98 - ca;
         let azarTalento = Math.random();
         let factorAmbicion;
 
-        if (azarTalento < 0.05) factorAmbicion = 0.85;     
-        else if (azarTalento < 0.20) factorAmbicion = 0.50; 
-        else factorAmbicion = 0.20;                        
+        if (azarTalento < 0.10) factorAmbicion = 0.80;
+        else if (azarTalento < 0.30) factorAmbicion = 0.45; 
+        else factorAmbicion = 0.15; 
 
         let factorEdad;
         if (edad < 22) factorEdad = 1.0;
-        else if (edad < 26) factorEdad = 0.70; 
-        else if (edad < 30) factorEdad = 0.25; 
-        else factorEdad = 0.05;
+        else if (edad < 26) factorEdad = 0.65; 
+        else if (edad < 30) factorEdad = 0.20; 
+        else factorEdad = 0.02;
 
         pa = ca + (distanciaAlTop * factorAmbicion * factorEdad);
     }
+
     let paFinal = Math.min(99, Math.max(ca, pa));
 
     return { 

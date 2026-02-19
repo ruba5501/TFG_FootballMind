@@ -48,20 +48,30 @@ class ClubsDAO {
   }
 
   // Nota: Asegúrate de tener estos campos en tu Schema de Club o crear un Schema de 'Tactica'
-  async actualizarRolesTacticos(clubId, roles) {
-    /* roles = { 
-         capitanId: '...', 
-         penaltisId: '...', 
-         faltasId: '...', 
-         formacion: '4-4-2' 
-       } 
-    */
-    return await Club.findByIdAndUpdate(
-      clubId,
-      { $set: { tactica: roles } }, 
-      { new: true }
-    );
-  }
+  // En ClubsDAO.js
+
+async actualizarEstrategia(clubId, plantillaIds, datosTacticos) {
+   return await Club.findByIdAndUpdate(
+        clubId,
+        { 
+            $set: { 
+                plantilla: plantillaIds,
+                "tactica.formacion": datosTacticos.formacion,
+                "tactica.capitan": datosTacticos.capitan,
+                "tactica.penaltis": datosTacticos.penaltis,
+                "tactica.faltasIzquierda": datosTacticos.faltasIzquierda,
+                "tactica.faltasDerecha": datosTacticos.faltasDerecha,
+                "tactica.faltasLejanas": datosTacticos.faltasLejanas,
+                "tactica.cornersIzquierda": datosTacticos.cornersIzquierda,
+                "tactica.cornersDerecha": datosTacticos.cornersDerecha,
+                "tactica.titulares": plantillaIds.slice(0, 11),
+                "tactica.suplentes": plantillaIds.slice(11, 23),
+                "tactica.reservas": plantillaIds.slice(23)
+            } 
+        },
+        { new: true }
+    ).populate('plantilla');
+}
   async promoverCanteranoDefinitivo(clubMatrizId, filialId, jugadorId) {
     await Club.findByIdAndUpdate(filialId, { $pull: { plantilla: jugadorId } });
     return await Club.findByIdAndUpdate(clubMatrizId, { $addToSet: { plantilla: jugadorId } });

@@ -6,10 +6,22 @@
 <div class="container-fluid mt-4">
     <div class="row">
         <div class="col-lg-8">
-            <div class="card bg-dark border-secondary">
+            <div class="card bg-dark border-secondary p-3">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="text-white mb-0">Disposición Táctica</h5>
+                    <div class="input-group style-select-tactica" style="width: auto;">
+                        <span class="input-group-text bg-secondary text-white border-secondary">Esquema</span>
+                        <select id="selector-formacion" class="form-select bg-dark text-white border-secondary">
+                            <% Object.keys(formaciones).forEach(f => { %>
+                                <option value="<%= f %>" <%= clubUsuario.tactica.formacion === f ? 'selected' : '' %>>
+                                    <%= f %>
+                                </option>
+                            <% }) %>
+                        </select>
+                    </div>
+                </div>
                 <div class="card-body p-0">
-                    <div id="campo-futbol" class="pitch">
-                        </div>
+                    <div id="campo-futbol" class="pitch"></div>
                 </div>
                 <div class="card-footer d-flex justify-content-center gap-2">
                     <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalRoles">
@@ -82,22 +94,23 @@
 <%- include('partials/modal_formacion') %>
 <%- include('partials/modal_subir_cantera') %>
 
-<script src="/js/formacion.js"></script>
-
+<script src="/js/logicaFormaciones.js"></script>
 <script>
+    const FORMACIONES_DATA = JSON.parse('<%- JSON.stringify(formaciones) %>');
+    const CLUB_ID = '<%= clubUsuario._id %>';
+
     document.addEventListener('DOMContentLoaded', () => {
         const formacionInicial = '<%= clubUsuario.tactica.formacion %>';
-        const clubId = '<%= clubUsuario._id %>';
 
         if (typeof GestorTactico !== 'undefined') {
-            GestorTactico.dibujarAlineacion(formacionInicial);
+            GestorTactico.init(formacionInicial, FORMACIONES_DATA);
         }
     });
 
     function guardarTodo() {
-        const clubId = '<%= clubUsuario._id %>';
         if (typeof GestorTactico !== 'undefined') {
-            GestorTactico.guardarCambios(clubId);
+            const formacionActual = document.getElementById('selector-formacion').value;
+            GestorTactico.guardarCambios(CLUB_ID, formacionActual);
         }
     }
 </script>

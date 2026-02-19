@@ -59,6 +59,15 @@ const clubSchema = new mongoose.Schema({
   ],
   tactica: {
     formacion: { type: String, default: '4-3-3' },
+    titulares: {
+      type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Jugador' }],
+      validate: [v => v.length <= 11, 'No pueden haber más de 11 titulares']
+    },
+    suplentes: {
+      type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Jugador' }],
+      validate: [v => v.length <= 13, 'El banquillo no puede superar los 13 jugadores']
+    },
+    reservas: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Jugador' }],
     capitan: { type: mongoose.Schema.Types.ObjectId, ref: 'Jugador', default: null },
     penaltis: { type: mongoose.Schema.Types.ObjectId, ref: 'Jugador', default: null },
     faltasIzquierda: { type: mongoose.Schema.Types.ObjectId, ref: 'Jugador', default: null },
