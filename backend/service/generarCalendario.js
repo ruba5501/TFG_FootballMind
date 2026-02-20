@@ -127,9 +127,16 @@ function obtenerFechaRealista(fechaBase, tipoCompeticion, nombreCompeticion = ''
     }
     //SUDAMERICA
     else if (tipoCompeticion === 'internacional_america') {
+        const esLibertadores = nombre.includes('libertadores');
         if (esUltimaJornada) {
-            nuevaFecha.setDate(nuevaFecha.getDate() + 2); 
-            nuevaFecha.setHours(21, 0, 0, 0); 
+            if(esLibertadores){
+                nuevaFecha.setDate(nuevaFecha.getDate() + 1); 
+                nuevaFecha.setHours(21, 0, 0, 0); 
+            }
+            else{
+                nuevaFecha.setDate(nuevaFecha.getDate() + 2); 
+                nuevaFecha.setHours(21, 0, 0, 0); 
+            }
         } 
         else {
             const esMartes = (indicePartido % 2 === 0);
