@@ -137,4 +137,100 @@ router.get('/competicion/:idCompeticion/clasificacion', requireLogin, async (req
         res.status(500).send("Error al cargar la clasificación");
     }
 });
+
+router.get('/clasificacion/:idPartida', requireLogin, async (req, res) => {
+    try {
+        const partidaId = req.params.idPartida;
+        
+        // 1. Obtener la partida y tu club
+        const partida = await Partida.findById(partidaId).populate('clubSeleccionado');
+        if (!partida) return res.redirect('/listarPartidas');
+        const clubUsuario = partida.clubSeleccionado;
+
+        // 2. Averiguar en qué liga juega el usuario
+        // Buscamos un partido cualquiera del usuario que sea de tipo 'LIGA'
+        const partidoReferencia = await Partido.findOne({
+            partidaId: partidaId,
+            $or: [{ equipoLocal: clubUsuario._id }, { equipoVisitante: clubUsuario._id }],
+            tipo: 'LIGA'
+        }).populate('competicionId');
+
+        if (!partidoReferencia) {
+            return res.status(404).send("No se ha encontrado ninguna liga para tu equipo.");
+        }
+
+        const competicionLiga = partidoReferencia.competicionId;
+
+        // 3. Obtener TODOS los partidos de esa liga (para saber qué equipos participan)
+        const todosLosPartidos = await Partido.find({
+            partidaId: partidaId,
+            competicionId: competicionLiga._id
+        }).populate('equipoLocal equipoVisitante');
+
+        // 4. Construir la tabla
+        const tabla = {};
+
+        // Inicializamos los contadores de todos los equipos a cero
+        todosLosPartidos.forEach(p => {
+            if (!tabla[p.equipoLocal._id]) tabla[p.equipoLocal._id] = { club: p.equipoLocal, pts: 0, pj: 0, pg: 0, pe: 0, pp: 0, gf: 0, gc: 0 };
+            if (!tabla[p.equipoVisitante._id]) tabla[p.equipoVisitante._id] = { club: p.equipoVisitante, pts: 0, pj: 0, pg: 0, pe: 0, pp: 0, gf: 0, gc: 0 };
+        });
+
+        // Sumamos las estadísticas solo de los partidos JUGADOS
+        const partidosJugados = todosLosPartidos.filter(p => p.jugado === true);
+        
+        partidosJugados.forEach(p => {
+            const idLocal = p.equipoLocal._id;
+            const idVisit = p.equipoVisitante._id;
+
+            // Partidos Jugados y Goles
+            tabla[idLocal].pj += 1;
+            tabla[idVisit].pj += 1;
+            tabla[idLocal].gf += p.golesLocal;
+            tabla[idLocal].gc += p.golesVisitante;
+            tabla[idVisit].gf += p.golesVisitante;
+            tabla[idVisit].gc += p.golesLocal;
+
+            // Puntos y Victorias/Empates/Derrotas
+            if (p.golesLocal > p.golesVisitante) {
+                tabla[idLocal].pts += 3;
+                tabla[idLocal].pg += 1;
+                tabla[idVisit].pp += 1;
+            } else if (p.golesLocal < p.golesVisitante) {
+                tabla[idVisit].pts += 3;
+                tabla[idVisit].pg += 1;
+                tabla[idLocal].pp += 1;
+            } else {
+                tabla[idLocal].pts += 1;
+                tabla[idVisit].pts += 1;
+                tabla[idLocal].pe += 1;
+                tabla[idVisit].pe += 1;
+            }
+        });
+
+        // 5. Convertir la tabla a Array y ORDENARLA
+        let clasificacion = Object.values(tabla).sort((a, b) => {
+            if (b.pts !== a.pts) return b.pts - a.pts; // 1º Mayor puntuación
+            
+            const difB = b.gf - b.gc;
+            const difA = a.gf - a.gc;
+            if (difB !== difA) return difB - difA;     // 2º Diferencia de goles
+            
+            return b.gf - a.gf;                        // 3º Goles a favor
+        });
+
+        // Renderizamos la vista
+        res.render('clasificacion', {
+            user: req.session.user,
+            partida,
+            clubUsuario,
+            competicion: competicionLiga,
+            clasificacion
+        });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Error al cargar la clasificación");
+    }
+});
 module.exports = router;
