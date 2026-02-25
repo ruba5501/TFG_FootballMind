@@ -36,8 +36,55 @@
                         <% if (partidoHoy) { 
                             let esLocal = partidoHoy.equipoLocal._id.toString() === clubUsuario._id.toString();
                             let rival = esLocal ? partidoHoy.equipoVisitante : partidoHoy.equipoLocal;
-                            let claseComp = partidoHoy.competicionId.tipo === 'LIGA' ? 'bg-liga' : 'bg-internacional';
-                        %>
+                            let nombreComp = partidoHoy.competicionId.nombre.toLowerCase();
+                            let tipoComp = partidoHoy.competicionId.tipo;
+                            let claseComp = ''; 
+                            if (nombreComp.includes('laliga')) {
+                                claseComp = 'bg-laliga';
+                            } 
+                            else if (nombreComp.includes('premier')) {
+                                claseComp = 'bg-premier';
+                            }
+                            else if (nombreComp.includes('serie a')) {
+                                claseComp = 'bg-seriea';
+                            }
+                            else if (nombreComp.includes('bundesliga')) {
+                                claseComp = 'bg-bundesliga';
+                            }
+                            else if (nombreComp.includes('ligue 1')) {
+                                claseComp = 'bg-ligue1';
+                            }
+                            else if (nombreComp.includes('eredivisie')) {
+                                claseComp = 'bg-eredivisie';
+                            }
+                            else if (nombreComp.includes('primeira liga')) {
+                                claseComp = 'bg-primeriraliga';
+                            }
+                            else if (nombreComp.includes('argentina')) {
+                                claseComp = 'bg-argentina';
+                            }
+                            else if (nombreComp.includes('brasileirão')) {
+                                claseComp = 'bg-brasileirão';
+                            }
+                            else if (nombreComp.includes('champions')) {
+                                claseComp = 'bg-champions';
+                            }
+                            else if (nombreComp.includes('europa')) {
+                                claseComp = 'bg-europa';
+                            }
+                            else if (nombreComp.includes('conference')) {
+                                claseComp = 'bg-conference';
+                            }
+                            else if (nombreComp.includes('libertadores')) {
+                                claseComp = 'bg-libertadores';
+                            }
+                            else if (nombreComp.includes('sudamericana')) {
+                                claseComp = 'bg-sudamericana';
+                            }
+                            else if (tipoComp === 'copa') {
+                                claseComp = 'bg-copa';
+                            }                       
+                            %>
                             <div class="match-tag <%= claseComp %> text-center mt-1">
                                 <div class="small fw-bold"><%= esLocal ? '(Local)' : '(Visitante)' %></div>
                                 <img src="/img/escudos/<%= rival.escudo %>" width="25">
@@ -50,7 +97,7 @@
         </div>
 
         <div class="col-md-3">
-            <%- include('partials/proximoPartido', { partidos, clubUsuario }) %>
+            <%- include('partials/proximoPartido', { proximoPartido, proximoPartido, clubUsuario }) %>
         </div>
     </div>
 </div>

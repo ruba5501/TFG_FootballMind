@@ -152,37 +152,52 @@
         background-color: #dee2e6;
         border: 1px solid #dee2e6;
     }
-    .calendar-day {
-        min-height: 100px;
-        background-color: white;
-        padding: 5px;
-        position: relative;
-    }
-    .day-name {
-        background-color: #f8f9fa;
-        text-align: center;
-        font-weight: bold;
-        padding: 10px;
-    }
-    .today { 
-        background-color: #fff3cd !important;
-        border: 2px solid #ffc107 !important; 
-    }
-    .other-month { 
-        background: #f8f9fa; 
-    }
-    .match-tag {
-        font-size: 0.7rem;
-        padding: 2px 4px;
-        border-radius: 3px;
-        margin-top: 2px;
-        display: block;
-        text-decoration: none;
-        color: white;
-    }
-.bg-liga { background-color: #e63946; }
-.bg-internacional { background-color: #457b9d; }
-.bg-copa { background-color: #6a0572; }
+.calendar-day {
+    min-height: 100px;
+    background-color: #cbceaa;
+    padding: 5px;
+    position: relative;
+}
+.day-name {
+    background-color: #f8f9fa;
+    text-align: center;
+    font-weight: bold;
+    padding: 10px;
+}
+.today { 
+    background-color: #fff3cd !important;
+    border: 2px solid #ffc107 !important; 
+}
+.other-month { 
+    background: #f8f9fa; 
+}
+.match-tag {
+    font-size: 0.7rem;
+    padding: 2px 4px;
+    border-radius: 3px;
+    margin-top: 2px;
+    display: block;
+    text-decoration: none;
+    color: white;
+}
+.bg-laliga { background-color: #ff4b44; }
+.bg-seriea { background-color: #003e7e; }
+.bg-premier { background-color: #3d195b; }
+.bg-bundesliga { background-color: #d3010c; }
+.bg-ligue1 { background-color: #091c3e; }
+.bg-eredivisie { background-color: #004792; }
+.bg-primeriraliga { background-color: #e10014; }
+.bg-argentina { background-color: #3dadcf; }
+.bg-brasileirão { background-color: #009b3a; }
+.bg-champions { background-color: #1f02a0; }
+.bg-europa { background-color: #f47e01; }
+.bg-conference { background-color: #00ff85; }
+.bg-libertadores { 
+    background-color: #f7d002; 
+    color: #000 !important; 
+}
+.bg-sudamericana { background-color: #0a244d; }
+.bg-copa { background-color: #3f3001; }
 
 /*--------------------------------------*/
 /*para mostrar la formacion*/
