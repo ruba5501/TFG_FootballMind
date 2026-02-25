@@ -162,7 +162,7 @@ function simularPartido(local, visitante) {
                 }
             }
 
-            // B) PENALTI (Nuevo)
+            // B) PENALTI 
             else if (tipoJugada < 0.35) {
                 // Pequeña probabilidad de penalti
                 const defensa = buscarJugadorPorPosicion(defensorTeam, ['DFC']);
