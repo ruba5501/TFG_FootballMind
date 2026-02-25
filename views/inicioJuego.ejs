@@ -23,30 +23,8 @@
     </div>
 
     <div class="row">
-        <div class="col-md-5 mb-4">
-            <div class="card shadow border-0 h-100">
-                <div class="card-header bg-primary text-white text-center fw-bold py-3">
-                    PRÓXIMO PARTIDO
-                </div>
-                <div class="card-body bg-light d-flex flex-column justify-content-center">
-                    <% if (proximoPartido) { %>
-                        <div class="mb-3">
-                            <%- include('partials/proximoPartido', { partidos, clubUsuario }) %>
-                        </div>
-                        
-                        <div class="d-grid mt-auto">
-                            <a href="/jugar-partido/<%= proximoPartido._id %>" class="btn btn-success btn-lg fw-bold shadow-sm">
-                                JUGAR PARTIDO
-                            </a>
-                        </div>
-                    <% } else { %>
-                        <div class="text-center p-4 text-muted">
-                            <p class="mb-0">No hay partidos programados próximamente.</p>
-                            <p class="small">Revisa el calendario o avanza de fecha.</p>
-                        </div>
-                    <% } %>
-                </div>
-            </div>
+        <div class="col-md-5 mb-4 d-flex align-items-stretch">
+            <%- include('partials/proximoPartido', { partidos, clubUsuario, partida, proximoPartido }) %>
         </div>
 
         <div class="col-md-7 mb-4">
