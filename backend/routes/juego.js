@@ -7,7 +7,7 @@ const mongoose = require('mongoose');
 const Partida = require('../models/partida');
 const Club = require('../models/club');
 const Jugador = require('../models/jugador');
-
+const Partido = require('../models/partido');
 // Motor
 const { simularPartido } = require('../engine/motorJuego');
 const { requireLogin } = require('../middleware/autenticacion');
@@ -37,53 +37,104 @@ async function seleccionarMejorOnce(clubId) {
 
 // RUTA PARA JUGAR EL PARTIDO
 // Se llama por ejemplo: /jugar-partido/ID_PARTIDA?rival=ID_CLUB_RIVAL
-router.get('/jugar-partido/:idPartida', requireLogin, async (req, res) => {
+router.get('/jugar-partido/:idPartido', requireLogin, async (req, res) => {
     try {
-        const partidaId = req.params.idPartida;
-        const rivalId = req.query.rival; // Debes pasar el ID del rival por URL
+        const partidoId = req.params.idPartido;
 
-        const partida = await Partida.findById(partidaId).populate('clubSeleccionado');
-        if (!partida) return res.redirect('/listarPartidas');
+        // 1. Buscar el partido específico y cargar los datos de los clubes
+        const partido = await Partido.findById(partidoId).populate('equipoLocal equipoVisitante');
+        if (!partido) return res.redirect('/listarPartidas');
 
-        // 1. Obtener datos del Club Usuario (Local)
-        const clubUsuario = partida.clubSeleccionado;
-        const jugadoresUsuario = await seleccionarMejorOnce(clubUsuario._id);
+        // Opcional: obtener los datos de la partida de guardado para la vista
+        const partidaJuego = await Partida.findById(partido.partidaId).populate('clubSeleccionado');
 
-        // 2. Obtener datos del Club Rival (Visitante)
-        // Si no hay rivalId (ej. partido de prueba), cogemos uno aleatorio de la misma liga
-        let clubRival;
-        if (rivalId) {
-            clubRival = await Club.findById(rivalId);
-        } else {
-             // Lógica temporal: buscar un rival random que no sea el mío
-            clubRival = await Club.findOne({ _id: { $ne: clubUsuario._id }, partidaId: partida._id });
-        }
-        
-        const jugadoresRival = await seleccionarMejorOnce(clubRival._id);
+        // 2. Seleccionar los mejores 11 jugadores de cada equipo
+        const jugadoresLocal = await seleccionarMejorOnce(partido.equipoLocal._id);
+        const jugadoresVisitante = await seleccionarMejorOnce(partido.equipoVisitante._id);
 
-        // 3. Preparar objetos para el motor
-        const equipoLocal = { nombre: clubUsuario.nombre, jugadores: jugadoresUsuario };
-        const equipoVisitante = { nombre: clubRival.nombre, jugadores: jugadoresRival };
+        // 3. Preparar objetos para el motor de simulación
+        const equipoLocal = { nombre: partido.equipoLocal.nombre, jugadores: jugadoresLocal };
+        const equipoVisitante = { nombre: partido.equipoVisitante.nombre, jugadores: jugadoresVisitante };
 
         // 4. EJECUTAR SIMULACIÓN
         const resultado = simularPartido(equipoLocal, equipoVisitante);
 
-        // 5. Guardar/Renderizar
-        // Aquí podrías guardar el resultado en el historial de la partida
-        
-        // Renderizamos una vista con el resultado
+        // 5. GUARDAR EL RESULTADO EN LA BASE DE DATOS
+        partido.golesLocal = resultado.golesLocal;
+        partido.golesVisitante = resultado.golesVisitante;
+        partido.jugado = true;
+        await partido.save(); 
+
+        // 6. Renderizar vista de resultado
         res.render('resultadoPartido', {
             title: 'Resultado del Partido',  
-            partida,
+            partida: partidaJuego,
             local: equipoLocal,
             visitante: equipoVisitante,
-            resultado: resultado
+            resultado: resultado,
+            partidoBBDD: partido // Pasamos la info del partido guardado
         });
 
     } catch (error) {
-        console.error(error);
+        console.error("Error en la simulación:", error);
         res.status(500).send("Error al simular el partido");
     }
 });
 
+router.get('/competicion/:idCompeticion/clasificacion', requireLogin, async (req, res) => {
+    try {
+        const idCompeticion = req.params.idCompeticion;
+        
+        // 1. Buscar todos los partidos JUGADOS de esta competición
+        const partidos = await Partido.find({ 
+            competicionId: idCompeticion, 
+            jugado: true 
+        }).populate('equipoLocal equipoVisitante');
+
+        // 2. Objeto temporal para ir sumando los puntos
+        const tabla = {};
+
+        partidos.forEach(p => {
+            // Inicializar equipos en la tabla si no existen
+            if (!tabla[p.equipoLocal._id]) tabla[p.equipoLocal._id] = { club: p.equipoLocal, pts: 0, pj: 0, pg: 0, pe: 0, pp: 0, gf: 0, gc: 0 };
+            if (!tabla[p.equipoVisitante._id]) tabla[p.equipoVisitante._id] = { club: p.equipoVisitante, pts: 0, pj: 0, pg: 0, pe: 0, pp: 0, gf: 0, gc: 0 };
+
+            // Sumar Partidos Jugados (PJ), Goles a Favor (GF) y Goles en Contra (GC)
+            tabla[p.equipoLocal._id].pj += 1;
+            tabla[p.equipoVisitante._id].pj += 1;
+            
+            tabla[p.equipoLocal._id].gf += p.golesLocal;
+            tabla[p.equipoLocal._id].gc += p.golesVisitante;
+            tabla[p.equipoVisitante._id].gf += p.golesVisitante;
+            tabla[p.equipoVisitante._id].gc += p.golesLocal;
+
+            // Calcular Puntos (PTS) y Victorias/Empates/Derrotas
+            if (p.golesLocal > p.golesVisitante) {
+                tabla[p.equipoLocal._id].pts += 3;
+                tabla[p.equipoLocal._id].pg += 1;
+                tabla[p.equipoVisitante._id].pp += 1;
+            } else if (p.golesLocal < p.golesVisitante) {
+                tabla[p.equipoVisitante._id].pts += 3;
+                tabla[p.equipoVisitante._id].pg += 1;
+                tabla[p.equipoLocal._id].pp += 1;
+            } else {
+                tabla[p.equipoLocal._id].pts += 1;
+                tabla[p.equipoVisitante._id].pts += 1;
+                tabla[p.equipoLocal._id].pe += 1;
+                tabla[p.equipoVisitante._id].pe += 1;
+            }
+        });
+
+        // 3. Convertir el objeto a Array y ordenarlo por puntos (y diferencia de goles)
+        let clasificacion = Object.values(tabla).sort((a, b) => {
+            if (b.pts !== a.pts) return b.pts - a.pts; // Mayor puntuación
+            return (b.gf - b.gc) - (a.gf - a.gc);     // Diferencia de goles
+        });
+
+        res.render('clasificacion', { clasificacion });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Error al cargar la clasificación");
+    }
+});
 module.exports = router;

@@ -11,6 +11,7 @@ const clubesDAO = require('../daos/clubesDAO');
 const Competicion = require('../models/competicion');
 const Club = require('../models/club');
 const Partida = require('../models/partida');
+const Partido = require('../models/partido'); 
 
 const cargarEstadios = require('../service/cargarEstadios'); 
 const cargarCompeticiones = require('../service/cargarCompeticiones');
@@ -228,8 +229,46 @@ partidaRouter.post('/eliminarPartida/:id', requireLogin, async (req, res) => {
 });
 
 partidaRouter.get('/inicioJuego/:id', requireLogin, async (req, res) => {
-    const partida = await partidaDAO.obtenerPartidaPorId(req.params.id);
-    res.render('inicioJuego', { user: req.session.user, partida });
+    try {
+        const partidaId = req.params.id;
+        
+        // Obtenemos la partida y usamos populate para tener los datos completos del club seleccionado
+        const partida = await Partida.findById(partidaId).populate('clubSeleccionado');
+        if (!partida) return res.redirect('/listarPartidas');
+
+        const clubUsuario = partida.clubSeleccionado;
+
+        // Buscamos todos los partidos de ESTA partida donde juegue el equipo del usuario
+        const partidos = await Partido.find({
+            partidaId: partidaId,
+            $or: [{ equipoLocal: clubUsuario._id }, { equipoVisitante: clubUsuario._id }]
+        }).populate('equipoLocal equipoVisitante competicionId').sort({ fecha: 1 }); // Ordenados por fecha
+
+        // Filtramos para buscar el próximo partido (el primero que no se haya jugado)
+        const proximosPartidos = partidos.filter(p => p.jugado === false);
+        const proximoPartido = proximosPartidos.length > 0 ? proximosPartidos[0] : null;
+
+        // Calculamos quién es el rival en ese próximo partido
+        let rivalId = null;
+        if (proximoPartido) {
+            const esLocal = proximoPartido.equipoLocal._id.toString() === clubUsuario._id.toString();
+            rivalId = esLocal ? proximoPartido.equipoVisitante._id : proximoPartido.equipoLocal._id;
+        }
+
+        // Ahora sí pasamos TODAS las variables necesarias a la vista
+        res.render('inicioJuego', { 
+            user: req.session.user, 
+            partida,
+            clubUsuario,
+            partidos,
+            proximoPartido,
+            rivalId
+        });
+
+    } catch (error) {
+        console.error("Error al cargar inicio de juego:", error);
+        res.status(500).send("Error al cargar el inicio del juego");
+    }
 });
 
 partidaRouter.get('/partida/:id', requireLogin, async (req, res) => {

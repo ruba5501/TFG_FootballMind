@@ -1,0 +1,42 @@
+<%- include('partials/head', {title: 'Clasificación'}) %>
+<header>
+  <%- include('partials/navbar') %>
+</header>
+<div class="container mt-4">
+    <h2>Clasificación de Liga</h2>
+    <table class="table table-striped mt-3">
+        <thead class="table-dark">
+            <tr>
+                <th>Pos</th>
+                <th>Equipo</th>
+                <th>PTS</th>
+                <th>PJ</th>
+                <th>PG</th>
+                <th>PE</th>
+                <th>PP</th>
+                <th>GF</th>
+                <th>GC</th>
+                <th>DIF</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% clasificacion.forEach((fila, index) => { %>
+                <tr>
+                    <td><%= index + 1 %></td>
+                    <td>
+                        <img src="/img/escudos/<%= fila.club.escudo %>" width="20" class="me-2">
+                        <%= fila.club.nombre %>
+                    </td>
+                    <td class="fw-bold"><%= fila.pts %></td>
+                    <td><%= fila.pj %></td>
+                    <td><%= fila.pg %></td>
+                    <td><%= fila.pe %></td>
+                    <td><%= fila.pp %></td>
+                    <td><%= fila.gf %></td>
+                    <td><%= fila.gc %></td>
+                    <td><%= fila.gf - fila.gc %></td>
+                </tr>
+            <% }) %>
+        </tbody>
+    </table>
+</div>
