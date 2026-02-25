@@ -1,0 +1,80 @@
+<%- include('partials/head', {title: 'Cuadro de Copa - FootballMind'}) %>
+<header>
+  <%- include('partials/navbar') %>
+</header>
+
+<div class="container mt-4 mb-5">
+    
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-0">
+                <i class="bi bi-diagram-3-fill text-danger me-2"></i>Eliminatorias
+            </h2>
+            <p class="text-muted"><%= competicion.nombre %></p>
+        </div>
+        <a href="/inicioJuego/<%= partida._id %>" class="btn btn-outline-dark">
+            <i class="bi bi-arrow-left me-1"></i> Volver al Centro de Mando
+        </a>
+    </div>
+
+    <div class="accordion shadow-sm" id="acordeonCopa">
+        <% 
+            let rondasKeys = Object.keys(rondas).reverse(); // Invertimos para que la Final/Ronda más avanzada salga arriba
+            rondasKeys.forEach((nombreRonda, index) => { 
+                let collapseId = "collapse" + index;
+                // Dejamos abierta solo la última ronda disputada por defecto
+                let isExpanded = index === 0 ? "true" : "false"; 
+                let showClass = index === 0 ? "show" : "";
+        %>
+            <div class="accordion-item border-0 border-bottom">
+                <h2 class="accordion-header" id="heading<%= index %>">
+                    <button class="accordion-button <%= index !== 0 ? 'collapsed' : '' %> fw-bold bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#<%= collapseId %>" aria-expanded="<%= isExpanded %>">
+                        <%= nombreRonda %>
+                    </button>
+                </h2>
+                <div id="<%= collapseId %>" class="accordion-collapse collapse <%= showClass %>" data-bs-parent="#acordeonCopa">
+                    <div class="accordion-body bg-white p-4">
+                        <div class="row g-4">
+                            <% rondas[nombreRonda].forEach(p => { 
+                                let esUsuario = p.equipoLocal._id.toString() === clubUsuario._id.toString() || p.equipoVisitante._id.toString() === clubUsuario._id.toString();
+                                let bgClass = esUsuario ? 'border-primary shadow-sm' : 'border-light bg-light';
+                            %>
+                                <div class="col-md-6 col-lg-4">
+                                    <div class="card h-100 <%= bgClass %>">
+                                        <div class="card-body p-2 d-flex flex-column justify-content-center">
+                                            
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <div class="d-flex align-items-center">
+                                                    <img src="/img/escudos/<%= p.equipoLocal.escudo %>" width="25" class="me-2">
+                                                    <span class="fw-semibold <%= p.golesLocal > p.golesVisitante && p.jugado ? 'text-dark' : 'text-muted' %>">
+                                                        <%= p.equipoLocal.nombre %>
+                                                    </span>
+                                                </div>
+                                                <span class="badge <%= p.jugado ? 'bg-dark' : 'bg-secondary opacity-50' %> fs-6">
+                                                    <%= p.jugado ? p.golesLocal : '-' %>
+                                                </span>
+                                            </div>
+
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div class="d-flex align-items-center">
+                                                    <img src="/img/escudos/<%= p.equipoVisitante.escudo %>" width="25" class="me-2">
+                                                    <span class="fw-semibold <%= p.golesVisitante > p.golesLocal && p.jugado ? 'text-dark' : 'text-muted' %>">
+                                                        <%= p.equipoVisitante.nombre %>
+                                                    </span>
+                                                </div>
+                                                <span class="badge <%= p.jugado ? 'bg-dark' : 'bg-secondary opacity-50' %> fs-6">
+                                                    <%= p.jugado ? p.golesVisitante : '-' %>
+                                                </span>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                </div>
+                            <% }) %>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        <% }) %>
+    </div>
+</div>

@@ -255,4 +255,64 @@ router.get('/clasificacion/:idPartida', requireLogin, async (req, res) => {
         res.status(500).send("Error al cargar la clasificación");
     }
 });
+
+// Ruta para ver el Cuadro de la Copa
+router.get('/copa/:idPartida', requireLogin, async (req, res) => {
+    try {
+        const partidaId = req.params.idPartida;
+        
+        const partida = await Partida.findById(partidaId).populate('clubSeleccionado');
+        if (!partida) return res.redirect('/listarPartidas');
+        const clubUsuario = partida.clubSeleccionado;
+
+        // 1. Buscamos cualquier partido de tipo ELIMINATORIA o FINAL para saber qué copa juega tu equipo
+        const partidoCopa = await Partido.findOne({
+            partidaId: partidaId,
+            tipo: { $in: ['ELIMINATORIA', 'FINAL'] },
+            $or: [{ equipoLocal: clubUsuario._id }, { equipoVisitante: clubUsuario._id }]
+        }).populate('competicionId');
+
+        if (!partidoCopa) {
+            return res.status(404).send("Aún no tienes partidos de Copa generados o fuiste eliminado antes de la creación.");
+        }
+
+        const competicionCopa = partidoCopa.competicionId;
+
+        // 2. Obtenemos TODOS los partidos de esa Copa
+        const partidosCopa = await Partido.find({
+            partidaId: partidaId,
+            competicionId: competicionCopa._id
+        }).populate('equipoLocal equipoVisitante').sort({ jornada: 1 });
+
+        // 3. Agrupamos los partidos por Rondas (Jornadas)
+        const rondas = {};
+        
+        // Helper para traducir el número de jornada a texto según tus reglas
+        const getNombreRonda = (jornada, tipo) => {
+            if (tipo === 'FINAL') return 'Gran Final';
+            if (jornada === 5) return 'Octavos de Final';
+            if (jornada === 6) return 'Cuartos de Final';
+            if (jornada === 7) return 'Semifinales';
+            return `Ronda ${jornada}`; // Por si hay rondas previas
+        };
+
+        partidosCopa.forEach(p => {
+            const nombre = getNombreRonda(p.jornada, p.tipo);
+            if (!rondas[nombre]) rondas[nombre] = [];
+            rondas[nombre].push(p);
+        });
+
+        res.render('copa', {
+            user: req.session.user,
+            partida,
+            clubUsuario,
+            competicion: competicionCopa,
+            rondas
+        });
+
+    } catch (error) {
+        console.error("Error al cargar la copa:", error);
+        res.status(500).send("Error al cargar la competición de Copa");
+    }
+});
 module.exports = router;
