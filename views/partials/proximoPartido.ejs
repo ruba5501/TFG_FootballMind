@@ -1,51 +1,55 @@
-<div class="col-md-3">
-    <div class="card shadow-sm border-0">
-        <div class="card-header bg-dark text-white fw-bold">
-            <i class="bi bi-info-circle me-2"></i>Próximo Partido
-        </div>
-        <div class="card-body text-center">
-            <% 
-                const proximo = partidos.sort((a,b) => a.fecha - b.fecha).find(p => p.jugado === false);
-                
-                if (proximo) { 
-                    const esLocal = proximo.equipoLocal._id.toString() === clubUsuario._id.toString();
-                    const rival = esLocal ? proximo.equipoVisitante : proximo.equipoLocal;
-            %>
-                <div class="mb-2">
-                    <span class="badge bg-primary"><%= proximo.competicionId.nombre %></span>
+<div class="card shadow-sm border-0">
+    <div class="card-header bg-dark text-white fw-bold text-center py-1" style="font-size: 0.75rem;">
+        PRÓXIMO PARTIDO
+    </div>
+    <div class="card-body p-2">
+        <% 
+            if (proximoPartido) { 
+                const loc = proximoPartido.equipoLocal;
+                const vis = proximoPartido.equipoVisitante;
+        %>
+            <div class="text-center mb-2">
+                <div class="badge bg-primary text-truncate w-100" style="font-size: 0.6rem; display: block;">
+                    <%= proximoPartido.competicionId.nombre %>
+                </div>
+            </div>
+
+            <div class="d-flex align-items-center justify-content-center flex-nowrap mb-1">
+                <div class="text-center">
+                    <img src="/img/escudos/<%= loc.escudo %>" width="35" height="35" title="<%= loc.nombre %>" style="object-fit: contain;">
                 </div>
                 
-                <div class="d-flex justify-content-between align-items-center my-3">
-                    <div class="text-center">
-                        <img src="/img/escudos/<%= clubUsuario.nombre.toLowerCase().replace(/ /g, '_') %>.png" width="45" onerror="this.src='/img/escudos/default.png'">
-                        <div class="small fw-bold mt-1">Tú</div>
-                    </div>
-                    <div class="fw-bold h4">VS</div>
-                    <div class="text-center">
-                        <img src="/img/escudos/<%= rival.nombre.toLowerCase().replace(/ /g, '_') %>.png" width="45" onerror="this.src='/img/escudos/default.png'">
-                        <div class="small fw-bold mt-1 text-truncate" style="max-width: 70px;"><%= rival.nombre %></div>
-                    </div>
+                <div class="px-3 fw-bolder text-dark" style="font-size: 0.9rem; flex-shrink: 0;">VS</div>
+
+                <div class="text-center">
+                    <img src="/img/escudos/<%= vis.escudo %>" width="35" height="35" title="<%= vis.nombre %>" style="object-fit: contain;">
                 </div>
+            </div>
 
-                <hr>
-                
-                <div class="text-start small">
-                    <p class="mb-1"><i class="bi bi-calendar-event me-2"></i><%= proximo.fecha.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' }) %></p>
-                    <p class="mb-1"><i class="bi bi-geo-alt me-2"></i><%= esLocal ? 'Tu Estadio' : 'Visitante' %></p>
-                </div>
+            <div class="text-center mb-2" style="line-height: 1.1;">
+                <div class="fw-bold text-truncate" style="font-size: 0.65rem;"><%= loc.nombre %></div>
+                <div class="text-muted" style="font-size: 0.6rem;">vs</div>
+                <div class="fw-bold text-truncate" style="font-size: 0.65rem;"><%= vis.nombre %></div>
+            </div>
 
-                <% if (proximo.fecha.toDateString() === partida.fechaActual.toDateString()) { %>
-                    <a href="/jugar/<%= proximo._id %>" class="btn btn-success w-100 mt-3 fw-bold animate__animated animate__pulse animate__infinite">
-                        <i class="bi bi-play-fill me-1"></i> JUGAR AHORA
-                    </a>
-                <% } else { %>
-                    <button class="btn btn-secondary w-100 mt-3" disabled>Esperar fecha</button>
-                <% } %>
+            <div class="text-center border-top pt-2 mt-1" style="font-size: 0.7rem;">
+                <span class="text-dark fw-bold">
+                    <%= proximoPartido.fecha.getDate() %>/<%= proximoPartido.fecha.getMonth()+1 %>
+                </span>
+                <span class="mx-1 text-muted">|</span>
+                <span class="text-primary fw-bold">
+                    <%= proximoPartido.fecha.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) %>
+                </span>
+            </div>
 
-            <% } else { %>
-                <p class="text-muted my-4">No hay partidos programados para este mes.</p>
-                <i class="bi bi-emoji-smile h1 text-muted"></i>
+            <% if (proximoPartido.fecha.toDateString() === partida.fechaActual.toDateString()) { %>
+                <a href="/jugar/<%= proximoPartido._id %>" class="btn btn-success btn-sm w-100 mt-2 fw-bold" style="font-size: 0.7rem;">
+                    JUGAR AHORA
+                </a>
             <% } %>
-        </div>
+
+        <% } else { %>
+            <div class="text-center py-2 text-muted" style="font-size: 0.7rem;">No hay partidos</div>
+        <% } %>
     </div>
 </div>

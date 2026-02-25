@@ -29,10 +29,23 @@ calendarioRouter.get('/calendario/:id', requireLogin, async (req, res) => {
             ]
         }).populate('equipoLocal equipoVisitante competicionId');
 
+        const proximoPartido = await Partido.findOne({
+            partidaId: partida._id,
+            jugado: false, 
+            fecha: { $gte: partida.fechaActual },
+            $or: [
+                { equipoLocal: partida.clubSeleccionado._id },
+                { equipoVisitante: partida.clubSeleccionado._id }
+            ]
+        })
+        .sort({ fecha: 1 })
+        .populate('equipoLocal equipoVisitante competicionId');
+
         res.render('calendario', {
             partida,
             clubUsuario: partida.clubSeleccionado,
             partidos: partidosMes,
+            proximoPartido: proximoPartido,
             calendario: {
                 mes,
                 anio,
