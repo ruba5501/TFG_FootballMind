@@ -298,4 +298,57 @@ partidaRouter.get('/guardar-y-salir/:id', requireLogin, async (req, res) => {
         res.redirect('/opcionPartida');
     }
 });
+
+partidaRouter.get('/avanzar-fecha/:id', requireLogin, async (req, res) => {
+    try {
+        const partidaId = req.params.id;
+        const partida = await partidaDAO.obtenerPartidaPorId(partidaId);
+        
+        if (!partida) return res.redirect('/listarPartidas');
+
+        // Sumar 1 día a la fecha actual de la partida
+        const nuevaFecha = new Date(partida.fechaActual);
+        nuevaFecha.setDate(nuevaFecha.getDate() + 1);
+        partida.fechaActual = nuevaFecha;
+
+        // Guardamos el cambio en la base de datos (asegúrate de que tu modelo tenga save o haz un update)
+        await Partida.findByIdAndUpdate(partidaId, { fechaActual: nuevaFecha });
+
+        // Recargamos el menú de inicio
+        res.redirect('/inicioJuego/' + partidaId);
+
+    } catch (error) {
+        console.error("Error al avanzar fecha:", error);
+        res.status(500).send("Error interno al intentar avanzar el tiempo.");
+    }
+});
+
+partidaRouter.get('/avanzar-hasta-partido/:id', requireLogin, async (req, res) => {
+    try {
+        const partidaId = req.params.id;
+        const partida = await partidaDAO.obtenerPartidaPorId(partidaId);
+        if (!partida) return res.redirect('/listarPartidas');
+
+        // 1. Buscamos el próximo partido del usuario
+        const clubUsuarioId = partida.clubSeleccionado._id;
+        const proximoPartido = await Partido.findOne({
+            partidaId: partidaId,
+            $or: [{ equipoLocal: clubUsuarioId }, { equipoVisitante: clubUsuarioId }],
+            jugado: false
+        }).sort({ fecha: 1 });
+
+        // 2. Si hay un partido futuro, actualizamos la fecha del juego a la fecha de ese partido
+        if (proximoPartido) {
+            partida.fechaActual = new Date(proximoPartido.fecha);
+            await Partida.findByIdAndUpdate(partidaId, { fechaActual: partida.fechaActual });
+        }
+
+        // 3. Recargamos la página
+        res.redirect('/inicioJuego/' + partidaId);
+
+    } catch (error) {
+        console.error("Error al avanzar hasta el partido:", error);
+        res.status(500).send("Error interno al intentar avanzar el tiempo.");
+    }
+});
 module.exports = partidaRouter;
