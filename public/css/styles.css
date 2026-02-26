@@ -222,36 +222,128 @@
     border: 2px solid white;
 }
 
+/* Círculo central */
+.pitch::after {
+    content: "";
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 20%;
+    aspect-ratio: 1;
+    border: 2px solid white;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+}
+
+#capa-jugadores {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 5;
+}
+
+/* Línea de medio campo */
+.mid-line {
+    position: absolute;
+    top: 50%; left: 5%; right: 5%;
+    height: 2px;
+    background: white;
+}
+
+/* Áreas */
+.area-top {
+    position: absolute;
+    top: 5%; left: 25%; right: 25%; height: 12%;
+    border: 2px solid white;
+    border-top: none;
+}
+
+.area-bottom {
+    position: absolute;
+    bottom: 5%; left: 25%; right: 25%; height: 12%;
+    border: 2px solid white;
+    border-bottom: none;
+}
+
 /* Icono del jugador en el campo */
 .player-node {
     position: absolute;
     width: 60px;
     text-align: center;
-    transition: all 0.5s ease; /* Para que al cambiar formación se "muevan" */
+    transition: all 0.3s ease; /* Para que al cambiar formación se "muevan" */
     transform: translate(-50%, -50%);
+    z-index: 10;
 }
 
-.player-node .circle {
+.circle {
     width: 35px;
     height: 35px;
-    background: #0d6efd;
-    border: 2px solid white;
     border-radius: 50%;
-    margin: 0 auto;
-    color: white;
-    font-weight: bold;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    font-weight: bold;
+    font-size: 12px;
+    border: 2px solid white;
+    margin-bottom: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
 }
 
-.player-node .name {
-    font-size: 0.65rem;
-    background: rgba(0,0,0,0.7);
+.name {
     color: white;
-    padding: 2px 5px;
-    border-radius: 3px;
-    margin-top: 3px;
+    font-size: 11px;
+    text-shadow: 1px 1px 2px black;
     white-space: nowrap;
+}
+
+.bg-primary { background-color: #0d6efd !important; } 
+.bg-warning { background-color: #ffc107 !important; } 
+.bg-danger { background-color: #dc3545 !important; } 
+
+/*Jugador seleccionado*/
+.list-group-item.selected {
+    border: 2px solid #ffc107 !important; 
+    background-color: #3d3d3d !important;
+    transform: scale(1.02);
+    transition: all 0.2s ease;
+}
+
+.jugador-item.selected {
+    border: 2px solid #ffc107 !important;
+    background-color: #343a40 !important;
+}
+
+/* barra de cansancio */
+.fitness-container {
+    width: 60px;
+    height: 8px;
+    background-color: #444;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-top: 4px;
+}
+
+.fitness-bar {
+    height: 100%;
+    transition: width 0.5s ease-in-out; 
+    border-radius: 4px;
+}
+
+.bg-fitness-high { background-color: #28a745; } 
+.bg-fitness-mid { background-color: #ffc107; }    
+.bg-fitness-low { background-color: #dc3545; }     
+
+.jugador-item {
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.jugador-item:hover {
+    background-color: #444 !important;
+}
+
+/* Estilo para cuando arrastras o intercambias */
+.jugador-item.active {
+    opacity: 0.6;
 }

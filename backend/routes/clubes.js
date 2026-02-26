@@ -6,6 +6,13 @@ const Club = require('../models/club');
 const { requireLogin } = require('../middleware/autenticacion');
 const { FORMACIONES } = require('../service/cargarFormaciones');
 
+const ORDEN_POSICIONES = { 
+    'POR': 1, 
+    'LD': 2, 'LI': 2, 'DFC': 3,
+    'MCD': 4, 'MC': 5, 'MI': 6, 'MD': 6, 'MCO': 7,
+    'ED': 8, 'EI': 8, 'SD': 9, 'DC': 10 
+};
+
 clubRouter.post('/clubes', async (req, res) => {
   try {
     if (req.body.esFilial && !req.body.clubMatriz) {
@@ -47,6 +54,20 @@ clubRouter.get('/formacion/:partidaId', requireLogin, async (req, res) => {
 
         const clubUsuario = await clubesDAO.buscarClubPorId(partida.clubSeleccionado);
         const filial = await clubesDAO.buscarFilialPorId(clubUsuario._id);
+
+        let porteros = clubUsuario.plantilla.filter(j => j.posicionPrincipal === 'POR');
+        let resto = clubUsuario.plantilla.filter(j => j.posicionPrincipal !== 'POR');
+
+        porteros.sort((a, b) => b.media - a.media);
+        resto.sort((a, b) => b.media - a.media);
+
+        let titulares = [porteros[0], ...resto.slice(0, 10)];
+        let demas = [...porteros.slice(1), ...resto.slice(10)];
+
+        demas.sort((a, b) => (ORDEN_POSICIONES[a.posicionPrincipal] || 99) - (ORDEN_POSICIONES[b.posicionPrincipal] || 99));
+        titulares.sort((a, b) => (ORDEN_POSICIONES[a.posicionPrincipal] || 99) - (ORDEN_POSICIONES[b.posicionPrincipal] || 99));
+
+        clubUsuario.plantilla = [...titulares, ...demas];
 
         res.render('formacion', {
             partida,

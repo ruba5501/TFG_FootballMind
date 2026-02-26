@@ -1,8 +1,9 @@
-<%- include('partials/head', {title: 'Formacion'}) %>
+<%- include('partials/head', {title: 'Formación'}) %>
 
 <header>
-  <%- include('partials/navbar') %>
+    <%- include('partials/navbar') %>
 </header>
+
 <div class="container-fluid mt-4">
     <div class="row justify-content-center">
         <div class="col-lg-4">
@@ -11,7 +12,7 @@
                     <h5 class="text-white mb-0">Disposición Táctica</h5>
                     <div class="input-group style-select-tactica" style="width: auto;">
                         <span class="input-group-text bg-secondary text-white border-secondary">Esquema</span>
-                        <select id="selector-formacion" class="form-select bg-dark text-white border-secondary">
+                        <select id="selector-formacion" class="form-select bg-dark text-white border-secondary" onchange="GestorTactico.cambiarEsquema(this.value)">
                             <% Object.keys(formaciones).forEach(f => { %>
                                 <option value="<%= f %>" <%= clubUsuario.tactica.formacion === f ? 'selected' : '' %>>
                                     <%= f %>
@@ -21,11 +22,16 @@
                     </div>
                 </div>
                 <div class="card-body p-0">
-                    <div id="campo-futbol" class="pitch"></div>
+                    <div id="campo-futbol" class="pitch">
+                        <div class="mid-line"></div>
+                        <div class="area-top"></div>
+                        <div class="area-bottom"></div>
+                        <div id="capa-jugadores"></div>
+                    </div>
                 </div>
                 <div class="card-footer d-flex justify-content-center gap-2">
                     <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalRoles">
-                        <i class="bi bi-person-badge"></i> Roles y Capitán
+                        <i class="bi bi-person-badge"></i> Roles
                     </button>
                     <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalCantera">
                         <i class="bi bi-mortarboard"></i> Cantera
@@ -38,52 +44,29 @@
         </div>
 
         <div class="col-lg-4">
-            <div class="card bg-dark text-white border-secondary" style="max-height: 80vh; overflow-y: auto;">
+            <div class="card bg-dark text-white border-secondary" style="max-height: 85vh; overflow-y: auto;">
                 <div class="card-header bg-secondary">
                     <h5 class="mb-0 text-center">Gestión de Plantilla</h5>
                 </div>
                 
                 <div class="p-2 bg-primary text-white small fw-bold">TITULARES</div>
-                <ul id="lista-titulares" class="list-group list-group-flush sortable-list">
-                    <% clubUsuario.plantilla.slice(0, 11).forEach((j, index) => { %>
-                        <% const esCanterano = filial && filial.plantilla.some(p => p._id.toString() === j._id.toString()) %>
-                        <li class="list-group-item bg-dark text-white border-secondary d-flex align-items-center" data-id="<%= j._id %>">
-                            <span class="badge bg-secondary me-2"><%= index + 1 %></span>
-                            <div class="flex-grow-1">
-                                <strong><%= j.nombre %></strong> 
-                                <strong><%= j.posicionPrincipal %></strong> 
-                                <% if (esCanterano) { %><span class="badge bg-info text-dark" style="font-size: 0.6rem;">CANTERA</span><% } %>
-                                <br><small class="text-muted"><%= j.posicion %></small>
-                            </div>
-                            </li>
+                <ul id="lista-titulares" class="list-group list-group-flush">
+                    <% clubUsuario.plantilla.slice(0, 11).forEach((j) => { %>
+                        <%- include('partials/jugador_items', { j, esTitular: true, filial: filial }) %>
                     <% }) %>
                 </ul>
 
                 <div class="p-2 bg-info text-dark small fw-bold">SUPLENTES</div>
-                <ul id="lista-suplentes" class="list-group list-group-flush sortable-list">
+                <ul id="lista-suplentes" class="list-group list-group-flush">
                     <% clubUsuario.plantilla.slice(11, 24).forEach(j => { %>
-                        <% const esCanterano = filial && filial.plantilla.some(p => p._id.toString() === j._id.toString()) %>
-                        <li class="list-group-item bg-dark text-white border-secondary d-flex align-items-center" data-id="<%= j._id %>">
-                            <div class="flex-grow-1">
-                                <%= j.nombre %> 
-                                <%= j.posicionPrincipal %>
-                                <% if (esCanterano) { %><span class="badge bg-info text-dark ms-2" style="font-size: 0.6rem;">CANTERA</span><% } %>
-                            </div>
-                        </li>
+                        <%- include('partials/jugador_items', { j, esTitular: false, filial: filial }) %>
                     <% }) %>
                 </ul>
 
                 <div class="p-2 bg-secondary text-white small fw-bold">RESERVAS</div>
-                <ul id="lista-reservas" class="list-group list-group-flush sortable-list">
+                <ul id="lista-reservas" class="list-group list-group-flush">
                     <% clubUsuario.plantilla.slice(24).forEach(j => { %>
-                        <% const esCanterano = filial && filial.plantilla.some(p => p._id.toString() === j._id.toString()) %>
-                        <li class="list-group-item bg-dark text-white border-secondary opacity-50 d-flex align-items-center" data-id="<%= j._id %>">
-                            <div class="flex-grow-1">
-                                <%= j.nombre %>
-                                <%= j.posicionPrincipal %>
-                                <% if (esCanterano) { %><span class="badge bg-info text-dark ms-2" style="font-size: 0.6rem;">CANTERA</span><% } %>
-                            </div>
-                        </li>
+                        <%- include('partials/jugador_items', { j, esTitular: false, filial: filial }) %>
                     <% }) %>
                 </ul>
             </div>
@@ -91,6 +74,7 @@
     </div>
 </div>
 
+<%- include('partials/modal_comparar_atributos') %>
 <%- include('partials/modal_formacion') %>
 <%- include('partials/modal_subir_cantera') %>
 
@@ -100,17 +84,11 @@
     const CLUB_ID = '<%= clubUsuario._id %>';
 
     document.addEventListener('DOMContentLoaded', () => {
-        const formacionInicial = '<%= clubUsuario.tactica.formacion %>';
-
-        if (typeof GestorTactico !== 'undefined') {
-            GestorTactico.init(formacionInicial, FORMACIONES_DATA);
-        }
+        GestorTactico.init('<%= clubUsuario.tactica.formacion %>', FORMACIONES_DATA);
     });
 
     function guardarTodo() {
-        if (typeof GestorTactico !== 'undefined') {
-            const formacionActual = document.getElementById('selector-formacion').value;
-            GestorTactico.guardarCambios(CLUB_ID, formacionActual);
-        }
+        const formacionActual = document.getElementById('selector-formacion').value;
+        GestorTactico.guardarCambios(CLUB_ID, formacionActual);
     }
 </script>
