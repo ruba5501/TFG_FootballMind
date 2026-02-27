@@ -579,11 +579,14 @@ async function generarFaseSudamerica(partidaId, competicion, anioInicio) {
 
     let todosLosPartidosTemporales = []; 
     let fechaInicio = new Date(anioInicio, 8, 15);
+    const letrasGrupos = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+
     while (fechaInicio.getDay() !== 1) fechaInicio.setDate(fechaInicio.getDate() + 1);
 
     for (let g = 0; g < 8; g++) {
         let grupo = [];
         let intentosGrupo = 0;
+        let nombreGrupo = `Grupo ${letrasGrupos[g]}`;
 
         while (grupo.length < 4 && bolsaEquipos.length > 0) {
             const candidato = bolsaEquipos.pop();
@@ -666,7 +669,7 @@ async function generarFaseSudamerica(partidaId, competicion, anioInicio) {
                 );
 
                 listaFinal.push(crearObjeto(
-                    partidaId, competicion._id, p.jornada, p.local, p.visitante, fechaPartido, 'LIGA'
+                    partidaId, competicion._id, p.jornada, p.local, p.visitante, fechaPartido, 'LIGA', p.grupo
                 ));
             });
         }

@@ -23,7 +23,11 @@
                     </div>
                     
                     <div class="d-grid">
-                        <% if (comp.tipo === 'liga' || comp.tipo === 'internacional_europa'|| comp.tipo === 'internacional_america') { %>
+                        <% 
+                            let mostrarClasificacion = (comp.tipo === 'liga') || (comp.faseActual === 'grupos' || comp.faseActual === 'regular');
+                        %>
+
+                        <% if (mostrarClasificacion) { %>
                             <a href="/clasificacion/<%= partida._id %>/<%= comp._id %>" class="btn btn-comp-action py-3 rounded-0">
                                 <i class="bi bi-list-ol me-2"></i>Ver Clasificación
                             </a>

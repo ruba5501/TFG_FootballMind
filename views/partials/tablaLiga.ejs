@@ -1,3 +1,22 @@
+<% if (competicion.tipo === 'internacional_europa' && competicion.faseActual === 'eliminatorias') { %>
+    <div class="alert alert-info d-flex justify-content-between align-items-center shadow-sm border-0 mb-4">
+        <div>
+            <i class="bi bi-info-circle-fill me-2"></i>
+            <strong>Fase de grupos finalizada.</strong> Ya puedes consultar los cruces.
+        </div>
+        
+        <% if (typeof partida !== 'undefined' && partida) { %>
+            <a href="/copa/<%= partida._id %>/<%= competicion._id %>" class="btn btn-primary btn-sm">
+                <i class="bi bi-diagram-3 me-2"></i>Ver Eliminatorias
+            </a>
+        <% } else { %>
+            <button onclick="cargarInfo('<%= competicion._id %>', 'copa')" 
+                    class="btn btn-primary btn-sm shadow-sm">
+                <i class="bi bi-diagram-3 me-2"></i>Ver Eliminatorias
+            </button>
+        <% } %>
+    </div>
+<% } %>
 <div class="card shadow border-0">
     <div class="card-body p-0">
         <div class="table-responsive">

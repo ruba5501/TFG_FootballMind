@@ -183,73 +183,75 @@ router.get('/clasificacion/:partidaId/:competicionId', requireLogin, async (req,
                 partida,
                 clubUsuario,
                 competicion,
-                clasificacion: []
+                clasificacion: [],
+                grupos: null
             });
         }
 
         const tabla = {};
 
-        const mapaGrupos = {};
-        competicion.tabla.forEach(item => {
-            if(item.club) mapaGrupos[item.club._id.toString()] = item.grupo;
-        });
-
         todosLosPartidos.forEach(p => {
             [p.equipoLocal, p.equipoVisitante].forEach(equipo => {
-                if (!tabla[equipo._id]) {
-                    tabla[equipo._id] = { 
+                const idStr = equipo._id.toString();
+                if (!tabla[idStr]) {
+                    tabla[idStr] = { 
                         club: equipo, 
                         pts: 0, pj: 0, pg: 0, pe: 0, pp: 0, gf: 0, gc: 0,
-                        grupo: mapaGrupos[equipo._id.toString()] || "Sin Grupo" 
+                        grupo: p.grupo || "Liga" 
                     };
                 }
             });
-        });
 
-        // Sumamos las estadísticas solo de los partidos JUGADOS
-        const partidosJugados = todosLosPartidos.filter(p => p.jugado === true);
-        
-        partidosJugados.forEach(p => {
-            const idLocal = p.equipoLocal._id;
-            const idVisit = p.equipoVisitante._id;
+            if (p.jugado) {
+                const idLocal = p.equipoLocal._id.toString();
+                const idVisit = p.equipoVisitante._id.toString();
 
-            // Partidos Jugados y Goles
-            tabla[idLocal].pj += 1;
-            tabla[idVisit].pj += 1;
-            tabla[idLocal].gf += p.golesLocal;
-            tabla[idLocal].gc += p.golesVisitante;
-            tabla[idVisit].gf += p.golesVisitante;
-            tabla[idVisit].gc += p.golesLocal;
+                tabla[idLocal].pj += 1;
+                tabla[idVisit].pj += 1;
+                tabla[idLocal].gf += p.golesLocal;
+                tabla[idLocal].gc += p.golesVisitante;
+                tabla[idVisit].gf += p.golesVisitante;
+                tabla[idVisit].gc += p.golesLocal;
 
-            // Puntos y Victorias/Empates/Derrotas
-            if (p.golesLocal > p.golesVisitante) {
-                tabla[idLocal].pts += 3;
-                tabla[idLocal].pg += 1;
-                tabla[idVisit].pp += 1;
-            } else if (p.golesLocal < p.golesVisitante) {
-                tabla[idVisit].pts += 3;
-                tabla[idVisit].pg += 1;
-                tabla[idLocal].pp += 1;
-            } else {
-                tabla[idLocal].pts += 1;
-                tabla[idVisit].pts += 1;
-                tabla[idLocal].pe += 1;
-                tabla[idVisit].pe += 1;
+                if (p.golesLocal > p.golesVisitante) {
+                    tabla[idLocal].pts += 3;
+                    tabla[idLocal].pg += 1;
+                    tabla[idVisit].pp += 1;
+                } else if (p.golesLocal < p.golesVisitante) {
+                    tabla[idVisit].pts += 3;
+                    tabla[idVisit].pg += 1;
+                    tabla[idLocal].pp += 1;
+                } else {
+                    tabla[idLocal].pts += 1;
+                    tabla[idVisit].pts += 1;
+                    tabla[idLocal].pe += 1;
+                    tabla[idVisit].pe += 1;
+                }
             }
         });
 
         let clasificacion = Object.values(tabla).sort((a, b) => b.pts - a.pts || (b.gf - b.gc) - (a.gf - a.gc));
 
         let grupos = null;
+
         if (competicion.tipo === 'internacional_america') {
             grupos = {};
-            clasificacion.forEach(fila => {
-                const nombreG = fila.grupo; 
+            const letras = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+           
+            clasificacion.forEach((fila, index) => {
+                
+                let nombreG = (fila.grupo && fila.grupo !== "Liga" && fila.grupo !== "Sin Grupo") 
+                            ? fila.grupo 
+                            : "Grupo " + letras[Math.floor(index / 4)];
+                
                 if (!grupos[nombreG]) grupos[nombreG] = [];
                 grupos[nombreG].push(fila);
             });
-        }
 
+            Object.keys(grupos).forEach(nombreG => {
+                grupos[nombreG].sort((a, b) => b.pts - a.pts || (b.gf - b.gc) - (a.gf - a.gc));
+            });
+        }
         let viewToRender = grupos ? 'partials/tablaGrupos' : 'partials/tablaLiga';
         
         //para usar AJAX y no recargar la pagina todo el rato

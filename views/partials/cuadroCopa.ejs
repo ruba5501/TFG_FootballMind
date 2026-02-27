@@ -1,3 +1,22 @@
+<% if (competicion.tipo.startsWith('internacional')) { %>
+   <div class="mb-3 d-flex align-items-center justify-content-between bg-light p-2 rounded border">
+        <div class="small text-muted">
+            <i class="bi bi-info-circle me-1"></i> Estás viendo las <strong>Eliminatorias</strong>
+        </div>
+        
+        <% if (typeof partida !== 'undefined' && partida) { %>
+            <a href="/clasificacion/<%= partida._id %>/<%= competicion._id %>" class="btn btn-sm btn-outline-primary shadow-sm">
+                <i class="bi bi-table me-1"></i> Ver Fase de Grupos
+            </a>
+        <% } else { %>
+            <button type="button" 
+                    onclick="cargarInfo('<%= competicion._id %>', 'liga')" 
+                    class="btn btn-sm btn-outline-primary shadow-sm">
+                <i class="bi bi-table me-1"></i> Ver Fase de Grupos
+            </button>
+        <% } %>
+    </div>
+<% } %>
 <div class="accordion shadow-sm" id="acordeonCopa">
     <% 
         let rondasKeys = Object.keys(rondas).reverse(); 

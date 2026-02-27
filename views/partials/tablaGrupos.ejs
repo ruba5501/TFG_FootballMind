@@ -1,3 +1,15 @@
+<% if (competicion.faseActual === 'eliminatorias') { %>
+    <div class="alert alert-info d-flex justify-content-between align-items-center shadow-sm border-0 mb-4">
+        <div>
+            <i class="bi bi-info-circle-fill me-2"></i>
+            <strong>Fase de grupos finalizada.</strong> Ya puedes consultar los cruces.
+        </div>
+        <button onclick="typeof cargarInfo === 'function' ? cargarInfo('<%= competicion._id %>', 'copa') : window.location.href='/copa/<%= competicion.partidaId %>/<%= competicion._id %>'" 
+                class="btn btn-primary btn-sm shadow-sm">
+            <i class="bi bi-diagram-3 me-2"></i>Ver Eliminatorias
+        </button>
+    </div>
+<% } %>
 <div class="row g-4">
     <% Object.keys(grupos).sort().forEach(nombreGrupo => { %>
         <div class="col-xl-6">
