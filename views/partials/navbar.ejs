@@ -32,8 +32,22 @@
           <li class="nav-item">
             <a class="nav-link" href="/traspasos/<%= partida._id %>"><i class="bi bi-currency-exchange me-1"></i> Traspasos</a>
           </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/competicones/<%= partida._id %>"><i class="bi bi-trophy me-1"></i> Competiciones</a>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="competicionesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <i class="bi bi-trophy me-1"></i> Competiciones
+            </a>
+            <ul class="dropdown-menu dropdown-menu-dark shadow" aria-labelledby="competicionesDropdown">
+              <li>
+                <a class="dropdown-item py-2" href="/mis-competiciones/<%= partida._id %>">
+                  <i class="bi bi-star-fill me-2 text-warning"></i> Mis Competiciones
+                </a>
+              </li>
+              <li>
+                <a class="dropdown-item py-2" href="/ver-competiciones/<%= partida._id %>">
+                  <i class="bi bi-search me-2 text-info"></i> Ver Competiciones
+                </a>
+              </li>
+            </ul>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="/calendario/<%= partida._id %>"><i class="bi bi-calendar3 me-1"></i> Calendario</a>

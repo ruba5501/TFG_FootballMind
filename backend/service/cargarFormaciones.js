@@ -95,7 +95,7 @@ const FORMACIONES = {
     },
     '3-5-2': {
         def: 3, med: 5, del: 2,
-        posiciones: ['POR', 'DFC', 'DFC', 'DFC', 'E1', 'MC', 'MC', 'MC', 'ED', 'DC', 'DC'],
+        posiciones: ['POR', 'DFC', 'DFC', 'DFC', 'EI', 'MC', 'MC', 'MC', 'ED', 'DC', 'DC'],
         coordenadas: [
             {t:85, l:50},
             {t:75, l:24}, {t:75, l:50}, {t:75, l:76},

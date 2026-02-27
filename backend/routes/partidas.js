@@ -244,6 +244,15 @@ partidaRouter.get('/inicioJuego/:id', requireLogin, async (req, res) => {
             $or: [{ equipoLocal: clubUsuario._id }, { equipoVisitante: clubUsuario._id }]
         }).populate('equipoLocal equipoVisitante competicionId').sort({ fecha: 1 }); // Ordenados por fecha
 
+        const competicionIds = [...new Set(partidos.map(p => p.competicionId._id.toString()))];
+        
+        const misCompeticiones = await Competicion.find({
+            _id: { $in: competicionIds }
+        });
+
+        const ordenPrioridad = { 'liga': 1, 'copa': 2, 'internacional_europa': 3 };
+        misCompeticiones.sort((a, b) => (ordenPrioridad[a.tipo] || 99) - (ordenPrioridad[b.tipo] || 99));
+
         // Filtramos para buscar el próximo partido (el primero que no se haya jugado)
         const proximosPartidos = partidos.filter(p => p.jugado === false);
         const proximoPartido = proximosPartidos.length > 0 ? proximosPartidos[0] : null;
@@ -262,7 +271,8 @@ partidaRouter.get('/inicioJuego/:id', requireLogin, async (req, res) => {
             clubUsuario,
             partidos,
             proximoPartido,
-            rivalId
+            rivalId,
+            misCompeticiones
         });
 
     } catch (error) {

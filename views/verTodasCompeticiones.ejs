@@ -1,0 +1,47 @@
+<%- include('partials/head', {title: title}) %>
+<header>
+  <%- include('partials/navbar') %>
+</header>
+<div class="container mt-4">
+    <h2 class="mb-4"><i class="fas fa-globe"></i> Explorar Mundo</h2>
+
+    <input type="hidden" id="partida-id" value="<%= partida._id %>">
+    <script id="competiciones-data" type="application/json">
+        <%- JSON.stringify(competiciones) %>
+    </script>
+
+    <div class="row g-3 bg-white p-4 rounded shadow-sm border">
+        <div class="col-md-5">
+            <label class="form-label fw-bold">1. Región o País</label>
+            <select id="selectPais" class="form-select">
+                <option value="">-- Seleccionar --</option>
+                <option value="Internacional">Internacional</option>
+                <% paises.forEach(pais => { %>
+                    <option value="<%= pais %>"><%= pais %></option>
+                <% }) %>
+            </select>
+        </div>
+
+        <div class="col-md-5">
+            <label class="form-label fw-bold">2. Competición</label>
+            <select id="selectCompeticion" class="form-select" disabled>
+                <option value="">-- Selecciona un país primero --</option>
+            </select>
+        </div>
+
+        <div class="col-md-2 d-flex align-items-end">
+            <button id="btnMostrar" class="btn btn-primary w-100 fw-bold" disabled>
+                <i class="fas fa-search"></i> Ver
+            </button>
+        </div>
+    </div>
+
+    <div id="contenedorResultados" class="mt-4">
+        <div class="text-center text-muted p-5 border rounded bg-light">
+            <i class="fas fa-info-circle fa-2x mb-3"></i>
+            <p>Selecciona una competición para ver su estado actual.</p>
+        </div>
+    </div>
+</div>
+
+<script src="/js/buscarCompeticiones.js"></script>

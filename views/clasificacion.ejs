@@ -4,12 +4,9 @@
 </header>
 
 <div class="container mt-4 mb-5">
-    
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h2 class="fw-bold mb-0">
-                <i class="bi bi-trophy text-warning me-2"></i>Clasificación
-            </h2>
+            <h2 class="fw-bold mb-0"><i class="bi bi-trophy text-warning me-2"></i>Clasificación</h2>
             <p class="text-muted"><%= competicion.nombre %></p>
         </div>
         <a href="/inicioJuego/<%= partida._id %>" class="btn btn-outline-dark">
@@ -17,62 +14,11 @@
         </a>
     </div>
 
-    <div class="card shadow border-0">
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-dark">
-                        <tr class="text-center">
-                            <th scope="col" class="py-3" style="width: 50px;">Pos</th>
-                            <th scope="col" class="py-3 text-start">Club</th>
-                            <th scope="col" class="py-3 px-3 fs-6" title="Puntos">PTS</th>
-                            <th scope="col" class="py-3 " title="Partidos Jugados" style="cursor: help;">PJ</th>
-                            <th scope="col" class="py-3 " title="Partidos Ganados" style="cursor: help;">PG</th>
-                            <th scope="col" class="py-3 " title="Partidos Empatados" style="cursor: help;">PE</th>
-                            <th scope="col" class="py-3 " title="Partidos Perdidos" style="cursor: help;">PP</th>
-                            <th scope="col" class="py-3 " title="Goles a Favor" style="cursor: help;">GF</th>
-                            <th scope="col" class="py-3 " title="Goles en Contra" style="cursor: help;">GC</th>
-                            <th scope="col" class="py-3 " title="Diferencia de Goles" style="cursor: help;">DIF</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <% clasificacion.forEach((fila, index) => { 
-                            // Resaltar la fila si es el equipo del usuario
-                            let esUsuario = fila.club._id.toString() === clubUsuario._id.toString();
-                            let bgClass = esUsuario ? 'table-primary border-primary' : '';
-                        %>
-                            <tr class="text-center <%= bgClass %>">
-                                <td class="fw-bold <%= index < 4 ? 'text-success' : (index > clasificacion.length - 4 ? 'text-danger' : '') %>">
-                                    <%= index + 1 %>
-                                </td>
-                                <td class="text-start fw-semibold">
-                                    <img src="/img/escudos/<%= fila.club.escudo %>" alt="<%= fila.club.nombre %>" width="30" class="me-2 drop-shadow-sm">
-                                    <%= fila.club.nombre %>
-                                </td>
-                                <td class="fw-bold fs-5 px-3"><%= fila.pts %></td>
-                                <td><%= fila.pj %></td>
-                                <td><%= fila.pg %></td>
-                                <td><%= fila.pe %></td>
-                                <td><%= fila.pp %></td>
-                                <td><%= fila.gf %></td>
-                                <td><%= fila.gc %></td>
-                                <td>
-                                    <% let dif = fila.gf - fila.gc; %>
-                                    <span class="<%= dif > 0 ? 'text-success' : (dif < 0 ? 'text-danger' : 'text-muted') %> fw-bold">
-                                        <%= dif > 0 ? '+' + dif : dif %>
-                                    </span>
-                                </td>
-                            </tr>
-                        <% }) %>
-                    </tbody>
-                </table>
-            </div>
-        </div>
+    <div id="contenedorResultados">
+        <% if (competicion.tipo === 'internacional_america') { %>
+            <%- include('partials/tablaGrupos') %>
+        <% } else { %>
+            <%- include('partials/tablaLiga') %>
+        <% } %>
     </div>
 </div>
-
-<style>
-    .drop-shadow-sm { filter: drop-shadow(0px 2px 3px rgba(0,0,0,0.3)); }
-    .table-hover tbody tr:hover { background-color: #f8f9fa; }
-    .table-primary:hover { background-color: #cfe2ff !important; }
-</style>

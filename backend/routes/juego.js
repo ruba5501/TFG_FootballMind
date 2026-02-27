@@ -8,6 +8,7 @@ const Partida = require('../models/partida');
 const Club = require('../models/club');
 const Jugador = require('../models/jugador');
 const Partido = require('../models/partido');
+const Competicion = require('../models/competicion')
 // Motor
 const { simularPartido } = require('../engine/motorJuego');
 const { requireLogin } = require('../middleware/autenticacion');
@@ -160,42 +161,49 @@ router.get('/competicion/:idCompeticion/clasificacion', requireLogin, async (req
     }
 });
 
-router.get('/clasificacion/:idPartida', requireLogin, async (req, res) => {
+router.get('/clasificacion/:partidaId/:competicionId', requireLogin, async (req, res) => {
     try {
-        const partidaId = req.params.idPartida;
+        const { partidaId, competicionId } = req.params;
         
         // 1. Obtener la partida y tu club
         const partida = await Partida.findById(partidaId).populate('clubSeleccionado');
-        if (!partida) return res.redirect('/listarPartidas');
+        const competicion = await Competicion.findById(competicionId);
+        if (!partida || !competicion) return res.redirect('/inicioJuego/' + partidaId);
         const clubUsuario = partida.clubSeleccionado;
 
-        // 2. Averiguar en qué liga juega el usuario
-        // Buscamos un partido cualquiera del usuario que sea de tipo 'LIGA'
-        const partidoReferencia = await Partido.findOne({
-            partidaId: partidaId,
-            $or: [{ equipoLocal: clubUsuario._id }, { equipoVisitante: clubUsuario._id }],
-            tipo: 'LIGA'
-        }).populate('competicionId');
-
-        if (!partidoReferencia) {
-            return res.status(404).send("No se ha encontrado ninguna liga para tu equipo.");
-        }
-
-        const competicionLiga = partidoReferencia.competicionId;
-
-        // 3. Obtener TODOS los partidos de esa liga (para saber qué equipos participan)
         const todosLosPartidos = await Partido.find({
             partidaId: partidaId,
-            competicionId: competicionLiga._id
+            competicionId: competicionId
         }).populate('equipoLocal equipoVisitante');
 
-        // 4. Construir la tabla
+        if (todosLosPartidos.length === 0) {
+            // Si no hay partidos, enviamos una clasificación vacía o error
+            return res.render('clasificacion', {
+                user: req.session.user,
+                partida,
+                clubUsuario,
+                competicion,
+                clasificacion: []
+            });
+        }
+
         const tabla = {};
 
-        // Inicializamos los contadores de todos los equipos a cero
+        const mapaGrupos = {};
+        competicion.tabla.forEach(item => {
+            if(item.club) mapaGrupos[item.club._id.toString()] = item.grupo;
+        });
+
         todosLosPartidos.forEach(p => {
-            if (!tabla[p.equipoLocal._id]) tabla[p.equipoLocal._id] = { club: p.equipoLocal, pts: 0, pj: 0, pg: 0, pe: 0, pp: 0, gf: 0, gc: 0 };
-            if (!tabla[p.equipoVisitante._id]) tabla[p.equipoVisitante._id] = { club: p.equipoVisitante, pts: 0, pj: 0, pg: 0, pe: 0, pp: 0, gf: 0, gc: 0 };
+            [p.equipoLocal, p.equipoVisitante].forEach(equipo => {
+                if (!tabla[equipo._id]) {
+                    tabla[equipo._id] = { 
+                        club: equipo, 
+                        pts: 0, pj: 0, pg: 0, pe: 0, pp: 0, gf: 0, gc: 0,
+                        grupo: mapaGrupos[equipo._id.toString()] || "Sin Grupo" 
+                    };
+                }
+            });
         });
 
         // Sumamos las estadísticas solo de los partidos JUGADOS
@@ -230,24 +238,39 @@ router.get('/clasificacion/:idPartida', requireLogin, async (req, res) => {
             }
         });
 
-        // 5. Convertir la tabla a Array y ORDENARLA
-        let clasificacion = Object.values(tabla).sort((a, b) => {
-            if (b.pts !== a.pts) return b.pts - a.pts; // 1º Mayor puntuación
-            
-            const difB = b.gf - b.gc;
-            const difA = a.gf - a.gc;
-            if (difB !== difA) return difB - difA;     // 2º Diferencia de goles
-            
-            return b.gf - a.gf;                        // 3º Goles a favor
-        });
+        let clasificacion = Object.values(tabla).sort((a, b) => b.pts - a.pts || (b.gf - b.gc) - (a.gf - a.gc));
+
+        let grupos = null;
+        if (competicion.tipo === 'internacional_america') {
+            grupos = {};
+            clasificacion.forEach(fila => {
+                const nombreG = fila.grupo; 
+                if (!grupos[nombreG]) grupos[nombreG] = [];
+                grupos[nombreG].push(fila);
+            });
+        }
+
+        let viewToRender = grupos ? 'partials/tablaGrupos' : 'partials/tablaLiga';
+        
+        //para usar AJAX y no recargar la pagina todo el rato
+        if (req.query.ajax) {
+            return res.render(viewToRender, { 
+                clasificacion, 
+                grupos, 
+                competicion, 
+                clubUsuario, 
+                layout: false 
+            });
+        }
 
         // Renderizamos la vista
         res.render('clasificacion', {
             user: req.session.user,
             partida,
             clubUsuario,
-            competicion: competicionLiga,
-            clasificacion
+            competicion,
+            clasificacion,
+            grupos
         });
 
     } catch (error) {
@@ -257,33 +280,31 @@ router.get('/clasificacion/:idPartida', requireLogin, async (req, res) => {
 });
 
 // Ruta para ver el Cuadro de la Copa
-router.get('/copa/:idPartida', requireLogin, async (req, res) => {
+router.get('/copa/:partidaId/:competicionId', requireLogin, async (req, res) => {
     try {
-        const partidaId = req.params.idPartida;
+        const { partidaId, competicionId } = req.params;
         
         const partida = await Partida.findById(partidaId).populate('clubSeleccionado');
-        if (!partida) return res.redirect('/listarPartidas');
+        const competicion = await Competicion.findById(competicionId);
+        if (!partida || !competicion) return res.redirect('/inicioJuego/' + partidaId);
         const clubUsuario = partida.clubSeleccionado;
 
-        // 1. Buscamos cualquier partido de tipo ELIMINATORIA o FINAL para saber qué copa juega tu equipo
-        const partidoCopa = await Partido.findOne({
-            partidaId: partidaId,
-            tipo: { $in: ['ELIMINATORIA', 'FINAL'] },
-            $or: [{ equipoLocal: clubUsuario._id }, { equipoVisitante: clubUsuario._id }]
-        }).populate('competicionId');
-
-        if (!partidoCopa) {
-            return res.status(404).send("Aún no tienes partidos de Copa generados o fuiste eliminado antes de la creación.");
-        }
-
-        const competicionCopa = partidoCopa.competicionId;
-
-        // 2. Obtenemos TODOS los partidos de esa Copa
+        //Obtenemos TODOS los partidos de esa Copa
         const partidosCopa = await Partido.find({
             partidaId: partidaId,
-            competicionId: competicionCopa._id
+            competicionId: competicionId
         }).populate('equipoLocal equipoVisitante').sort({ jornada: 1 });
 
+        if (!partidosCopa || partidosCopa.length === 0) {
+            return res.render('copa', {
+                user: req.session.user,
+                partida,
+                clubUsuario,
+                competicion,
+                rondas: {},
+                mensaje: "La competición aún no ha comenzado."
+            });
+        }
         // 3. Agrupamos los partidos por Rondas (Jornadas)
         const rondas = {};
         
@@ -302,17 +323,91 @@ router.get('/copa/:idPartida', requireLogin, async (req, res) => {
             rondas[nombre].push(p);
         });
 
+        //para usar AJAX y no recargar la pagina todo el rato
+        if (req.query.ajax) {
+            return res.render('partials/cuadroCopa', { 
+                rondas, 
+                competicion,
+                clubUsuario: partida.clubSeleccionado,
+                layout: false 
+            });
+        }
+
         res.render('copa', {
             user: req.session.user,
             partida,
             clubUsuario,
-            competicion: competicionCopa,
+            competicion,
             rondas
         });
 
     } catch (error) {
         console.error("Error al cargar la copa:", error);
         res.status(500).send("Error al cargar la competición de Copa");
+    }
+});
+
+router.get('/mis-competiciones/:idPartida', requireLogin, async (req, res) => {
+    try {
+        const partidaId = req.params.idPartida;
+        const partida = await Partida.findById(partidaId).populate('clubSeleccionado');
+        
+        const clubUsuario = partida.clubSeleccionado;
+        const partidosClub = await Partido.find({
+            partidaId: partidaId,
+            $or: [
+                { equipoLocal: clubUsuario._id },
+                { equipoVisitante: clubUsuario._id }
+            ]
+        }).distinct('competicionId');
+
+        const misCompeticiones = await Competicion.find({
+            $or: [
+                { _id: { $in: partidosClub } },
+                { 
+                    pais: clubUsuario.pais, 
+                    tipo: 'copa',
+                    partidaId: partidaId
+                }
+            ]
+        });
+
+        const ordenPrioridad = { 'liga': 1, 'copa': 2, 'internacional_europa': 3, 'internacional_america': 3 };
+        
+        misCompeticiones.sort((a, b) => {
+            return (ordenPrioridad[a.tipo] || 99) - (ordenPrioridad[b.tipo] || 99);
+        });
+
+        res.render('misCompeticiones', {
+            title: 'Mis Competiciones',
+            partida,
+            misCompeticiones
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Error al cargar mis competiciones");
+    }
+});
+
+router.get('/ver-competiciones/:idPartida', requireLogin, async (req, res) => {
+    try {
+        const partidaId = req.params.idPartida;
+        const partida = await Partida.findById(partidaId).populate('clubSeleccionado');
+        const competiciones = await Competicion.find({ partidaId: partidaId });
+
+        const paises = [...new Set(competiciones
+            .map(c => c.pais)
+            .filter(p => p && p !== 'Europa' && p !== 'Sudamérica'))];
+
+        res.render('verTodasCompeticiones', {
+            title: 'Explorar Mundo',
+            partida,
+            paises,
+            competiciones
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Error al abrir el explorador");
     }
 });
 module.exports = router;

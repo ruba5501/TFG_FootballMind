@@ -1,0 +1,40 @@
+<%- include('partials/head', {title: title}) %>
+<header>
+  <%- include('partials/navbar') %>
+</header>
+<div class="container mt-5">
+    <div class="d-flex align-items-center mb-4">
+        <h2 class="text-white"> Mis Competiciones</h2>
+    </div>
+    
+    <div class="row">
+        <% misCompeticiones.forEach(comp => { %>
+            <div class="col-md-4 mb-4">
+                <div class="card card-competicion shadow-lg">
+                    <div class="card-body text-center p-4">
+                        <div class="logo-container-comp">
+                            <img src="/img/logos/<%= comp.logo %>" alt="<%= comp.nombre %>" class="logo-comp">
+                        </div>
+                        <h5 class="text-white fw-bold mb-1"><%= comp.nombre %></h5>
+                        <small class="text-muted text-uppercase d-block mb-3"><%= comp.pais || 'Internacional' %></small>
+                        <span class="badge rounded-pill bg-dark border border-secondary text-info px-3">
+                            <%= comp.tipo.replace('_', ' ') %>
+                        </span>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <% if (comp.tipo === 'liga' || comp.tipo === 'internacional_europa'|| comp.tipo === 'internacional_america') { %>
+                            <a href="/clasificacion/<%= partida._id %>/<%= comp._id %>" class="btn btn-comp-action py-3 rounded-0">
+                                <i class="bi bi-list-ol me-2"></i>Ver Clasificación
+                            </a>
+                        <% } else { %>
+                            <a href="/copa/<%= partida._id %>/<%= comp._id %>" class="btn btn-comp-action py-3 rounded-0">
+                                <i class="bi bi-diagram-3 me-2"></i>Ver Cuadro de Copa
+                            </a>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+        <% }) %>
+    </div>
+</div>
