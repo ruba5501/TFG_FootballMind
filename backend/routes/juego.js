@@ -255,15 +255,30 @@ router.get('/clasificacion/:partidaId/:competicionId', requireLogin, async (req,
             });
         }
 
+        const partidosPorJornada = {};
+        todosLosPartidos.forEach(p => {
+            if (!partidosPorJornada[p.jornada]) {
+                partidosPorJornada[p.jornada] = [];
+            }
+            partidosPorJornada[p.jornada].push(p);
+        });
+
+        const jornadas = Object.keys(partidosPorJornada).sort((a, b) => a - b);
+        const jornadaActual = jornadas.find(j => partidosPorJornada[j].some(p => !p.jugado)) || jornadas[jornadas.length - 1];
+
         let viewToRender = grupos ? 'partials/tablaGrupos' : 'partials/tablaLiga';
         
         //para usar AJAX y no recargar la pagina todo el rato
         if (req.query.ajax) {
             return res.render(viewToRender, { 
+                partida,
                 clasificacion, 
-                grupos, 
                 competicion, 
                 clubUsuario, 
+                grupos,
+                partidosPorJornada,
+                jornadas,
+                jornadaActual,
                 layout: false 
             });
         }
@@ -275,7 +290,10 @@ router.get('/clasificacion/:partidaId/:competicionId', requireLogin, async (req,
             clubUsuario,
             competicion,
             clasificacion,
-            grupos
+            grupos,
+            partidosPorJornada,
+            jornadas,
+            jornadaActual
         });
 
     } catch (error) {

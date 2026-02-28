@@ -1,0 +1,45 @@
+<div class="card shadow-sm border-0 mb-4 bg-light">
+    <div class="card-body py-3">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <button class="btn btn-sm btn-outline-primary border-0 rounded-circle" onclick="cambiarJornada(-1)">
+                <i class="bi bi-arrow-left-circle fs-4"></i>
+            </button>
+            <div class="text-center">
+                <h5 class="fw-bold mb-0">Jornada <span id="numJornada"><%= jornadaActual %></span></h5>
+                <small class="text-muted text-uppercase fw-semibold" style="font-size: 0.65rem;">Resultados y Calendario</small>
+            </div>
+            <button class="btn btn-sm btn-outline-primary border-0 rounded-circle" onclick="cambiarJornada(1)">
+                <i class="bi bi-arrow-right-circle fs-4"></i>
+            </button>
+        </div>
+
+        <div id="contenedorJornadas">
+            <% jornadas.forEach(j => { %>
+                <div class="jornada-index <%= j == jornadaActual ? '' : 'd-none' %>" data-jornada="<%= j %>">
+                    <div class="row g-2">
+                        <% partidosPorJornada[j].forEach(p => { %>
+                            <% 
+                                let esTuPartido = clubUsuario && (p.equipoLocal._id.toString() === clubUsuario._id.toString() || p.equipoVisitante._id.toString() === clubUsuario._id.toString()); 
+                            %>
+                            <div class="col-md-6 col-lg-4">
+                                <div class="p-2 bg-white rounded match-card d-flex align-items-center <%= esTuPartido ? 'user-match shadow-sm' : '' %>">
+                                    <div class="text-truncate flex-grow-1 text-end pe-2 <%= esTuPartido && p.equipoLocal._id.toString() === clubUsuario._id.toString() ? 'fw-bold text-primary' : '' %>" style="font-size: 0.85rem;">
+                                        <%= p.equipoLocal.nombre %>
+                                    </div>
+                                    
+                                    <div class="badge <%= p.jugado ? 'bg-dark' : 'bg-secondary' %> match-badge px-2 py-1 mx-1">
+                                        <%= p.jugado ? `${p.golesLocal} - ${p.golesVisitante}` : 'vs' %>
+                                    </div>
+                                    
+                                    <div class="text-truncate flex-grow-1 text-start ps-2 <%= esTuPartido && p.equipoVisitante._id.toString() === clubUsuario._id.toString() ? 'fw-bold text-primary' : '' %>" style="font-size: 0.85rem;">
+                                        <%= p.equipoVisitante.nombre %>
+                                    </div>
+                                </div>
+                            </div>
+                        <% }) %>
+                    </div>
+                </div>
+            <% }) %>
+        </div>
+    </div>
+</div>
