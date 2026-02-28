@@ -615,7 +615,8 @@ async function generarFaseSudamerica(partidaId, competicion, anioInicio) {
                 todosLosPartidosTemporales.push({
                     jornada: e.j,
                     local: grupo[e.loc]._id,
-                    visitante: grupo[e.vis]._id
+                    visitante: grupo[e.vis]._id,
+                    grupo: nombreGrupo
                 });
             }
         });
@@ -647,7 +648,7 @@ async function generarFaseSudamerica(partidaId, competicion, anioInicio) {
                 );
 
                 listaFinal.push(crearObjeto(
-                    partidaId, competicion._id, p.jornada, p.local, p.visitante, fechaPartido, 'LIGA'
+                    partidaId, competicion._id, p.jornada, p.local, p.visitante, fechaPartido, 'LIGA', null, p.grupo
                 ));
             });
         } 
@@ -669,7 +670,7 @@ async function generarFaseSudamerica(partidaId, competicion, anioInicio) {
                 );
 
                 listaFinal.push(crearObjeto(
-                    partidaId, competicion._id, p.jornada, p.local, p.visitante, fechaPartido, 'LIGA', p.grupo
+                    partidaId, competicion._id, p.jornada, p.local, p.visitante, fechaPartido, 'LIGA', null, p.grupo
                 ));
             });
         }
@@ -1316,7 +1317,7 @@ async function generarSiguienteRondaCopa(partidaId, competicion, equiposGanadore
 }
 
 //ESTA ES FUNCION AUXILIAR PARA CREAR EL PARTIDO (ESTA SI QUE ESTA BIEN SEGURO)
-function crearObjeto(partidaId, compId, jornada, localId, visitanteId, fecha, tipo, llave = null) {
+function crearObjeto(partidaId, compId, jornada, localId, visitanteId, fecha, tipo, llave = null, grupo = null) {
     return {
         partidaId,
         competicionId: compId,
@@ -1326,7 +1327,8 @@ function crearObjeto(partidaId, compId, jornada, localId, visitanteId, fecha, ti
         equipoVisitante: visitanteId,
         fecha: new Date(fecha),
         jugado: false,
-        llave: llave
+        llave: llave,
+        grupo: grupo
     };
 }
 module.exports = generarCalendario;

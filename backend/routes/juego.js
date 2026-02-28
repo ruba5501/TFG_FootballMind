@@ -189,6 +189,14 @@ router.get('/clasificacion/:partidaId/:competicionId', requireLogin, async (req,
         }
 
         const tabla = {};
+        const mapaEquiposGrupos = {};
+
+        todosLosPartidos.forEach(p => {
+            if (p.grupo) {
+                mapaEquiposGrupos[p.equipoLocal._id.toString()] = p.grupo;
+                mapaEquiposGrupos[p.equipoVisitante._id.toString()] = p.grupo;
+            }
+        });
 
         todosLosPartidos.forEach(p => {
             [p.equipoLocal, p.equipoVisitante].forEach(equipo => {
@@ -197,7 +205,7 @@ router.get('/clasificacion/:partidaId/:competicionId', requireLogin, async (req,
                     tabla[idStr] = { 
                         club: equipo, 
                         pts: 0, pj: 0, pg: 0, pe: 0, pp: 0, gf: 0, gc: 0,
-                        grupo: p.grupo || "Liga" 
+                        grupo: mapaEquiposGrupos[idStr] || "Sin Grupo"
                     };
                 }
             });
@@ -236,14 +244,8 @@ router.get('/clasificacion/:partidaId/:competicionId', requireLogin, async (req,
 
         if (competicion.tipo === 'internacional_america') {
             grupos = {};
-            const letras = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
-           
-            clasificacion.forEach((fila, index) => {
-                
-                let nombreG = (fila.grupo && fila.grupo !== "Liga" && fila.grupo !== "Sin Grupo") 
-                            ? fila.grupo 
-                            : "Grupo " + letras[Math.floor(index / 4)];
-                
+            Object.values(tabla).forEach(fila => {
+                const nombreG = fila.grupo;
                 if (!grupos[nombreG]) grupos[nombreG] = [];
                 grupos[nombreG].push(fila);
             });
@@ -252,6 +254,7 @@ router.get('/clasificacion/:partidaId/:competicionId', requireLogin, async (req,
                 grupos[nombreG].sort((a, b) => b.pts - a.pts || (b.gf - b.gc) - (a.gf - a.gc));
             });
         }
+
         let viewToRender = grupos ? 'partials/tablaGrupos' : 'partials/tablaLiga';
         
         //para usar AJAX y no recargar la pagina todo el rato
