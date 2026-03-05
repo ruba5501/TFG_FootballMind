@@ -24,53 +24,7 @@
 
     <div class="tab-content">
         <div class="tab-pane fade show active" id="tab-atributos">
-            <div class="row g-3 mb-4 bg-white rounded p-3 shadow-sm border">
-                <div class="d-flex align-items-center">
-                    <span class="badge bg-dark fs-5 me-2" title="Posición Principal">
-                        <%= jugador.posicionPrincipal %>
-                    </span>
-                        
-                    <% if (jugador.posicionesSecundarias && jugador.posicionesSecundarias.length > 0) { %>
-                        <span class="text-muted fs-5 fw-light">
-                            / <%= jugador.posicionesSecundarias.join(' / ') %>
-                        </span>
-                    <% } %>
-                </div>
-
-                <div class="col-md-12">
-                    <div class="d-flex">
-                        <span class="small text-muted me-2" style="min-width: 80px;">Pierna buena:</span>
-                        <span class="fw-bold text-capitalize text-dark"><%= jugador.piernaBuena %></span>
-                    </div>
-
-                    <div class="d-flex">
-                        <span class="small text-muted me-2" style="min-width: 80px;">Pierna mala:</span>
-                        <div class="text-warning">
-                            <% for(let i=1; i<=5; i++) { %>
-                                <i class="bi <%= i <= jugador.piernaMala ? 'bi-star-fill' : 'bi-star text-secondary opacity-25' %>"></i>
-                            <% } %>
-                            <span class="text-dark small ms-1">(<%= jugador.piernaMala %>/5)</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="row row-cols-2 g-3">
-                <% Object.keys(jugador.atributos).forEach(categoria => { %>
-                    <div class="col">
-                        <h6 class="text-uppercase fw-bold text-primary small"><%= categoria %></h6>
-                        <ul class="list-unstyled small">
-                            <% Object.entries(jugador.atributos[categoria]).forEach(([attr, valor]) => { %>
-                                <li class="d-flex justify-content-between border-bottom py-1">
-                                    <span><%= attr %></span>
-                                    <span class="fw-bold <%= valor > 80 ? 'text-success' : (valor > 60 ? 'text-warning' : 'text-danger') %>">
-                                        <%= valor %>
-                                    </span>
-                                </li>
-                            <% }) %>
-                        </ul>
-                    </div>
-                <% }) %>
-            </div>
+            <%- include('atributosJugador', { jugador: jugador }) %>
         </div>
 
         <div class="tab-pane fade" id="tab-mercado">

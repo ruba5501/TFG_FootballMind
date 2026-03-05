@@ -200,51 +200,17 @@ const GestorTactico = {
         } catch (error) { console.error(error); }
     },
     
-    /*HAY QUE MIRARLO*/
-    verAtributos: async function(jugadorId) {
-        try {
-            const response = await fetch(`/jugador/datos/${jugadorId}`);
-            if (!response.ok) throw new Error("No se pudo obtener la información");
-            
-            const jugador = await response.json();
+    verAtributos: function(jugadorId) {
+        const contenedor = document.getElementById('contenidoModalJugador');
+        contenedor.innerHTML = '<div class="text-center p-5"><div class="spinner-border"></div></div>';
 
-            document.getElementById('nombreJugadorModal').innerText = jugador.nombre;
-            document.getElementById('posicionModal').innerText = jugador.posicionPrincipal;
-            document.getElementById('mediaModal').innerText = jugador.media;
+        const bsModal = bootstrap.Modal.getOrCreateInstance(document.getElementById('modalAtributos'));
+        bsModal.show();
 
-            const contenedor = document.getElementById('contenedorAtributos');
-            contenedor.innerHTML = '';
-
-            const atributosAMostrar = [
-                { nombre: 'Ritmo', valor: jugador.atributos.ritmo },
-                { nombre: 'Tiro', valor: jugador.atributos.tiro },
-                { nombre: 'Pase', valor: jugador.atributos.pase },
-                { nombre: 'Regate', valor: jugador.atributos.regate },
-                { nombre: 'Defensa', valor: jugador.atributos.defensa },
-                { nombre: 'Físico', valor: jugador.atributos.fisico }
-            ];
-
-            atributosAMostrar.forEach(attr => {
-                const div = document.createElement('div');
-                div.className = 'col-6 mb-2';
-                const colorClase = attr.valor >= 80 ? 'text-success' : (attr.valor >= 60 ? 'text-warning' : 'text-danger');
-                
-                div.innerHTML = `
-                    <div class="d-flex justify-content-between p-2 bg-secondary rounded shadow-sm" style="--bs-bg-opacity: .2;">
-                        <span>${attr.nombre}</span>
-                        <span class="fw-bold ${colorClase}">${attr.valor}</span>
-                    </div>
-                `;
-                contenedor.appendChild(div);
+        fetch(`/jugador/atributos/${jugadorId}`)
+            .then(res => res.text())
+            .then(html => {
+                contenedor.innerHTML = `<div class="p-3">${html}</div>`;
             });
-
-            const modalElement = document.getElementById('modalAtributos');
-            const bsModal = new bootstrap.Modal(modalElement);
-            bsModal.show();
-
-        } catch (error) {
-            console.error("Error al cargar atributos:", error);
-            alert("Error al cargar los datos del jugador.");
-        }
     }
 };

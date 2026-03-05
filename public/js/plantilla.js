@@ -18,7 +18,6 @@ function verDetalleJugador(id) {
 }
 
 async function accionJugador(id, tipo) {
-    console.log("perro");
     try {
         const response = await fetch(`/jugador/cambiar-estado/${id}`, {
             method: 'POST',
@@ -39,7 +38,6 @@ let mapaDorsales = {};
 let idJugadorActual = null;
 
 async function abrirModalDorsal(jugadorId) {
-    console.log("--- INICIO ABRIR MODAL ---");
     idJugadorActual = jugadorId;
     
     const input = document.getElementById('inputDorsal');
@@ -59,9 +57,7 @@ async function abrirModalDorsal(jugadorId) {
         const res = await fetch(`/club/dorsales-ocupados?clubId=${CLUB_ID_ACTUAL}`);
         const data = await res.json();
         
-        console.log("DATOS RECIBIDOS DEL SERVIDOR:", data);
         mapaDorsales = data.ocupados || {};
-        console.log("MAPA GUARDADO EN VARIABLE GLOBAL:", mapaDorsales);
 
         input.value = 1;
         actualizarEstadoDorsal(1);
@@ -78,7 +74,6 @@ function actualizarEstadoDorsal(num) {
     
     const numeroABuscar = String(num).trim();
     const ocupante = mapaDorsales[numeroABuscar];
-    console.log(`¿Existe el dorsal ${numeroABuscar} en el mapa?`, ocupante ? "SÍ: " + ocupante : "NO");
 
     if (ocupante) {
         infoOcupante.innerHTML = `<i class="bi bi-exclamation-triangle-fill me-2"></i> Ocupado por: <strong>${ocupante}</strong>`;
@@ -91,7 +86,6 @@ function actualizarEstadoDorsal(num) {
     }
 }
 
-// ASIGNACIÓN DE EVENTOS
 document.addEventListener('DOMContentLoaded', () => {
     const inputD = document.getElementById('inputDorsal');
     if (inputD) {

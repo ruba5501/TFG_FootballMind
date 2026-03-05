@@ -147,6 +147,15 @@ clubRouter.get('/jugador/detalle/:jugadorId', requireLogin, async (req, res) => 
     }
 });
 
+clubRouter.get('/jugador/atributos/:id', async (req, res) => {
+    try {
+        const jugador = await Jugador.findById(req.params.id);
+        res.render('partials/atributosJugador', { jugador: jugador });
+    } catch (error) {
+        res.status(500).send("Error");
+    }
+})
+
 clubRouter.get('/club/dorsales-ocupados', requireLogin, async (req, res) => {
     try {
         const idDelClub = req.query.clubId;
