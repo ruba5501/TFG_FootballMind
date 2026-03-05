@@ -121,6 +121,13 @@ const jugadorSchema = new mongoose.Schema({
     satisfaccion: { type: Number, default: 100 },
     lesion: { type: String, default: null }
   },
+
+  mercado: {
+    transferible: { type: Boolean, default: false },
+    cedible: { type: Boolean, default: false },
+    clausulaRescision: { type: Number, default: 0 }
+  },
+
   statsTemporada: [
     {
         competicionId: { type: mongoose.Schema.Types.ObjectId, ref: 'Competicion' },
@@ -129,6 +136,7 @@ const jugadorSchema = new mongoose.Schema({
         minutos: { type: Number, default: 0 },
         goles: { type: Number, default: 0 },
         asistencias: { type: Number, default: 0 },
+        porteriasACero: { type: Number, default: 0 },
         amarillas: { type: Number, default: 0 },
         rojas: { type: Number, default: 0 },
         notaMedia: { type: Number, default: 0 }

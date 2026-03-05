@@ -3,6 +3,7 @@ const clubRouter = express.Router();
 const partidasDAO = require('../daos/partidasDAO');
 const clubesDAO = require('../daos/clubesDAO');
 const Club = require('../models/club');
+const Jugador = require('../models/jugador');
 const { requireLogin } = require('../middleware/autenticacion');
 const { FORMACIONES } = require('../service/cargarFormaciones');
 
@@ -117,4 +118,51 @@ clubRouter.post('/subirCanterano/:jugadorId', requireLogin, async (req, res) => 
     }
 });
 
+clubRouter.get('/plantilla/:partidaId', requireLogin, async (req, res) => {
+    try {
+        const partida = await partidasDAO.obtenerPartidaPorId(req.params.partidaId);
+        const clubUsuario = await Club.findById(partida.clubSeleccionado).populate('plantilla');
+        
+        clubUsuario.plantilla.sort((a, b) => (ORDEN_POSICIONES[a.posicionPrincipal] || 99) - (ORDEN_POSICIONES[b.posicionPrincipal] || 99));
+
+        res.render('plantilla', {
+            partida,
+            clubUsuario,
+            jugadores: clubUsuario.plantilla
+        });
+    } catch (err) {
+        res.status(500).send("Error al cargar la plantilla");
+    }
+});
+
+clubRouter.get('/jugador/detalle/:jugadorId', requireLogin, async (req, res) => {
+    try {
+        const jugador = await Jugador.findById(req.params.jugadorId).populate('statsTemporada.competicionId');
+        res.render('partials/detalleJugador', { 
+          jugador,
+          layout: false 
+        });
+    } catch (err) {
+        res.status(500).send("Error al obtener detalles");
+    }
+});
+
+clubRouter.get('/club/dorsales-ocupados', requireLogin, async (req, res) => {
+    try {
+        const idDelClub = req.query.clubId;
+        const jugadores = await Jugador.find({ clubActual: idDelClub });
+        
+        const ocupados = {};
+        jugadores.forEach(j => {
+            if (j.dorsal) {
+                ocupados[String(j.dorsal)] = j.nombre;
+            }
+        });
+
+        res.json({ ocupados });
+    } catch (err) {
+        console.error("Error en servidor:", err);
+        res.status(500).json({ ocupados: {}, error: err.message });
+    }
+});
 module.exports = clubRouter;
