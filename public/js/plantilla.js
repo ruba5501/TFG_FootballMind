@@ -1,3 +1,4 @@
+/*sirve para cantera y para plantilla*/
 function verDetalleJugador(id) {
     const panel = document.getElementById('panelDetalleJugador');
     panel.innerHTML = '<div class="text-center mt-5"><div class="spinner-border"></div></div>';
@@ -150,4 +151,46 @@ function actualizarFilaTabla(id, nuevoDorsal) {
             }
         }
     });
+}
+
+function enviarOjeador(ojeadorId) {
+    const pais = document.getElementById(`select-pais-${ojeadorId}`).value;
+    const meses = document.getElementById(`input-meses-${ojeadorId}`).value;
+
+    fetch('/ojeador/enviar-ojeador', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ ojeadorId, pais, meses })
+    }).then(res => res.json()).then(data => {
+        if(data.success) location.reload();
+        else alert(data.message);
+    });
+}
+
+function cancelarMision(ojeadorId) {
+    if (!confirm("¿Estás seguro de cancelar la misión? Perderás cualquier informe en progreso.")) return;
+
+    fetch('/ojeador/cancelar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ojeadorId })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            window.location.reload();
+        } else {
+            alert("Error al cancelar la misión");
+        }
+    });
+}
+
+function subirPrimerEquipo(id) {
+    if(confirm("¿Estás seguro de que quieres subir a este jugador? Ocupará una ficha del primer equipo.")) {
+        fetch(`/cantera/promocionar/${id}`, { method: 'POST' })
+            .then(res => res.json())
+            .then(data => {
+                if(data.success) window.location.href = '/plantilla';
+            });
+    }
 }

@@ -36,16 +36,6 @@ clubRouter.get('/buscarClub/:id', async (req, res) => {
   res.json(club);
 });
 
-clubRouter.put('/editarClub/:id', async (req, res) => {
-  const club = await clubesDAO.actualizarClub(req.params.id, req.body);
-  res.json(club);
-});
-
-clubRouter.delete('/eliminarClubes/:id', async (req, res) => {
-  await clubesDAO.eliminarClub(req.params.id);
-  res.json({ mensaje: "Club eliminado" });
-});
-
 clubRouter.get('/formacion/:partidaId', requireLogin, async (req, res) => {
     try {
         const partida = await partidasDAO.obtenerPartidaPorId(req.params.partidaId);
@@ -135,27 +125,6 @@ clubRouter.get('/plantilla/:partidaId', requireLogin, async (req, res) => {
     }
 });
 
-clubRouter.get('/jugador/detalle/:jugadorId', requireLogin, async (req, res) => {
-    try {
-        const jugador = await Jugador.findById(req.params.jugadorId).populate('statsTemporada.competicionId');
-        res.render('partials/detalleJugador', { 
-          jugador,
-          layout: false 
-        });
-    } catch (err) {
-        res.status(500).send("Error al obtener detalles");
-    }
-});
-
-clubRouter.get('/jugador/atributos/:id', async (req, res) => {
-    try {
-        const jugador = await Jugador.findById(req.params.id);
-        res.render('partials/atributosJugador', { jugador: jugador });
-    } catch (error) {
-        res.status(500).send("Error");
-    }
-})
-
 clubRouter.get('/club/dorsales-ocupados', requireLogin, async (req, res) => {
     try {
         const idDelClub = req.query.clubId;
@@ -172,6 +141,43 @@ clubRouter.get('/club/dorsales-ocupados', requireLogin, async (req, res) => {
     } catch (err) {
         console.error("Error en servidor:", err);
         res.status(500).json({ ocupados: {}, error: err.message });
+    }
+});
+
+clubRouter.get('/cantera/:partidaId', requireLogin, async (req, res) => {
+    try {
+        const partida = await partidasDAO.obtenerPartidaPorId(req.params.partidaId);
+        
+        const clubUsuario = await Club.findById(partida.clubSeleccionado)
+            .populate('empleados');
+
+        const clubFilial = await Club.findOne({ 
+            partidaId: req.params.partidaId,
+            clubMatriz: clubUsuario._id,
+            esFilial: true 
+        }).populate('plantilla');
+
+        const ojeadoresCantera = clubUsuario.empleados.filter(emp => 
+            emp.tipo === 'ojeadorCantera' 
+        );
+
+        let jugadoresFilial = [];
+        if (clubFilial && clubFilial.plantilla) {
+            jugadoresFilial = clubFilial.plantilla.sort((a, b) => 
+                (ORDEN_POSICIONES[a.posicionPrincipal] || 99) - (ORDEN_POSICIONES[b.posicionPrincipal] || 99)
+            );
+        }
+        res.render('cantera', {
+            partida,
+            clubUsuario,
+            clubFilial, 
+            jugadoresFilial,
+            ojeadores: ojeadoresCantera
+        });
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).send("Error al cargar la gestión de cantera");
     }
 });
 module.exports = clubRouter;

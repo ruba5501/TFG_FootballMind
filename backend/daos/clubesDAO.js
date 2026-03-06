@@ -103,6 +103,23 @@ async actualizarEstrategia(clubId, plantillaIds, datosTacticos) {
   async eliminarClub(id) {
     return await Club.findByIdAndDelete(id);
   }
+  // Actualiza el presupuesto de forma directa (p.ej. tras una venta o ajuste manual)
+  async actualizarPresupuesto(clubId, cantidad) {
+    return await Club.findByIdAndUpdate(
+      clubId,
+      { $set: { presupuestoTraspasos: cantidad } },
+      { new: true }
+    );
+  }
+
+  // Modifica el presupuesto sumando o restando (ideal para pagar misiones de ojeadores)
+  async modificarPresupuesto(clubId, cantidad) {
+    return await Club.findByIdAndUpdate(
+      clubId,
+      { $inc: { presupuestoTraspasos: cantidad } },
+      { new: true }
+    );
+  }
 }
 
 module.exports = new ClubsDAO();

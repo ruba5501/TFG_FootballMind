@@ -1,0 +1,187 @@
+<%- include('partials/head', {title: 'Gestión de Cantera'}) %>
+<%- include('partials/navbar') %>
+
+<div class="container-fluid mt-3">
+    <ul class="nav nav-pills mb-3 justify-content-center" id="canteraMainTabs" role="tablist">
+        <li class="nav-item">
+            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#seccion-filial">
+                <i class="bi bi-people-fill me-2"></i>Jugadores del Filial
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#seccion-ojeadores">
+                <i class="bi bi-search-heart me-2"></i>Red de Ojeadores
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content">
+        <div class="tab-pane fade show active" id="seccion-filial">
+            <div class="row">
+                <div class="col-md-7 border-end" style="height: 75vh; overflow-y: auto;">
+                    <h4 class="mb-3 text-primary">Equipo filial: <%= clubUsuario.nombre %>
+                    <img src="/img/escudos/<%= clubUsuario.escudo %>"
+                            alt="<%= clubUsuario.escudo %>" 
+                            class="ms-1 shadow-sm" 
+                            style="height: 50px; width: auto; vertical-align: middle; border-radius: 2px;"
+                        > 
+                    </h4>
+                    <table class="table table-dark table-hover align-middle shadow-sm border">
+                        <thead class="table-dark border">
+                            <tr class="small text-uppercase">
+                                <th>Jugador</th>
+                                <th>Posición</th>
+                                <th>Edad</th>
+                                <th>Media</th>
+                                <th>Potencial</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% jugadoresFilial.forEach(j => { %>
+                                <tr style="cursor: pointer;" onclick="verDetalleJugador('<%= j._id %>')">
+                                    <td class="fw-bold"><%= j.nombre %></td>
+                                    <td><span class="badge bg-secondary"><%= j.posicionPrincipal %></span></td>
+                                    <td><%= j.edad %> años</td>
+                                    <td><%= j.valoracion %></td>
+                                    <td><%= j.potencial %></td>
+                                </tr>
+                            <% }) %>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="col-md-5 bg-light border rounded" id="panelDetalleJugador">
+                    <div class="text-center mt-5 text-muted">
+                        <i class="bi bi-person-badge display-1"></i>
+                        <p>Selecciona una promesa para gestionar su futuro</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="seccion-ojeadores">
+            <div class="row row-cols-1 row-cols-md-3 g-4">
+                <% ojeadores.forEach(ojeador => { %>
+                    <div class="col">
+                        <div class="card h-100 shadow-sm border-<%= ojeador.estado === 'libre' ? 'success' : 'warning' %>">
+                            <div class="card-body">
+                                <h2 class="card-title"><%= ojeador.nombre %></h2>
+                                <h6 class="card-text">Nivel de detección general: <%= ojeador.atributos.nivelDeteccion %></h6>
+                                <h6 class="card-text">Nivel de detección jovenes: <%= ojeador.atributos.nivelCantera %></h6>
+                                <h6 class="card-text">Experiencia: <%= ojeador.atributos.experiencia %></h6>
+                                <h6 class="card-text">Estado: 
+                                    <div class="badge <%= ojeador.estado === 'libre' ? 'bg-success' : 'bg-warning text-dark' %> mb-3">
+                                        <%= ojeador.estado === 'libre' ? 'Disponible' : 'En misión: ' + ojeador.paisDestino %>
+                                    </div>
+                                </h6>
+
+                                <% if(ojeador.estado === 'libre') { %>
+                                    <div class="input-group input-group-sm mb-2">
+                                        <select class="form-select" id="select-pais-<%= ojeador._id %>">
+                                            <optgroup label="Europa">
+                                                <option value="España">España</option>
+                                                <option value="Inglaterra">Inglaterra</option>
+                                                <option value="Italia">Italia</option>
+                                                <option value="Alemania">Alemania</option>
+                                                <option value="Francia">Francia</option>
+                                                <option value="Portugal">Portugal</option>
+                                                <option value="Noruega">Noruega</option>
+                                                <option value="Croacia">Croacia</option>
+                                                <option value="Países Bajos">Países Bajos</option>
+                                                <option value="Bélgica">Bélgica</option>
+                                                <option value="Dinamarca">Dinamarca</option>
+                                                <option value="Suecia">Suecia</option>
+                                                <option value="Polonia">Polonia</option>
+                                                <option value="Suiza">Suiza</option>
+                                                <option value="Rusia">Rusia</option>
+                                                <option value="Grecia">Grecia</option>
+                                                <option value="Austria">Austria</option>
+                                                <option value="Rumanía">Rumanía</option>
+                                                <option value="Eslovaquia">Eslovaquia</option>
+                                                <option value="Eslovenia">Eslovenia</option>
+                                                <option value="Bulgaria">Bulgaria</option>
+                                                <option value="Hungría">Hungría</option>
+                                                <option value="República Checa">República Checa</option>
+                                                <option value="Irlanda">Irlanda</option>
+                                                <option value="Turquía">Turquía</option>
+                                            </optgroup>
+                                            <optgroup label="Sudamérica">
+                                                <option value="Brasil">Brasil</option>
+                                                <option value="Argentina">Argentina</option>
+                                                <option value="Colombia">Colombia</option>
+                                                <option value="Uruguay">Uruguay</option>
+                                                <option value="Ecuador">Ecuador</option>
+                                                <option value="Chile">Chile</option>
+                                                <option value="Perú">Perú</option>
+                                                <option value="Venezuela">Venezuela</option>
+                                                <option value="Paraguay">Paraguay</option>
+                                                <option value="Bolivia">Bolivia</option>
+                                            </optgroup>
+                                            <optgroup label="Norte américa">
+                                                <option value="México">México</option>
+                                                <option value="Estados Unidos">Estados Unidos</option>
+                                                <option value="Canadá">Canadá</option>
+                                            </optgroup>
+                                            <optgroup label="África">
+                                                <option value="Marruecos">Marruecos</option>
+                                                <option value="Egipto">Egipto</option>
+                                                <option value="Nigeria">Nigeria</option>
+                                                <option value="Senegal">Senegal</option>
+                                                <option value="Camerún">Camerún</option>
+                                                <option value="Costa de Marfil">Costa de Marfil</option>
+                                                <option value="Argelia">Argelia</option>
+                                                <option value="Sudáfrica">Sudáfrica</option>
+                                                <option value="Ghana">Ghana</option>
+                                            </optgroup>
+                                            <optgroup label="Asia y otros">
+                                                <option value="China">China</option>
+                                                <option value="Corea del Sur">Corea del Sur</option>
+                                                <option value="Japón">Japón</option>
+                                                <option value="Australia">Australia</option>
+                                                <option value="Irán">Irán</option>
+                                                <option value="Arabia Saudí">Arabia Saudí</option>
+                                            </optgroup>
+                                        </select>
+                                        <div class="input-group input-group-sm mb-2">
+                                            <span class="input-group-text">Meses:</span>
+                                            <input type="number" class="form-control" id="input-meses-<%= ojeador._id %>" value="1" min="1" max="6">
+                                        </div>
+                                        <div>
+                                            <button class="btn btn-primary" onclick="enviarOjeador('<%= ojeador._id %>')">
+                                                Enviar (Coste: <span id="coste-<%= ojeador._id %>"></span> 35000 €/mes)
+                                            </button>
+                                        </div>
+                                    </div>
+                                <% } else if(ojeador.estado === 'enMision') { %>
+                                    <div class="alert alert-info py-1 px-2 small">
+                                        Regresa el: <strong>
+                                            <%= new Date(ojeador.fechaRegreso).toLocaleDateString('es-ES', { 
+                                                day: '2-digit', month: 'long', year: 'numeric' 
+                                            }) %>
+                                        </strong>
+                                    </div>
+                                    <div class="d-grid gap-2">
+                                        <button class="btn btn-sm btn-outline-danger" onclick="cancelarMision('<%= ojeador._id %>')">
+                                            <i class="bi bi-x-circle"></i> Cancelar Misión
+                                        </button>
+                                        
+                                        <% if(ojeador.diasRestantes <= 0) { %>
+                                            <a href="/ojeador/informe/<%= ojeador._id %>" class="btn btn-sm btn-success">
+                                                <i class="bi bi-file-earmark-text"></i> Ver Informe
+                                            </a>
+                                        <% } else { %>
+                                            <button class="btn btn-sm btn-secondary" disabled>
+                                                <i class="bi bi-hourglass-split"></i> Esperando resultados...
+                                            </button>
+                                        <% } %>
+                                    </div>
+                                <% } %>
+                            </div>
+                        </div>
+                    </div>
+                <% }) %>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="/js/plantilla.js"></script>

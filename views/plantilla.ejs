@@ -11,16 +11,16 @@
                     style="height: 50px; width: auto; vertical-align: middle; border-radius: 2px;"
                 > 
             </h4>
-            <table class="table table-dark table-hover align-middle shadow-sm">
+            <table class="table table-dark table-hover align-middle shadow-sm border">
                 <thead>
-                    <tr class="small text-muted text-uppercase">
+                    <tr class="small text-muted text-uppercase border">
                         <th>Dorsal</th>
                         <th>Jugador</th>
                         <th>Pos</th>
                         <th>Edad</th>
+                        <th>Rol</th>
                         <th>Satisfacción</th>
                         <th>Moral</th>
-                        <th>Rol</th>
                         <th>Lesión</th>
                     </tr>
                 </thead>
@@ -30,14 +30,14 @@
                             <td class="fw-bold text-info"><%= j.dorsal %></td>
                             <td><div><%= j.nombre %></div></td>
                             <td><span class="badge bg-secondary"><%= j.posicionPrincipal %></span></td>
-                            <td><%= j.edad %></td>
+                            <td><%= j.edad %> años</td>
+                            <td><%= j.rolEquipo %></td>
                             <td>
                                 <i class="bi bi-emoji-smile text-<%= j.estado.satisfaccion > 70 ? 'success' : 'warning' %>"></i>
                             </td>
                             <td>
                                 <i class="bi bi-emoji-smile text-<%= j.estado.moral > 70 ? 'success' : 'warning' %>"></i>
                             </td>
-                            <td><%= j.rolEquipo %></td>
                             <td>
                                 <% if(j.estado.lesion) { %><i class="bi bi-plus-circle-fill text-danger ms-1"></i><% } %>
                             </td>

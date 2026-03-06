@@ -1,6 +1,10 @@
 const express = require('express');
 const empleadoRouter = express.Router();
 const Empleado = require('../models/empleado');
+const clubesDAO = require('../daos/clubesDAO');
+const empleadosDAO = require('../daos/empleadosDAO');
+const partidasDAO = require('../daos/partidasDAO');
+const { requireLogin } = require('../middleware/autenticacion');
 
 empleadoRouter.post('/empleados', async (req, res) => {
   try {
@@ -31,22 +35,71 @@ empleadoRouter.get('/buscarEmpleado/:id', async (req, res) => {
   }
 });
 
-empleadoRouter.put('/editarEmplado/:id', async (req, res) => {
+// Ruta para mandar a misión
+empleadoRouter.post('/ojeador/enviar-ojeador', requireLogin, async (req, res) => {
   try {
-    const empleado = await Empleado.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    res.json(empleado);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
+        const { ojeadorId, pais, meses } = req.body;
+        const ojeador = await empleadosDAO.buscarEmpleadoPorId(ojeadorId);
+        const club = await clubesDAO.buscarClubPorId(ojeador.clubActual);
+        const partida = await partidasDAO.obtenerPartidaPorId(club.partidaId);
+
+        const costePorMes = 35000; 
+        const costeTotal = costePorMes * meses;
+      
+        if (club.presupuestoTraspasos < costeTotal) {
+            return res.status(400).json({ success: false, message: "Fondos insuficientes" });
+        }
+
+        const fechaRegreso = new Date(partida.fechaActual);
+        fechaRegreso.setMonth(fechaRegreso.getMonth() + parseInt(meses));
+
+        await empleadosDAO.actualizarEmpleado(ojeadorId, {
+            estado: 'enMision',
+            paisDestino: pais,
+            fechaRegreso: fechaRegreso,
+            fechaInicioMision: partida.fechaActual
+        });
+
+        await clubesDAO.modificarPresupuesto(club._id, -costeTotal);
+
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ success: false, message: "Error interno" });
+    }
 });
 
-empleadoRouter.delete('/eliminarEmpleado/:id', async (req, res) => {
-  try {
-    await Empleado.findByIdAndDelete(req.params.id);
-    res.json({ mensaje: 'Empleado eliminado' });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+
+// Ruta para ver el informe
+empleadoRouter.get('/ojeador/informe/:ojeadorId', requireLogin, async (req, res) => {
+    try {
+        const ojeador = await Empleado.findById(req.params.ojeadorId);
+        const jugadoresEncontrados = await Jugador.find({ 
+            informeOrigen: ojeador._id 
+        });
+
+        res.render('informe-cantera', { 
+            ojeador, 
+            jugadores: jugadoresEncontrados 
+        });
+    } catch (err) {
+        res.status(500).send("Error al cargar el informe");
+    }
 });
+
+// Ruta para cancelar misión
+empleadoRouter.post('/ojeador/cancelar', requireLogin, async (req, res) => {
+    try {
+        const { ojeadorId } = req.body;
+        await Empleado.findByIdAndUpdate(ojeadorId, { 
+            estado: 'libre', 
+            paisDestino: null, 
+            fechaRegreso: null 
+        });
+        res.json({ success: true, message: "Misión cancelada" });
+    } catch (err) {
+        res.status(500).json({ success: false, error: "No se pudo cancelar" });
+    }
+});
+
 
 module.exports = empleadoRouter;

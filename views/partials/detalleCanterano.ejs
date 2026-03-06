@@ -1,0 +1,48 @@
+<div class="p-4">
+    <div class="row border-bottom mb-3">
+        <div>
+            <h2 class="mb-2"><%= jugador.nombre %></h2>
+            <span class="badge bg-primary fs-5">Media: <%= jugador.valoracion %></span>
+            <span class="badge bg-primary fs-5">Potencial: <%= jugador.potencial %></span>
+        </div>
+        <p class="text-muted pt-3">
+                <%= jugador.posicionPrincipal %> | 
+                <%= jugador.nacionalidad %> 
+                <img src="/img/banderas/<%= jugador.nacionalidad %>.png"
+                    alt="<%= jugador.nacionalidad %>" 
+                    class="ms-1 shadow-sm" 
+                    style="height: 14px; width: auto; vertical-align: middle; border-radius: 2px;"
+                > 
+                | <%= jugador.edad %> años | <%= jugador.altura %>cm | <%= jugador.peso %>kg</p>
+    </div>
+
+    <ul class="nav nav-tabs mb-3" id="canteranoTabs">
+        <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#can-atributos">Atributos</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#can-gestion">Gestión de Contrato</button></li>
+    </ul>
+
+    <div class="tab-content">
+        <div class="tab-pane fade show active" id="can-atributos">
+            <%- include('atributosJugador', { jugador: jugador }) %>
+        </div>
+
+        <div class="tab-pane fade" id="can-gestion">
+            <div class="card p-3 shadow-sm border-0 bg-white">
+                <h6 class="fw-bold mb-3 text-uppercase border-bottom pb-2">Opciones de Cantera</h6>
+                <div class="d-grid gap-3">
+                    <button class="btn btn-success btn-lg" onclick="subirPrimerEquipo('<%= jugador._id %>')">
+                        <i class="bi bi-arrow-up-circle-fill me-2"></i>Promocionar al Primer Equipo
+                    </button>
+                    
+                    <p class="small text-muted mb-0 mt-2">Al subirlo al primer equipo, el jugador pasará a ocupar una ficha profesional y deberás asignarle un dorsal y hacerle un contrato.</p>
+                    
+                    <hr>
+                    
+                    <button class="btn btn-outline-danger" onclick="despedirCanterano('<%= jugador._id %>')">
+                        <i class="bi bi-trash-fill me-1"></i>Dar la carta de libertad
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

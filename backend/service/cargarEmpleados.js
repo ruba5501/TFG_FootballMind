@@ -59,7 +59,10 @@ async function generarEmpleadosNuevaPartida(partidaId, listaClubes, nombrePartid
                         bandera: `${nacionalidad}.png`,
                         tipo: conf.rol,
                         clubActual: club._id,
-                        atributos: generarAtributosPorRol(conf.rol, nivelBase)
+                        atributos: generarAtributosPorRol(conf.rol, nivelBase),
+                        estado: 'libre',
+                        paisDestino: null,
+                        fechaRegreso: null
                     });
 
                     idsEmpleadosDelClub.push(idEmpleado);
@@ -94,29 +97,41 @@ function calcularNivelBase(reputacion) {
     return Math.min(98, Math.max(15, Math.floor(nivel)));
 }
 
-function generarAtributosPorRol(rol, nivel) {
-    const rMin = () => Math.floor(Math.random() * 15) + 10;
+function generarAtributosPorRol(rol, nivelBase) {
+    const variacion = () => Math.floor(Math.random() * 30) - 15;
+    const aplicarNivel = (base) => Math.min(100, Math.max(1, base + variacion()));
+
     let atr = {
-        nivelFisico: rMin(), nivelTecnico: rMin(), nivelTactico: rMin(),
-        nivelPortero: rMin(), nivelPsicologico: rMin(), nivelMedico: rMin(),
-        nivelRecuperacion: rMin(), nivelPrevencionLesiones: rMin(),
-        nivelDeteccion: rMin(), nivelCantera: rMin(),
-        motivacion: nivel, desarrolloJovenes: nivel, 
-        reputacion: nivel, experiencia: Math.floor(nivel * 0.8)
+        nivelFisico: 50, nivelTecnico: 50, nivelTactico: 50,
+        nivelPortero: 50, nivelPsicologico: 50, nivelMedico: 50,
+        nivelRecuperacion: 50, nivelPrevencionLesiones: 50,
+        nivelDeteccion: 50, nivelCantera: 50,
+        motivacion: nivelBase, desarrolloJovenes: nivelBase, 
+        reputacion: nivelBase, experiencia: Math.floor(nivelBase * 0.8)
     };
 
-    if (rol.includes('Fisico')) atr.nivelFisico = nivel;
-    if (rol.includes('Tecnico')) atr.nivelTecnico = nivel;
-    if (rol.includes('Tactico')) atr.nivelTactico = nivel;
-    if (rol.includes('Porteros')) atr.nivelPortero = nivel;
-    if (rol === 'psicologo') atr.nivelPsicologico = nivel;
-    if (rol === 'medico') { atr.nivelMedico = nivel; atr.nivelPrevencionLesiones = nivel; }
-    if (rol === 'fisio') { atr.nivelRecuperacion = nivel; atr.nivelPrevencionLesiones = nivel; }
-    if (rol.includes('ojeador')) atr.nivelDeteccion = nivel;
-    if (rol.includes('Cantera')) atr.nivelCantera = nivel;
-    if (rol.includes('entrenador')) { atr.nivelTecnico = nivel; atr.nivelTactico = nivel; }
+    if (rol.includes('Fisico')) atr.nivelFisico = nivelBase;
+    if (rol.includes('Tecnico')) atr.nivelTecnico = nivelBase;
+    if (rol.includes('Tactico')) atr.nivelTactico = nivelBase;
+    if (rol.includes('Porteros')) atr.nivelPortero = nivelBase;
+    if (rol === 'psicologo') atr.nivelPsicologico = nivelBase;
+    if (rol === 'medico') { atr.nivelMedico = nivelBase; atr.nivelPrevencionLesiones = nivelBase; }
+    if (rol === 'fisio') { atr.nivelRecuperacion = nivelBase; atr.nivelPrevencionLesiones = nivelBase; }
+    
+    if (rol === 'ojeador') {
+        atr.nivelDeteccion = aplicarNivel(nivelBase);
+        atr.nivelCantera = aplicarNivel(nivelBase * 0.5); 
+    }
+    if (rol === 'ojeadorCantera') {
+        atr.nivelDeteccion = aplicarNivel(nivelBase * 0.7);
+        atr.nivelCantera = aplicarNivel(nivelBase); 
+    }
+    
+    if (rol.includes('entrenador')) { 
+        atr.nivelTecnico = nivelBase; 
+        atr.nivelTactico = nivelBase; 
+    }
 
     return atr;
 }
-
 module.exports = generarEmpleadosNuevaPartida;

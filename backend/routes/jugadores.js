@@ -1,6 +1,7 @@
 const express = require('express');
 const jugadoresRouter = express.Router();
 const jugadoresDAO = require('../daos/jugadoresDAO');
+const clubesDAO = require('../daos/clubesDAO');
 const Jugador = require('../models/jugador');
 const { requireLogin } = require('../middleware/autenticacion');
 
@@ -13,25 +14,41 @@ jugadoresRouter.post('/jugadores', async (req, res) => {
   }
 });
 
-jugadoresRouter.get('/jugadores', async (req, res) => {
-  const jugadores = await jugadoresDAO.listarJugadores();
-  res.json(jugadores);
-});
-
 jugadoresRouter.get('/buscarJugador/:id', async (req, res) => {
   const jugador = await jugadoresDAO.buscarJugadorPorId(req.params.id);
   res.json(jugador);
 });
 
-jugadoresRouter.put('/editarJugador/:id', async (req, res) => {
-  const jugador = await jugadoresDAO.actualizarJugador(req.params.id, req.body);
-  res.json(jugador);
+jugadoresRouter.get('/jugador/detalle/:jugadorId', requireLogin, async (req, res) => {
+    try {
+        const jugador = await Jugador.findById(req.params.jugadorId).populate('statsTemporada.competicionId');
+        const club = await clubesDAO.buscarClubPorId(jugador.clubActual);
+        
+        if(club.esFilial){
+            res.render('partials/detalleCanterano', { 
+                jugador,
+                layout: false 
+            });
+        }
+        else{
+            res.render('partials/detalleJugador', { 
+            jugador,
+            layout: false 
+            });
+        }
+    } catch (err) {
+        res.status(500).send("Error al obtener detalles");
+    }
 });
 
-jugadoresRouter.delete('/eliminarJugador/:id', async (req, res) => {
-  await jugadoresDAO.eliminarJugador(req.params.id);
-  res.json({ mensaje: "Jugador eliminado" });
-});
+jugadoresRouter.get('/jugador/atributos/:id', async (req, res) => {
+    try {
+        const jugador = await Jugador.findById(req.params.id);
+        res.render('partials/atributosJugador', { jugador: jugador });
+    } catch (error) {
+        res.status(500).send("Error");
+    }
+})
 
 // Cambiar estado (Transferible / Cedible)
 jugadoresRouter.post('/jugador/cambiar-estado/:id', requireLogin, async (req, res) => {

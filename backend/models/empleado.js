@@ -11,6 +11,13 @@ const empleadoSchema = new mongoose.Schema({
   edad: { type: Number, min: 18, max: 80, required: true },
   nacionalidad: { type: String, required: true, trim: true },
   bandera: { type: String, trim: true, default: null },
+  estado: { 
+    type: String, 
+    enum: ['libre', 'enMision'], 
+    default: 'libre' 
+  },
+  paisDestino: { type: String, default: null },
+  fechaRegreso: { type: Date, default: null },
   tipo: { 
     type: String,
     enum: [
