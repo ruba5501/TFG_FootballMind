@@ -4,7 +4,16 @@ const Empleado = require('../models/empleado');
 const clubesDAO = require('../daos/clubesDAO');
 const empleadosDAO = require('../daos/empleadosDAO');
 const partidasDAO = require('../daos/partidasDAO');
+const Club = require('../models/club');
 const { requireLogin } = require('../middleware/autenticacion');
+
+const grupos = {
+    "Preparadores": ['preparadorFisico', 'preparadorTecnico', 'preparadorTactico', 'preparadorPorteros'],
+    "Médicos y Salud": ['psicologo', 'medico', 'fisio'],
+    "Ojeadores": ['ojeador'],
+    "Cantera": ['ojeadorCantera', 'entrenadorCantera'],
+    "Equipo Técnico": ['entrenadorPrincipal', 'segundoEntrenador']
+};
 
 empleadoRouter.post('/empleados', async (req, res) => {
   try {
@@ -33,6 +42,58 @@ empleadoRouter.get('/buscarEmpleado/:id', async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
+});
+
+empleadoRouter.get('/empleados/:partidaId', requireLogin, async (req, res) => {
+    try {
+        const partida = await partidasDAO.obtenerPartidaPorId(req.params.partidaId);
+        
+        const filtros = {
+            nombre: req.query.nombre,
+            estado: req.query.estado,
+            clubActual: partida.clubSeleccionado,
+            atributos: {}
+        };
+
+        if (req.query.estado === 'libre') delete filtros.clubActual;
+
+        const empleados = await empleadosDAO.buscarEmpleados(filtros);
+
+        res.render('empleados', {
+            empleados,
+            grupos,
+            partida
+        });
+    } catch (err) {
+        res.status(500).send("Error al cargar los empleados");
+    }
+});
+
+empleadoRouter.get('/buscar', async (req, res) => {
+    const filtros = {
+        nombre: req.query.nombre,
+        clubActual: req.query.club,
+        estado: req.query.estado,
+        atributos: {
+            nivelFisico: req.query.minFisico, 
+            nivelTecnico: req.query.minTecnico
+        }
+    };
+    
+    if (!filtros.atributos.nivelFisico) delete filtros.atributos.nivelFisico;
+    
+    const empleados = await empleadosDAO.buscarEmpleados(filtros);
+    res.json(empleados);
+});
+
+empleadoRouter.get('/empleado/atributos/:id', async (req, res) => {
+    const emp = await empleadosDAO.buscarEmpleadoPorId(req.params.id);
+    res.json({ atributos: emp.atributos });
+});
+
+empleadoRouter.post('/empleados/despedir/:id', async (req, res) => {
+    await empleadosDAO.eliminarEmpleado(req.params.id);
+    res.status(200).send('Empleado despedido');
 });
 
 // Ruta para mandar a misión
