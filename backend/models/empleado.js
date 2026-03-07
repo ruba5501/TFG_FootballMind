@@ -18,6 +18,7 @@ const empleadoSchema = new mongoose.Schema({
   },
   paisDestino: { type: String, default: null },
   fechaRegreso: { type: Date, default: null },
+  salario: { type: Number, default: 0 },
   tipo: { 
     type: String,
     enum: [
@@ -38,22 +39,22 @@ const empleadoSchema = new mongoose.Schema({
   },
   clubActual: {type: mongoose.Schema.Types.ObjectId, ref: 'Club', default: null},
   atributos: {
-    nivelFisico: { type: Number, min: 0, max: 100, default: 50 },
-    nivelTecnico: { type: Number, min: 0, max: 100, default: 50 },
-    nivelTactico: { type: Number, min: 0, max: 100, default: 50 },
-    nivelPortero: { type: Number, min: 0, max: 100, default: 50 },
-    nivelPsicologico: { type: Number, min: 0, max: 100, default: 50 },
-    nivelMedico: { type: Number, min: 0, max: 100, default: 50 },
-    nivelRecuperacion: { type: Number, min: 0, max: 100, default: 50 },
-    nivelPrevencionLesiones: { type: Number, min: 0, max: 100, default: 50 },
-    nivelDeteccion: { type: Number, min: 0, max: 100, default: 50 },
+    nivelFisico: { type: Number, min: 0, max: 100, default: 0 },
+    nivelTecnico: { type: Number, min: 0, max: 100, default: 0 },
+    nivelTactico: { type: Number, min: 0, max: 100, default: 0 },
+    nivelPortero: { type: Number, min: 0, max: 100, default: 0 },
+    nivelPsicologico: { type: Number, min: 0, max: 100, default: 0 },
+    nivelMedico: { type: Number, min: 0, max: 100, default: 0 },
+    nivelRecuperacion: { type: Number, min: 0, max: 100, default: 0 },
+    nivelPrevencionLesiones: { type: Number, min: 0, max: 100, default: 0 },
+    nivelDeteccion: { type: Number, min: 0, max: 100, default: 0 },
     regionEspecialidad: { type: String, trim: true },
-    nivelCantera: { type: Number, min: 0, max: 100, default: 50 },
-    motivacion: { type: Number, min: 0, max: 100, default: 50 },
-    desarrolloJovenes: { type: Number, min: 0, max: 100, default: 50 },
-    reputacion: { type: Number, min: 0, max: 100, default: 50 },
+    nivelCantera: { type: Number, min: 0, max: 100, default: 0 },
+    motivacion: { type: Number, min: 0, max: 100, default: 0 },
+    desarrolloJovenes: { type: Number, min: 0, max: 100, default: 0 },
+    reputacion: { type: Number, min: 0, max: 100, default: 0 },
     estiloJuego: { type: String, trim: true },
-    experiencia: { type: Number, min: 0, max: 100, default: 50 }
+    experiencia: { type: Number, min: 0, max: 100, default: 0 }
   }
 });
 

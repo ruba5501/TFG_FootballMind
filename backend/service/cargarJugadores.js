@@ -219,7 +219,7 @@ async function generarJugadoresNuevaPartida(partidaId, listaClubes, nombrePartid
                     estadoClub: club.esFilial ? 'cantera' : 'primerEquipo',
                     atributos: generarAtributos(posicion, ratings.ca, arquetipo),
                     valorMercado: calcularValorMercado(ratings.ca, ratings.pa, edad),
-                    salario: calcularSalario(ratings.ca, rep),
+                    salario: calcularSalario(ratings.ca, ratings.pa, edad, rep),
                     estado: { forma: 100, moral: Math.floor(Math.random() * 21) + 80, satisfaccion: 100, lesion: null },
                     statsTemporada: competicionesDelClub.map(compId => ({
                         competicionId: compId,
@@ -486,9 +486,29 @@ function calcularValorMercado(ca, pa, edad) {
     return Math.floor(valor / 100000) * 100000;
 }
 
-function calcularSalario(ca, rep) {
-    const sueldo = Math.pow(ca / 10, 4.5) * (rep / 40) * 1200;
-    return Math.floor(sueldo / 12000) * 12000;
+function calcularSalario(ca, pa, edad, repClub) {
+    let baseEfectiva = Math.max(0, ca - 40); 
+    let salarioBase = Math.pow(baseEfectiva, 2.5) * 600; 
+
+    // Factor Club 
+    const factorClub = 0.8 + (repClub / 400); 
+    salarioBase *= factorClub;
+
+    // Factor Edad
+    let factorEdad = 1.0;
+    if (edad < 21) factorEdad = 0.7;      
+    else if (edad >= 22 && edad <= 30) factorEdad = 1.15; 
+    else if (edad > 32) factorEdad = 0.8; 
+
+    // Factor Potencial
+    let factorPotencial = (edad < 23 && (pa - ca) > 10) ? 1.15 : 1.0;
+
+    // Ajuste Superestrella 
+    let factorSuperestrella = (ca >= 85) ? (1 + (ca - 85) * 0.15) : 1.0;
+
+    let salarioFinal = salarioBase * factorEdad * factorPotencial * factorSuperestrella;
+
+    return Math.floor(Math.max(100000, salarioFinal) / 10000) * 10000;
 }
 
 function aplicarMentalidad(a) {

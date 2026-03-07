@@ -17,9 +17,10 @@ const cargarEstadios = require('../service/cargarEstadios');
 const cargarCompeticiones = require('../service/cargarCompeticiones');
 const cargarClubes = require('../service/cargarClubes');
 const generarJugadores = require('../service/cargarJugadores');
-const generarEmpleados = require('../service/cargarEmpleados');
+const { generarEmpleadosNuevaPartida, calcularSalarioEmpleado } = require('../service/cargarEmpleados');
 const generarCalendario = require('../service/generarCalendario');
 const { requireLogin } = require('../middleware/autenticacion');
+
 
 const atributosDefault = {
   nivelFisico: 0,
@@ -150,6 +151,23 @@ partidaRouter.get('/crearPartida/final', requireLogin, async (req, res) => {
   if (!datos) return res.redirect('/crearPartida/step1');
 
   try {
+    const atributosCompletos = {
+      nivelFisico: Number(datos.atributos.nivelFisico),
+      nivelTecnico: Number(datos.atributos.nivelTecnico),
+      nivelTactico: Number(datos.atributos.nivelTactico),
+      nivelPortero: Number(datos.atributos.nivelPortero),
+      nivelPsicologico: 30,
+      nivelMedico: 10,
+      nivelRecuperacion: 10,
+      nivelPrevencionLesiones: 10,
+      nivelDeteccion: 20,
+      nivelCantera: Number(datos.atributos.nivelCantera),
+      motivacion: Number(datos.atributos.motivacion),
+      desarrolloJovenes: Number(datos.atributos.desarrolloJovenes),
+      reputacion: Number(datos.atributos.reputacion),
+      experiencia: Number(datos.atributos.experiencia),
+      estiloJuego: 'Equilibrado'
+    };
     const partidaId = new mongoose.Types.ObjectId();
     const entrenadorId = new mongoose.Types.ObjectId();
 
@@ -158,6 +176,10 @@ partidaRouter.get('/crearPartida/final', requireLogin, async (req, res) => {
     const clubes = await cargarClubes(partidaId, estadios, competiciones, datos.nombrePartida);
 
     const clubJugador = clubes.find(c => c.nombre === datos.clubSeleccionado);
+    const salarioUsuario = calcularSalarioEmpleado(
+        { tipo: 'entrenadorPrincipal', atributos: atributosCompletos }, 
+        clubJugador.reputacion
+    );
 
     const nuevaPartida = await partidaDAO.crearPartida(
       req.session.user._id,
@@ -173,13 +195,16 @@ partidaRouter.get('/crearPartida/final', requireLogin, async (req, res) => {
       nombre: `${datos.nombreEntrenador} ${datos.apellidoEntrenador}`,
       edad: datos.edad,
       nacionalidad: datos.nacionalidad,
+      bandera: `${datos.nacionalidad}.png`,
       tipo: 'entrenadorPrincipal',
       clubActual: clubJugador._id,
-      atributos: datos.atributos
+      atributos: atributosCompletos,
+      salario: salarioUsuario, 
+      estado: 'libre'
     });
 
     await generarJugadores(partidaId, clubes, datos.nombrePartida);
-    await generarEmpleados(partidaId, clubes, datos.nombrePartida);
+    await generarEmpleadosNuevaPartida(partidaId, clubes, datos.nombrePartida);
     await generarCalendario(partidaId);
     req.setTimeout(0);
 

@@ -29,7 +29,7 @@
 
         <div class="tab-pane fade" id="tab-mercado">
             <div class="card p-3 mb-3">
-                <p><strong>Salario:</strong> <%= jugador.salario.toLocaleString() %> € / mes</p>
+                <p><strong>Salario:</strong> <%= (jugador.salario / 12).toLocaleString() %> €/mes (<%= jugador.salario.toLocaleString() %>)</p>
                 <p><strong>Valor:</strong> <%= jugador.valorMercado.toLocaleString() %> €</p>
                 <p><strong>Cláusula:</strong> 
                     <% if (jugador.mercado.clausulaRescision == 0) { %>

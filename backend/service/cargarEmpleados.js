@@ -49,7 +49,10 @@ async function generarEmpleadosNuevaPartida(partidaId, listaClubes, nombrePartid
                     const nombre = resultado.nombreCompleto;
                     const nacionalidad = resultado.nacionalidad;
                     const nivelBase = calcularNivelBase(club.reputacion);
-                    
+                    const atributosGenerados = generarAtributosPorRol(conf.rol, nivelBase);
+                    const empleadoTemporal = { tipo: conf.rol, atributos: atributosGenerados };
+                    const salario = calcularSalarioEmpleado(empleadoTemporal, club.reputacion);
+
                     todosLosEmpleados.push({
                         _id: idEmpleado,
                         partidaId: partidaId,
@@ -59,10 +62,11 @@ async function generarEmpleadosNuevaPartida(partidaId, listaClubes, nombrePartid
                         bandera: `${nacionalidad}.png`,
                         tipo: conf.rol,
                         clubActual: club._id,
-                        atributos: generarAtributosPorRol(conf.rol, nivelBase),
+                        atributos: atributosGenerados,
                         estado: 'libre',
                         paisDestino: null,
-                        fechaRegreso: null
+                        fechaRegreso: null,
+                        salario: salario
                     });
 
                     idsEmpleadosDelClub.push(idEmpleado);
@@ -133,5 +137,71 @@ function generarAtributosPorRol(rol, nivelBase) {
     }
 
     return atr;
+};
+
+function calcularSalarioEmpleado(empleado, reputacionClub) {
+    const { tipo, atributos } = empleado;
+    let nivelEspecifico = 0;
+
+    switch (tipo) {
+        case 'entrenadorPrincipal':
+        case 'segundoEntrenador':
+            nivelEspecifico = (atributos.nivelTecnico + atributos.nivelTactico + atributos.experiencia) / 3;
+            break;
+        case 'preparadorFisico':
+            nivelEspecifico = atributos.nivelFisico;
+            break;
+        case 'preparadorTecnico':
+            nivelEspecifico = atributos.nivelTecnico;
+            break;
+        case 'preparadorTactico':
+            nivelEspecifico = atributos.nivelTactico;
+            break;
+        case 'preparadorPorteros':
+            nivelEspecifico = atributos.nivelPortero;
+            break;
+        case 'psicologo':
+            nivelEspecifico = atributos.nivelPsicologico;
+            break;
+        case 'medico':
+            nivelEspecifico = (atributos.nivelMedico + atributos.nivelPrevencionLesiones) / 2;
+            break;
+        case 'fisio':
+            nivelEspecifico = (atributos.nivelRecuperacion + atributos.nivelPrevencionLesiones) / 2;
+            break;
+        case 'ojeador':
+            nivelEspecifico = atributos.nivelDeteccion;
+            break;
+        case 'ojeadorCantera':
+            nivelEspecifico = (atributos.nivelDeteccion + atributos.nivelCantera) / 2;
+            break;
+        case 'entrenadorCantera':
+            nivelEspecifico = (atributos.desarrolloJovenes + atributos.nivelTecnico) / 2;
+            break;
+        default:
+            nivelEspecifico = 20;
+    }
+
+    const multiplicadores = {
+        'entrenadorPrincipal': 2.5,
+        'segundoEntrenador': 1.6,
+        'medico': 1.3,
+        'preparadorFisico': 1.1,
+        'ojeador': 1.0,
+        'ojeadorCantera': 0.85,
+        'entrenadorCantera': 1.0
+    };
+
+    const multRol = multiplicadores[tipo] || 1.0;
+    const reputacion = 0.5 + (atributos.reputacion / 100);
+    const potenciaCalidad = Math.pow(nivelEspecifico, 2.1);
+    const bonoClub = reputacionClub * 1.8;
+    
+    let sueldoAnual = (potenciaCalidad + bonoClub) * 12 * multRol * reputacion;
+
+    return Math.max(18000, Math.floor(sueldoAnual / 1000) * 1000);
 }
-module.exports = generarEmpleadosNuevaPartida;
+module.exports = {
+    generarEmpleadosNuevaPartida,
+    calcularSalarioEmpleado
+}
