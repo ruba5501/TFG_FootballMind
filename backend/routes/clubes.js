@@ -180,4 +180,67 @@ clubRouter.get('/cantera/:partidaId', requireLogin, async (req, res) => {
         res.status(500).send("Error al cargar la gestión de cantera");
     }
 });
+
+clubRouter.get('/traspasos/:partidaId', requireLogin, async (req, res) => {
+   try {
+        const partida = await partidasDAO.obtenerPartidaPorId(req.params.partidaId);
+        
+        const clubUsuario = await Club.findById(partida.clubSeleccionado)
+            .populate('empleados');
+
+
+        const ojeadores = clubUsuario.empleados.filter(emp => 
+            emp.tipo === 'ojeador' 
+        );
+
+        res.render('traspasos', {
+            partida,
+            clubUsuario,
+            ojeadores: ojeadores
+        });
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).send("Error al cargar el centro de traspasos");
+    }
+});
+// búsqueda manual traspasos
+clubRouter.get('/traspasos/buscar/:partidaId', requireLogin, async (req, res) => {
+    try {
+        const partida = await partidasDAO.obtenerPartidaPorId(req.params.partidaId);
+        const { query, posicion, estado, edadMin, edadMax, minVelocidad } = req.query;
+
+        let mongoQuery = { 
+            partidaId: req.params.partidaId,
+            clubActual: { $ne: partida.clubSeleccionado }
+         };
+
+        // Filtros básicos
+        if (query) mongoQuery.nombre = { $regex: query, $options: 'i' };
+        if (posicion) mongoQuery.posicionPrincipal = posicion;
+        if (estado) mongoQuery.estadoMercado = estado;
+        
+        // Rango de edad
+        if (edadMin || edadMax) {
+            mongoQuery.edad = {};
+            if (edadMin) mongoQuery.edad.$gte = parseInt(edadMin);
+            if (edadMax) mongoQuery.edad.$lte = parseInt(edadMax);
+        }
+
+        // Filtros de atributos (notación de puntos para objetos anidados)
+        if (minVelocidad) {
+            mongoQuery['atributos.fisico.velocidad'] = { $gte: parseInt(minVelocidad) };
+        }
+
+        const jugadoresEncontrados = await Jugador.find(mongoQuery).populate('clubActual').limit(50);
+
+        res.render('resultados-busqueda', {
+            jugadores: jugadoresEncontrados,
+            partida,
+            clubUsuario: await Club.findById(partida.clubSeleccionado)
+        });
+    } catch (err) {
+        res.status(500).send("Error en la búsqueda");
+    }
+});
 module.exports = clubRouter;

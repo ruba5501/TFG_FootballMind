@@ -1,0 +1,54 @@
+<%- include('partials/head', {title: 'Resultados de Búsqueda'}) %>
+<%- include('partials/navbar') %>
+
+<div class="container-fluid mt-3">
+    <div class="row">
+        <div class="col-md-7 border-end" style="height: 85vh; overflow-y: auto;">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4>Jugadores encontrados (<%= jugadores.length %>)</h4>
+                <a href="/traspasos/<%= partida._id %>" class="btn btn-sm btn-outline-secondary">Volver al buscador</a>
+            </div>
+            
+            <table class="table table-dark table-hover align-middle shadow-sm">
+                <thead>
+                    <tr class="small text-muted text-uppercase">
+                        <th>Jugador</th>
+                        <th>Club</th>
+                        <th>Pos</th>
+                        <th>Edad</th>
+                        <th>Valor</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% jugadores.forEach(j => { %>
+                        <tr style="cursor: pointer;" onclick="verDetalleJugador('<%= j._id %>')">
+                            <td><div class="fw-bold"><%= j.nombre %></div></td>
+                            <td>
+                                <% if (j.clubActual) { %>
+                                    <img src="/img/escudos/<%= j.clubActual.escudo %>" 
+                                        alt="<%= j.clubActual.nombre %>" 
+                                        class="ms-1 shadow-sm" 
+                                        style="height: 30px; width: auto; vertical-align: middle; border-radius: 2px;">
+                                <% } else { %>
+                                    <span class="text-muted italic">Agente Libre</span>
+                                <% } %>
+                            </td>
+                            <td><span class="badge bg-secondary"><%= j.posicionPrincipal %></span></td>
+                            <td><%= j.edad %></td>
+                            <td class="text-success fw-bold"><%= j.valorMercado.toLocaleString() %> €</td>
+                        </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="col-md-5 bg-light" id="panelDetalleJugador" style="height: 85vh; overflow-y: auto;">
+            <div class="text-center mt-5 text-muted">
+                <i class="bi bi-search display-1"></i>
+                <p>Haz clic en un jugador para ver el informe detallado</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="/js/plantilla.js"></script>

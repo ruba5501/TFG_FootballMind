@@ -1,0 +1,101 @@
+<%- include('partials/head', {title: 'Centro de Traspasos'}) %>
+<%- include('partials/navbar') %>
+
+<div class="container-fluid mt-3">
+    <ul class="nav nav-tabs justify-content-center mb-3" id="traspasosTabs" role="tablist">
+        <li class="nav-item">
+            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-buscador">
+                <i class="bi bi-search me-2"></i>Buscador de Jugadores
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-ojeadores">
+                <i class="bi bi-geo-alt me-2"></i>Red de Ojeadores
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content">
+        <div class="tab-pane fade show active" id="tab-buscador">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body bg-dark text-white rounded">
+                    <form action="/traspasos/buscar/<%= partida._id %>" method="GET" class="row g-3">
+                        <div class="col-md-3">
+                            <label class="small">Nombre / Equipo</label>
+                            <input type="text" name="query" class="form-control form-control-sm" placeholder="Buscar...">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="small">Posición</label>
+                            <select name="posicion" class="form-select form-select-sm">
+                                <option value="">Todas</option>
+                                <option value="POR">POR</option>
+                                <option value="DFC">DFC</option>
+                                <option value="LI">LI</option>
+                                <option value="LD">LD</option>
+                                <option value="MCD">MCD</option>
+                                <option value="MC">MC</option>
+                                <option value="MI">MI</option>
+                                <option value="MD">MD</option>
+                                <option value="MCO">MCO</option>
+                                <option value="EI">EI</option>
+                                <option value="ED">ED</option>
+                                <option value="SD">SD</option>
+                                <option value="DC">DC</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="small">Estado</label>
+                            <select name="estado" class="form-select form-select-sm">
+                                <option value="">Cualquiera</option>
+                                <option value="transferible">Transferible</option>
+                                <option value="cedible">Cedible</option>
+                                <option value="libre">Sin Equipo</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="small">Edad (Min - Max)</label>
+                            <div class="input-group input-group-sm">
+                                <input type="number" name="edadMin" class="form-control" placeholder="16">
+                                <input type="number" name="edadMax" class="form-control" placeholder="40">
+                            </div>
+                        </div>
+                        
+                        <div class="col-12 text-center">
+                            <button class="btn btn-sm btn-outline-light w-100" type="button" data-bs-toggle="collapse" data-bs-target="#filtrosAvanzados">
+                                Filtros de Atributos Avanzados ▼
+                            </button>
+                        </div>
+
+                        <div class="collapse col-12" id="filtrosAvanzados">
+                            <div class="row g-2 mt-2 border-top pt-3">
+                                <div class="col-md-2">
+                                    <input type="number" name="minVelocidad" class="form-control form-control-sm" placeholder="Min Velocidad">
+                                </div>
+                                <div class="col-md-2">
+                                    <input type="number" name="minDefinicion" class="form-control form-control-sm" placeholder="Min Definición">
+                                </div>
+                                <div class="col-md-2">
+                                    <input type="number" name="minEntradas" class="form-control form-control-sm" placeholder="Min Entradas">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12 text-end">
+                            <button type="submit" class="btn btn-primary btn-sm px-4">Realizar Búsqueda</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="tab-ojeadores">
+            <div class="row row-cols-1 row-cols-md-3 g-4">
+                 <% ojeadores.forEach(ojeador => { %>
+                    <%- include('partials/redOjeadores', { ojeador: ojeador, contexto: 'traspasos' }) %>
+                    <% }) %>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="/js/plantilla.js"></script>

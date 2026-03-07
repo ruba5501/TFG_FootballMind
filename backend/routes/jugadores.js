@@ -33,7 +33,8 @@ jugadoresRouter.get('/jugador/detalle/:jugadorId', requireLogin, async (req, res
         else{
             res.render('partials/detalleJugador', { 
             jugador,
-            layout: false 
+            layout: false,
+            club
             });
         }
     } catch (err) {
