@@ -2,8 +2,10 @@ const express = require('express');
 const clubRouter = express.Router();
 const partidasDAO = require('../daos/partidasDAO');
 const clubesDAO = require('../daos/clubesDAO');
+const competicionesDAO = require('../daos/competicionesDAO');
 const Club = require('../models/club');
 const Jugador = require('../models/jugador');
+const Competicion = require('../models/competicion');
 const { requireLogin } = require('../middleware/autenticacion');
 const { FORMACIONES } = require('../service/cargarFormaciones');
 
@@ -184,19 +186,32 @@ clubRouter.get('/cantera/:partidaId', requireLogin, async (req, res) => {
 clubRouter.get('/traspasos/:partidaId', requireLogin, async (req, res) => {
    try {
         const partida = await partidasDAO.obtenerPartidaPorId(req.params.partidaId);
+        const ligas = await Competicion.find({ 
+            tipo: 'liga',
+            partidaId: partida._id,
+        }).select('nombre').lean();
+        const filial = await Club.findOne({ clubMatriz: partida.clubSeleccionado }).select('_id');
+        const clubes = await Club.find({
+            _id: { 
+                $ne: partida.clubSeleccionado,
+                $not: { $eq: filial ? filial._id : null }
+            },
+            partidaId: partida._id,
+        }).lean();
         
-        const clubUsuario = await Club.findById(partida.clubSeleccionado)
-            .populate('empleados');
+        const clubUsuario = await Club.findById(partida.clubSeleccionado).populate('empleados');
 
 
         const ojeadores = clubUsuario.empleados.filter(emp => 
             emp.tipo === 'ojeador' 
         );
-
+        
         res.render('traspasos', {
             partida,
             clubUsuario,
-            ojeadores: ojeadores
+            ojeadores: ojeadores,
+            ligas: ligas,  
+            clubes: clubes
         });
 
     } catch (err) {
@@ -208,37 +223,120 @@ clubRouter.get('/traspasos/:partidaId', requireLogin, async (req, res) => {
 clubRouter.get('/traspasos/buscar/:partidaId', requireLogin, async (req, res) => {
     try {
         const partida = await partidasDAO.obtenerPartidaPorId(req.params.partidaId);
-        const { query, posicion, estado, edadMin, edadMax, minVelocidad } = req.query;
+        const filtros = req.query;
+        const filial = await Club.findOne({ clubMatriz: partida.clubSeleccionado }).select('_id');
 
         let mongoQuery = { 
             partidaId: req.params.partidaId,
-            clubActual: { $ne: partida.clubSeleccionado }
-         };
+            clubActual: { 
+                $ne: partida.clubSeleccionado,
+                $not: { $eq: filial ? filial._id : null }
+            }
+        };
 
-        // Filtros básicos
-        if (query) mongoQuery.nombre = { $regex: query, $options: 'i' };
-        if (posicion) mongoQuery.posicionPrincipal = posicion;
-        if (estado) mongoQuery.estadoMercado = estado;
+        if (filtros.query) mongoQuery.nombre = { $regex: filtros.query, $options: 'i' };
         
-        // Rango de edad
-        if (edadMin || edadMax) {
+        if (filtros.clubId && filtros.clubId !== "") {
+            mongoQuery.clubActual = filtros.clubId;
+        }
+        else if (filtros.liga && filtros.liga !== "") {
+            const clubesEnLiga = await Club.find({ 
+                competiciones: filtros.liga,
+                _id: { 
+                    $ne: partida.clubSeleccionado, 
+                    $not: { $eq: filial ? filial._id : null }
+                }
+            }).select('_id').lean();
+            const idsClubes = clubesEnLiga.map(c => c._id);
+            
+            mongoQuery.clubActual = { $in: idsClubes };
+        }
+        if (filtros.posicion) mongoQuery.posicionPrincipal = filtros.posicion;
+        if (filtros.estado) mongoQuery.estadoMercado = filtros.estado;
+        
+        
+        if (filtros.edadMin || filtros.edadMax) {
             mongoQuery.edad = {};
-            if (edadMin) mongoQuery.edad.$gte = parseInt(edadMin);
-            if (edadMax) mongoQuery.edad.$lte = parseInt(edadMax);
+            if (filtros.edadMin) mongoQuery.edad.$gte = parseInt(filtros.edadMin);
+            if (filtros.edadMax) mongoQuery.edad.$lte = parseInt(filtros.edadMax);
         }
 
-        // Filtros de atributos (notación de puntos para objetos anidados)
-        if (minVelocidad) {
-            mongoQuery['atributos.fisico.velocidad'] = { $gte: parseInt(minVelocidad) };
+        if (filtros.valorMin || filtros.valorMax) {
+            mongoQuery.valorMercado = {};
+            if (filtros.valorMin) mongoQuery.valorMercado.$gte = parseInt(filtros.valorMin);
+            if (filtros.valorMax) mongoQuery.valorMercado.$lte = parseInt(filtros.valorMax);
         }
 
-        const jugadoresEncontrados = await Jugador.find(mongoQuery).populate('clubActual').limit(50);
+        const mapaAtributos = [
+            // Habilidad
+            ['reg', 'atributos.habilidad.regate'],
+            ['contBal', 'atributos.habilidad.controlBalon'],
+            ['des', 'atributos.habilidad.desmarques'],
+            // Tiro
+            ['def', 'atributos.tiro.definicion'],
+            ['potTir', 'atributos.tiro.potenciaTiro'],
+            ['tirLej', 'atributos.tiro.tiroLejano'],
+            ['fal', 'atributos.tiro.lanzamientoFaltas'],
+            ['pen', 'atributos.tiro.lanzamientoPenaltis'],
+            ['remCa', 'atributos.tiro.remateCabeza'],
+            // Pase
+            ['pasCor', 'atributos.pase.paseCorto'],
+            ['pasLar', 'atributos.pase.paseLargo'],
+            ['vis', 'atributos.pase.vision'],
+            ['cen', 'atributos.pase.centros'],
+            // Defensa
+            ['mar', 'atributos.defensa.marcaje'],
+            ['ent', 'atributos.defensa.entradas'],
+            ['int', 'atributos.defensa.intercepciones'],
+            ['desp', 'atributos.defensa.despejes'],
+            ['dueAr', 'atributos.defensa.duelosAereos'],
+            ['col', 'atributos.defensa.colocacion'],
+            // Fisico
+            ['vel', 'atributos.fisico.velocidad'],
+            ['ace', 'atributos.fisico.aceleracion'],
+            ['agi', 'atributos.fisico.agilidad'],
+            ['fue', 'atributos.fisico.fuerza'],
+            ['res', 'atributos.fisico.resistencia'],
+            ['equi', 'atributos.fisico.equilibrio'],
+            ['salt', 'atributos.fisico.salto'],
+            // Mental
+            ['conc', 'atributos.mental.concentracion'],
+            ['lid', 'atributos.mental.liderazgo'],
+            ['agre', 'atributos.mental.agresividad'],
+            ['mot', 'atributos.mental.motivacion'],
+            ['compBaPre', 'atributos.mental.composturaBajoPresion'],
+            // Portero
+            ['ref', 'atributos.portero.reflejos'],
+            ['para', 'atributos.portero.paradas'],
+            ['est', 'atributos.portero.estirada'],
+            ['jueAr', 'atributos.portero.juegoAereo'],
+            ['unoVSuno', 'atributos.portero.unoContraUno'],
+            ['bloc', 'atributos.portero.blocaje'],
+            ['saq', 'atributos.portero.saque'],
+            ['comu', 'atributos.portero.comunicacion'],
+            ['penal', 'atributos.portero.penales']
+        ];
+
+        mapaAtributos.forEach(([prefijo, rutaDB]) => {
+            const minVal = filtros[`${prefijo}Min`];
+            const maxVal = filtros[`${prefijo}Max`];
+
+            if (minVal || maxVal) {
+                mongoQuery[rutaDB] = {};
+                if (minVal) mongoQuery[rutaDB].$gte = parseInt(minVal);
+                if (maxVal) mongoQuery[rutaDB].$lte = parseInt(maxVal);
+            }
+        });
+
+        const jugadoresEncontrados = await Jugador.find(mongoQuery)
+            .populate('clubActual');
 
         res.render('resultados-busqueda', {
             jugadores: jugadoresEncontrados,
             partida,
             clubUsuario: await Club.findById(partida.clubSeleccionado)
         });
+
     } catch (err) {
         res.status(500).send("Error en la búsqueda");
     }

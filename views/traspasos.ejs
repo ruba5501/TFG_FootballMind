@@ -25,6 +25,32 @@
                             <input type="text" name="query" class="form-control form-control-sm" placeholder="Buscar...">
                         </div>
                         <div class="col-md-2">
+                            <label class="small">Liga</label>
+                            <select name="liga" id="liga" class="form-select form-select-sm">
+                                <option value="">Todas las ligas</option>
+                                <% ligas.forEach(liga => { %>
+                                    <option value="<%= liga._id %>"><%= liga.nombre %></option>
+                                <% }) %>
+                            </select>
+                        </div>
+
+                        <div class="col-md-2">
+                            <label class="small">Club</label>
+                            <input type="text" 
+                                id="club" 
+                                class="form-control form-control-sm" 
+                                list="lista-clubes" 
+                                placeholder="Escribe o selecciona">
+                            
+                            <datalist id="lista-clubes">
+                                <% clubes.forEach(club => { %>
+                                    <option value="<%= club.nombre %>" data-id="<%= club._id %>" data-competiciones="<%= club.competiciones %>"></option>
+                                <% }) %>
+                            </datalist>
+                            <input type="hidden" name="clubId" id="club-id-hidden">
+                        </div>
+
+                        <div class="col-md-2">
                             <label class="small">Posición</label>
                             <select name="posicion" class="form-select form-select-sm">
                                 <option value="">Todas</option>
@@ -55,27 +81,312 @@
                         <div class="col-md-3">
                             <label class="small">Edad (Min - Max)</label>
                             <div class="input-group input-group-sm">
-                                <input type="number" name="edadMin" class="form-control" placeholder="16">
-                                <input type="number" name="edadMax" class="form-control" placeholder="40">
+                                <input type="number" name="edadMin" class="form-control" placeholder="Ej: 15">
+                                <input type="number" name="edadMax" class="form-control" placeholder="Ej: 40">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="small">Valor Mercado (Min - Max)</label>
+                            <div class="input-group input-group-sm">
+                                <input type="number" name="valorMin" class="form-control" placeholder="Ej: 200000">
+                                <input type="number" name="valorMax" class="form-control" placeholder="Ej: 150000000">
                             </div>
                         </div>
                         
                         <div class="col-12 text-center">
                             <button class="btn btn-sm btn-outline-light w-100" type="button" data-bs-toggle="collapse" data-bs-target="#filtrosAvanzados">
-                                Filtros de Atributos Avanzados ▼
+                                Filtros de Atributos ▼
                             </button>
                         </div>
 
                         <div class="collapse col-12" id="filtrosAvanzados">
                             <div class="row g-2 mt-2 border-top pt-3">
+                                <strong class="text-uppercase">tecnica</strong>
                                 <div class="col-md-2">
-                                    <input type="number" name="minVelocidad" class="form-control form-control-sm" placeholder="Min Velocidad">
+                                    <label class="small">Regate (Min - Max)</label>
+                                    <div class="input-group input-group-sm">
+                                        <input type="number" name="regMin" class="form-control" placeholder="0">
+                                        <input type="number" name="regMax" class="form-control" placeholder="99">
+                                    </div>
                                 </div>
                                 <div class="col-md-2">
-                                    <input type="number" name="minDefinicion" class="form-control form-control-sm" placeholder="Min Definición">
+                                    <label class="small">Control Balón (Min - Max)</label>
+                                    <div class="input-group input-group-sm">
+                                        <input type="number" name="contBalMin" class="form-control" placeholder="0">
+                                        <input type="number" name="contBalMax" class="form-control" placeholder="99">
+                                    </div>
                                 </div>
                                 <div class="col-md-2">
-                                    <input type="number" name="minEntradas" class="form-control form-control-sm" placeholder="Min Entradas">
+                                    <label class="small">Desmarques (Min - Max)</label>
+                                    <div class="input-group input-group-sm">
+                                        <input type="number" name="desMin" class="form-control" placeholder="0">
+                                        <input type="number" name="desMax" class="form-control" placeholder="99">
+                                    </div>
+                                </div>
+                                <strong class="text-uppercase">tiro</strong>
+                                <div class="col-md-2">
+                                    <label class="small">Definición (Min - Max)</label>
+                                    <div class="input-group input-group-sm">
+                                        <input type="number" name="defMin" class="form-control" placeholder="0">
+                                        <input type="number" name="defMax" class="form-control" placeholder="99">
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="small">Potencia Tiro (Min - Max)</label>
+                                    <div class="input-group input-group-sm">
+                                        <input type="number" name="potTirMin" class="form-control" placeholder="0">
+                                        <input type="number" name="potTirMax" class="form-control" placeholder="99">
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="small">Tiro Lejano (Min - Max)</label>
+                                    <div class="input-group input-group-sm">
+                                        <input type="number" name="tirLejMin" class="form-control" placeholder="0">
+                                        <input type="number" name="tirLejMax" class="form-control" placeholder="99">
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="small">Faltas (Min - Max)</label>
+                                    <div class="input-group input-group-sm">
+                                        <input type="number" name="falMin" class="form-control" placeholder="0">
+                                        <input type="number" name="falMax" class="form-control" placeholder="99">
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="small">Penaltis (Min - Max)</label>
+                                    <div class="input-group input-group-sm">
+                                        <input type="number" name="penMin" class="form-control" placeholder="0">
+                                        <input type="number" name="penMax" class="form-control" placeholder="99">
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="small">Remate cabeza (Min - Max)</label>
+                                    <div class="input-group input-group-sm">
+                                        <input type="number" name="remCaMin" class="form-control" placeholder="0">
+                                        <input type="number" name="remCaMax" class="form-control" placeholder="99">
+                                    </div>
+                                </div>
+                                <strong class="text-uppercase">pase</strong>
+                                <div class="col-md-2">
+                                    <label class="small">Pase corto (Min - Max)</label>
+                                    <div class="input-group input-group-sm">
+                                        <input type="number" name="pasCorMin" class="form-control" placeholder="0">
+                                        <input type="number" name="pasCorMax" class="form-control" placeholder="99">
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="small">Pase largo (Min - Max)</label>
+                                    <div class="input-group input-group-sm">
+                                        <input type="number" name="pasLarMin" class="form-control" placeholder="0">
+                                        <input type="number" name="pasLarMax" class="form-control" placeholder="99">
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="small">Vsión (Min - Max)</label>
+                                    <div class="input-group input-group-sm">
+                                        <input type="number" name="visMin" class="form-control" placeholder="0">
+                                        <input type="number" name="visMax" class="form-control" placeholder="99">
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="small">Centros (Min - Max)</label>
+                                    <div class="input-group input-group-sm">
+                                        <input type="number" name="cenMin" class="form-control" placeholder="0">
+                                        <input type="number" name="cenMax" class="form-control" placeholder="99">
+                                    </div>
+                                </div>
+                                <strong class="text-uppercase">defensa</strong>
+                                <div class="col-md-2">
+                                    <label class="small">Marcaje (Min - Max)</label>
+                                    <div class="input-group input-group-sm">
+                                        <input type="number" name="marMin" class="form-control" placeholder="0">
+                                        <input type="number" name="marMax" class="form-control" placeholder="99">
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="small">Entradas (Min - Max)</label>
+                                    <div class="input-group input-group-sm">
+                                        <input type="number" name="entMin" class="form-control" placeholder="0">
+                                        <input type="number" name="entMax" class="form-control" placeholder="99">
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="small">Intercepciones (Min - Max)</label>
+                                    <div class="input-group input-group-sm">
+                                        <input type="number" name="intMin" class="form-control" placeholder="0">
+                                        <input type="number" name="intMax" class="form-control" placeholder="99">
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="small">Despejes (Min - Max)</label>
+                                    <div class="input-group input-group-sm">
+                                        <input type="number" name="despMin" class="form-control" placeholder="0">
+                                        <input type="number" name="despMax" class="form-control" placeholder="99">
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="small">Duelos Aereos (Min - Max)</label>
+                                    <div class="input-group input-group-sm">
+                                        <input type="number" name="dueArMin" class="form-control" placeholder="0">
+                                        <input type="number" name="dueArMax" class="form-control" placeholder="99">
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="small">Colocación (Min - Max)</label>
+                                    <div class="input-group input-group-sm">
+                                        <input type="number" name="colMin" class="form-control" placeholder="0">
+                                        <input type="number" name="colMax" class="form-control" placeholder="99">
+                                    </div>
+                                </div>
+                                <strong class="text-uppercase">físico</strong>
+                                <div class="col-md-2">
+                                    <label class="small">Velocidad (Min - Max)</label>
+                                    <div class="input-group input-group-sm">
+                                        <input type="number" name="velMin" class="form-control" placeholder="0">
+                                        <input type="number" name="velMax" class="form-control" placeholder="99">
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="small">Aceleración (Min - Max)</label>
+                                    <div class="input-group input-group-sm">
+                                        <input type="number" name="aceMin" class="form-control" placeholder="0">
+                                        <input type="number" name="aceMax" class="form-control" placeholder="99">
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="small">Agilidad (Min - Max)</label>
+                                    <div class="input-group input-group-sm">
+                                        <input type="number" name="agiMin" class="form-control" placeholder="0">
+                                        <input type="number" name="agiMax" class="form-control" placeholder="99">
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="small">Fuerza (Min - Max)</label>
+                                    <div class="input-group input-group-sm">
+                                        <input type="number" name="fueMin" class="form-control" placeholder="0">
+                                        <input type="number" name="fueMax" class="form-control" placeholder="99">
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="small">Resistencia (Min - Max)</label>
+                                    <div class="input-group input-group-sm">
+                                        <input type="number" name="resMin" class="form-control" placeholder="0">
+                                        <input type="number" name="resMax" class="form-control" placeholder="99">
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="small">Equilibrio (Min - Max)</label>
+                                    <div class="input-group input-group-sm">
+                                        <input type="number" name="equiMin" class="form-control" placeholder="0">
+                                        <input type="number" name="equiMax" class="form-control" placeholder="99">
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="small">Salto (Min - Max)</label>
+                                    <div class="input-group input-group-sm">
+                                        <input type="number" name="saltMin" class="form-control" placeholder="0">
+                                        <input type="number" name="saltMax" class="form-control" placeholder="99">
+                                    </div>
+                                </div>
+                                <strong class="text-uppercase">mental</strong>
+                                <div class="col-md-2">
+                                    <label class="small">Concentración (Min - Max)</label>
+                                    <div class="input-group input-group-sm">
+                                        <input type="number" name="concMin" class="form-control" placeholder="0">
+                                        <input type="number" name="concMax" class="form-control" placeholder="99">
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="small">Liderazgo (Min - Max)</label>
+                                    <div class="input-group input-group-sm">
+                                        <input type="number" name="lidMin" class="form-control" placeholder="0">
+                                        <input type="number" name="lidMax" class="form-control" placeholder="99">
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="small">Agresividad (Min - Max)</label>
+                                    <div class="input-group input-group-sm">
+                                        <input type="number" name="agreMin" class="form-control" placeholder="0">
+                                        <input type="number" name="agreMax" class="form-control" placeholder="99">
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="small">Motivación (Min - Max)</label>
+                                    <div class="input-group input-group-sm">
+                                        <input type="number" name="motMin" class="form-control" placeholder="0">
+                                        <input type="number" name="motMax" class="form-control" placeholder="99">
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="small">Compostura Bajo Presión (Min - Max)</label>
+                                    <div class="input-group input-group-sm">
+                                        <input type="number" name="compBaPreMin" class="form-control" placeholder="0">
+                                        <input type="number" name="compBaPreMax" class="form-control" placeholder="99">
+                                    </div>
+                                </div>
+                                <strong class="text-uppercase">portero</strong>
+                                <div class="col-md-2">
+                                    <label class="small">Reflejos (Min - Max)</label>
+                                    <div class="input-group input-group-sm">
+                                        <input type="number" name="refMin" class="form-control" placeholder="0">
+                                        <input type="number" name="refMax" class="form-control" placeholder="99">
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="small">Paradas (Min - Max)</label>
+                                    <div class="input-group input-group-sm">
+                                        <input type="number" name="paraMin" class="form-control" placeholder="0">
+                                        <input type="number" name="paraMax" class="form-control" placeholder="99">
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="small">Estirada (Min - Max)</label>
+                                    <div class="input-group input-group-sm">
+                                        <input type="number" name="estMin" class="form-control" placeholder="0">
+                                        <input type="number" name="estMax" class="form-control" placeholder="99">
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="small">Juego Aereo (Min - Max)</label>
+                                    <div class="input-group input-group-sm">
+                                        <input type="number" name="jueArMin" class="form-control" placeholder="0">
+                                        <input type="number" name="jueArMax" class="form-control" placeholder="99">
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="small">Uno contra uno (Min - Max)</label>
+                                    <div class="input-group input-group-sm">
+                                        <input type="number" name="unoVSunoMin" class="form-control" placeholder="0">
+                                        <input type="number" name="unoVSunoMax" class="form-control" placeholder="99">
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="small">Blocaje (Min - Max)</label>
+                                    <div class="input-group input-group-sm">
+                                        <input type="number" name="blocMin" class="form-control" placeholder="0">
+                                        <input type="number" name="blocMax" class="form-control" placeholder="99">
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="small">Saque (Min - Max)</label>
+                                    <div class="input-group input-group-sm">
+                                        <input type="number" name="saqMin" class="form-control" placeholder="0">
+                                        <input type="number" name="saqMax" class="form-control" placeholder="99">
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="small">Comunicación (Min - Max)</label>
+                                    <div class="input-group input-group-sm">
+                                        <input type="number" name="comuMin" class="form-control" placeholder="0">
+                                        <input type="number" name="comuMax" class="form-control" placeholder="99">
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="small">Penaltis (Min - Max)</label>
+                                    <div class="input-group input-group-sm">
+                                        <input type="number" name="penalMin" class="form-control" placeholder="0">
+                                        <input type="number" name="penalMax" class="form-control" placeholder="99">
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -99,3 +410,4 @@
 </div>
 
 <script src="/js/plantilla.js"></script>
+<script src="/js/buscadorTraspasos.js"></script>

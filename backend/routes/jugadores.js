@@ -101,7 +101,7 @@ jugadoresRouter.post('/jugador/cambiar-dorsal/:id', requireLogin, async (req, re
         await jugadorEditado.save();
 
         res.json({ success: true, mensaje: isOcupado ? "Dorsales intercambiados" : "Dorsal asignado" });
-    } catch (err) {
+    } catch (err) {                                                                                                                                               
         res.status(500).json({ success: false, error: err.message });
     }
 });
