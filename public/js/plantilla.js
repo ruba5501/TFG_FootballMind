@@ -69,6 +69,25 @@ async function abrirModalDorsal(jugadorId) {
     }
 }
 
+async function gestionarListaObjetivos(id, accion) {
+    try {
+        const response = await fetch(`/listaObjetivos/${accion}/${id}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        
+        const result = await response.json();
+
+        if (result.success) {
+            verDetalleJugador(id);
+        } else {
+            alert("Error: " + result.message);
+        }
+    } catch (err) {
+        console.error("Error en la lista de objetivos:", err);
+    }
+}
+
 function actualizarEstadoDorsal(num) {
     const infoOcupante = document.getElementById('infoOcupante');
     const infoLibre = document.getElementById('infoLibre');

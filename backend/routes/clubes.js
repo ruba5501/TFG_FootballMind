@@ -205,7 +205,7 @@ clubRouter.get('/traspasos/:partidaId', requireLogin, async (req, res) => {
         const ojeadores = clubUsuario.empleados.filter(emp => 
             emp.tipo === 'ojeador' 
         );
-        
+
         res.render('traspasos', {
             partida,
             clubUsuario,
@@ -339,6 +339,36 @@ clubRouter.get('/traspasos/buscar/:partidaId', requireLogin, async (req, res) =>
 
     } catch (err) {
         res.status(500).send("Error en la búsqueda");
+    }
+});
+clubRouter.post('/listaObjetivos/aniadir/:id', async (req, res) => {
+    try {
+        const jugador = await Jugador.findById(req.params.id);
+        const partida = await partidasDAO.obtenerPartidaPorId(jugador.partidaId);
+        const clubSeleccionado = await clubesDAO.buscarClubPorId(partida.clubSeleccionado);
+        
+        await clubesDAO.actualizarClub(clubSeleccionado, {
+            $addToSet: { listaObjetivos: jugador._id }
+        });
+
+        res.json({ success: true });
+    } catch (error) {
+        res.json({ success: false, message: error.message });
+    }
+});
+clubRouter.post('/listaObjetivos/quitar/:id', async (req, res) => {
+    try {
+        const jugador = await Jugador.findById(req.params.id);
+        const partida = await partidasDAO.obtenerPartidaPorId(jugador.partidaId);
+        const clubSeleccionado = await clubesDAO.buscarClubPorId(partida.clubSeleccionado);
+        
+        await clubesDAO.actualizarClub(clubSeleccionado, {
+            $pull: { listaObjetivos: jugador._id }
+        });
+
+        res.json({ success: true });
+    } catch (error) {
+        res.json({ success: false, message: error.message });
     }
 });
 module.exports = clubRouter;

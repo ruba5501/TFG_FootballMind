@@ -2,6 +2,7 @@ const express = require('express');
 const jugadoresRouter = express.Router();
 const jugadoresDAO = require('../daos/jugadoresDAO');
 const clubesDAO = require('../daos/clubesDAO');
+const partidasDAO = require('../daos/partidasDAO');
 const Jugador = require('../models/jugador');
 const { requireLogin } = require('../middleware/autenticacion');
 
@@ -23,18 +24,25 @@ jugadoresRouter.get('/jugador/detalle/:jugadorId', requireLogin, async (req, res
     try {
         const jugador = await Jugador.findById(req.params.jugadorId).populate('statsTemporada.competicionId');
         const club = await clubesDAO.buscarClubPorId(jugador.clubActual);
-        
+        const partida = await partidasDAO.obtenerPartidaPorId(jugador.partidaId);
+        const clubSeleccionado = await clubesDAO.buscarClubPorId(partida.clubSeleccionado);
+        const estaEnListaObjetivos = clubSeleccionado.listaObjetivos.some(objId => 
+            objId.equals(jugador._id)
+        );        
         if(club.esFilial){
             res.render('partials/detalleCanterano', { 
                 jugador,
+                clubSeleccionado,
                 layout: false 
             });
         }
         else{
             res.render('partials/detalleJugador', { 
-            jugador,
-            layout: false,
-            club
+                jugador,
+                layout: false,
+                club,
+                clubSeleccionado,
+                estaEnListaObjetivos
             });
         }
     } catch (err) {

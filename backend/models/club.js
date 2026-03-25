@@ -75,7 +75,8 @@ const clubSchema = new mongoose.Schema({
     faltasLejanas: { type: mongoose.Schema.Types.ObjectId, ref: 'Jugador', default: null },
     cornersIzquierda: { type: mongoose.Schema.Types.ObjectId, ref: 'Jugador', default: null },
     cornersDerecha: { type: mongoose.Schema.Types.ObjectId, ref: 'Jugador', default: null }
-  }
+  },
+  listaObjetivos: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Jugador' }]
 }, { 
     collection: 'clubes' 
 }

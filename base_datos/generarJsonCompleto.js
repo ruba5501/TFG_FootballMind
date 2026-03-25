@@ -156,7 +156,8 @@ const generarDatosUniversales = (clubes) => {
             infraestructuras: { entrenamiento: nivelInfra, cantera: nivelCantera },
             popularidad: pop,
             reputacion: rep,
-            statsTemporada: []
+            statsTemporada: [],
+            listaObjetivos: []
         };
     });
 
@@ -188,7 +189,7 @@ const generarDatosUniversales = (clubes) => {
                     popularidad: Math.floor(club.popularidad * 0.7),
                     reputacion: repFilial,
                     historialTitulos: [],
-                    statsTemporada: []
+                    statsTemporada: [],
                 });
             }
         }
