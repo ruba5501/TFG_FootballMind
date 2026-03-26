@@ -213,7 +213,8 @@ clubRouter.get('/traspasos/:partidaId', requireLogin, async (req, res) => {
             ojeadores: ojeadores,
             ligas: ligas,  
             clubes: clubes,
-            listaObjetivos: clubUsuario.listaObjetivos
+            listaObjetivos: clubUsuario.listaObjetivos,
+            errorFiltros: null
         });
 
     } catch (err) {
@@ -221,12 +222,37 @@ clubRouter.get('/traspasos/:partidaId', requireLogin, async (req, res) => {
         res.status(500).send("Error al cargar el centro de traspasos");
     }
 });
+const esRangoValido = (valorMin, valorMax, min, max) => {
+    if (valorMin > valorMax) return false;
+    if (valorMin < min) return false;
+    if (valorMax > max) return false;
+    return true;
+}
 // búsqueda manual traspasos
 clubRouter.get('/traspasos/buscar/:partidaId', requireLogin, async (req, res) => {
     try {
         const partida = await partidasDAO.obtenerPartidaPorId(req.params.partidaId);
         const filtros = req.query;
+        const ligas = await Competicion.find({ 
+            tipo: 'liga',
+            partidaId: partida._id,
+        }).select('nombre').lean();
         const filial = await Club.findOne({ clubMatriz: partida.clubSeleccionado }).select('_id');
+        const clubes = await Club.find({
+            _id: { 
+                $ne: partida.clubSeleccionado,
+                $not: { $eq: filial ? filial._id : null }
+            },
+            partidaId: partida._id,
+        }).lean();
+        const clubUsuario = await Club.findById(partida.clubSeleccionado).populate('empleados').populate({
+            path: 'listaObjetivos',
+            populate: { path: 'clubActual', select: 'nombre escudo' }
+        });
+        const ojeadores = clubUsuario.empleados.filter(emp => 
+            emp.tipo === 'ojeador' 
+        );
+        
 
         let mongoQuery = { 
             partidaId: req.params.partidaId,
@@ -259,14 +285,46 @@ clubRouter.get('/traspasos/buscar/:partidaId', requireLogin, async (req, res) =>
         
         if (filtros.edadMin || filtros.edadMax) {
             mongoQuery.edad = {};
-            if (filtros.edadMin) mongoQuery.edad.$gte = parseInt(filtros.edadMin);
-            if (filtros.edadMax) mongoQuery.edad.$lte = parseInt(filtros.edadMax);
+            const valorMin = filtros.edadMin ? parseInt(filtros.edadMin) : 0;
+            const valorMax = filtros.edadMax ? parseInt(filtros.edadMax) : 100;
+            const esValido = esRangoValido(valorMin, valorMax, 0, 100)
+            if (esValido) {
+                if (filtros.edadMin) mongoQuery.edad.$gte = valorMin;
+                if (filtros.edadMax) mongoQuery.edad.$lte = valorMax;
+            }
+            else{
+                return res.render('traspasos', {
+                    partida,
+                    clubUsuario,
+                    ojeadores: ojeadores,
+                    ligas: ligas,  
+                    clubes: clubes,
+                    listaObjetivos: clubUsuario.listaObjetivos,
+                    errorFiltros: 'El valor introducido esta fuera del rango'
+                });   
+             }
         }
 
         if (filtros.valorMin || filtros.valorMax) {
             mongoQuery.valorMercado = {};
-            if (filtros.valorMin) mongoQuery.valorMercado.$gte = parseInt(filtros.valorMin);
-            if (filtros.valorMax) mongoQuery.valorMercado.$lte = parseInt(filtros.valorMax);
+            const valorMin = filtros.valorMin ? parseInt(filtros.valorMin) : 0;
+            const valorMax = filtros.valorMax ? parseInt(filtros.valorMax) : 1000000000;
+            const esValido = esRangoValido(valorMin, valorMax, 0, 1000000000)
+            if (esValido) {
+                if (filtros.valorMin) mongoQuery.valorMercado.$gte = valorMin;
+                if (filtros.valorMax) mongoQuery.valorMercado.$lte = valorMax;
+            }
+            else{
+                return res.render('traspasos', {
+                    partida,
+                    clubUsuario,
+                    ojeadores: ojeadores,
+                    ligas: ligas,  
+                    clubes: clubes,
+                    listaObjetivos: clubUsuario.listaObjetivos,
+                    errorFiltros: 'El valor introducido esta fuera del rango'
+                });   
+             }
         }
 
         const mapaAtributos = [
@@ -319,16 +377,32 @@ clubRouter.get('/traspasos/buscar/:partidaId', requireLogin, async (req, res) =>
             ['penal', 'atributos.portero.penales']
         ];
 
-        mapaAtributos.forEach(([prefijo, rutaDB]) => {
+        for (const [prefijo, rutaDB] of mapaAtributos) {
             const minVal = filtros[`${prefijo}Min`];
             const maxVal = filtros[`${prefijo}Max`];
 
             if (minVal || maxVal) {
                 mongoQuery[rutaDB] = {};
-                if (minVal) mongoQuery[rutaDB].$gte = parseInt(minVal);
-                if (maxVal) mongoQuery[rutaDB].$lte = parseInt(maxVal);
+                const valorMin = minVal ? minVal : 0;
+                const valorMax = maxVal ? maxVal : 99;
+                const esValido = esRangoValido(valorMin, valorMax, 0, 99)
+                if (esValido) {
+                    if (minVal) mongoQuery[rutaDB].$gte = valorMin;
+                    if (maxVal) mongoQuery[rutaDB].$lte = valorMax;
+                }
+                else{
+                    return res.render('traspasos', {
+                        partida,
+                        clubUsuario,
+                        ojeadores: ojeadores,
+                        ligas: ligas,  
+                        clubes: clubes,
+                        listaObjetivos: clubUsuario.listaObjetivos,
+                        errorFiltros: 'El valor introducido esta fuera del rango'
+                    });   
+                }
             }
-        });
+        }
 
         const jugadoresEncontrados = await Jugador.find(mongoQuery)
             .populate('clubActual');
