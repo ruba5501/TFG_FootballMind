@@ -199,19 +199,21 @@ clubRouter.get('/traspasos/:partidaId', requireLogin, async (req, res) => {
             partidaId: partida._id,
         }).lean();
         
-        const clubUsuario = await Club.findById(partida.clubSeleccionado).populate('empleados');
-
+        const clubUsuario = await Club.findById(partida.clubSeleccionado).populate('empleados').populate({
+            path: 'listaObjetivos',
+            populate: { path: 'clubActual', select: 'nombre escudo' }
+        });
 
         const ojeadores = clubUsuario.empleados.filter(emp => 
             emp.tipo === 'ojeador' 
         );
-
         res.render('traspasos', {
             partida,
             clubUsuario,
             ojeadores: ojeadores,
             ligas: ligas,  
-            clubes: clubes
+            clubes: clubes,
+            listaObjetivos: clubUsuario.listaObjetivos
         });
 
     } catch (err) {

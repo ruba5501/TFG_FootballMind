@@ -13,6 +13,11 @@
                 <i class="bi bi-geo-alt me-2"></i>Red de Ojeadores
             </button>
         </li>
+        <li class="nav-item">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-listaObjetivos">
+                <i class="bi bi-list-stars me-2"></i>Lista de Objetivos
+            </button>
+        </li>
     </ul>
 
     <div class="tab-content">
@@ -406,8 +411,78 @@
                     <% }) %>
             </div>
         </div>
+
+        <div class="tab-pane fade" id="tab-listaObjetivos">
+            <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3">
+                <% listaObjetivos.forEach(jugador => { %>
+                    <div class="col" id="card-objetivo-<%= jugador._id %>">
+                        <div class="card h-100 bg-dark text-white border-secondary shadow-sm">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h5 class="card-title text-info mb-0"><%= jugador.nombre %></h5>
+                                    <span class="badge bg-light text-dark"><%= jugador.posicionPrincipal %></span>
+                                </div>
+
+                                <div class="small mb-3">
+                                    <p class="text pt-3">
+                                        Media: <%= jugador.valoracion %> | Potencial: <%= jugador.potencial %> | 
+                                        <%= jugador.nacionalidad %> 
+                                        <img src="/img/banderas/<%= jugador.nacionalidad %>.png"
+                                            alt="<%= jugador.nacionalidad %>" 
+                                            class="ms-1 shadow-sm" 
+                                            style="height: 14px; width: auto; vertical-align: middle; border-radius: 2px;"
+                                        > 
+                                        | <%= jugador.edad %> años | <%= jugador.altura %>cm | <%= jugador.peso %>kg
+                                    </p>
+                                    <div class="mt-2 p-2 bg-black bg-opacity-25 rounded border border-secondary">
+                                        <strong>Club:</strong> 
+                                        <span class="<%= jugador.clubActual ? 'text-white' : 'text-success fw-bold' %>">
+                                            <% if (jugador.clubActual) { %>
+                                                <%= jugador.clubActual.nombre %>
+                                                <img src="/img/escudos/<%= jugador.clubActual.escudo %>" 
+                                                    alt=""
+                                                    class="me-1 shadow-sm"
+                                                    style="height: 18px; width: auto; vertical-align: middle; border-radius: 2px;"
+                                                    onerror="this.style.display='none';"> 
+                                                
+                                            <% } else { %>
+                                                <i class="bi bi-person-x me-1"></i> Agente Libre
+                                            <% } %>
+                                        </span><br>
+                                        <strong>Otras pos.:</strong> <%= jugador.posicionesSecundarias.join(', ') || '---' %>
+                                    </div>
+                                </div>
+
+                                <div class="d-grid gap-2">
+                                    <div class="btn-group w-100">
+                                        <button class="btn btn-sm btn-outline-info" onclick="verAtributos('<%= jugador._id %>')">
+                                            <i class="bi bi-bar-chart-fill me-1"></i> Atributos
+                                        </button>
+                                        
+                                        <button class="btn btn-sm btn-outline-danger" onclick="gestionarListaObjetivos('<%= jugador._id %>', 'quitar')">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+
+                                    <% if (!jugador.clubActual || jugador.clubActual.nombre === 'Libre' || jugador.acuerdoConClub) { %>
+                                        <button class="btn btn-success" onclick="iniciarNegociacionContrato('<%= jugador._id %>')">
+                                            <i class="bi bi-file-earmark-person me-1"></i> Negociar Contrato
+                                        </button>
+                                    <% } else { %>
+                                        <button class="btn btn-primary" onclick="negociarTraspasoClub('<%= jugador._id %>')">
+                                            <i class="bi bi-chat-dots me-1"></i> Contactar para Fichar
+                                        </button>
+                                    <% } %>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                <% }) %>
+            </div>
+        </div>
     </div>
 </div>
 
+<%- include('partials/modal_atributos') %>
 <script src="/js/plantilla.js"></script>
 <script src="/js/buscadorTraspasos.js"></script>

@@ -79,7 +79,22 @@ async function gestionarListaObjetivos(id, accion) {
         const result = await response.json();
 
         if (result.success) {
-            verDetalleJugador(id);
+            if (accion === 'quitar') {
+                if (document.getElementById('tab-listaObjetivos')) {
+                    const elemento = document.getElementById(`card-objetivo-${id}`);
+                    if (elemento) {
+                        elemento.style.transition = "opacity 0.3s ease";
+                        elemento.style.opacity = "0";
+                        setTimeout(() => elemento.remove(), 300);
+                    }
+                }
+                else{
+                    verDetalleJugador(id);
+                }
+            }
+            else{
+                verDetalleJugador(id);
+            }
         } else {
             alert("Error: " + result.message);
         }
@@ -212,4 +227,52 @@ function subirPrimerEquipo(id) {
                 if(data.success) window.location.href = '/plantilla';
             });
     }
+}
+
+async function negociarTraspasoClub(jugadorId) {
+    const oferta = prompt("El club pide una negociación. ¿Cuánto ofreces por el traspaso? (€)");
+    
+    if (oferta && !isNaN(oferta)) {
+        try {
+            const res = await fetch(`/fichajes/oferta-club/${jugadorId}`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ oferta: parseInt(oferta) })
+            });
+            const data = await res.json();
+            
+            if (data.success) {
+                alert("¡Acuerdo alcanzado con el club! Ahora negocia el contrato con el jugador.");
+                location.reload(); 
+            } else {
+                alert("El club ha rechazado la oferta. Piden al menos " + data.precioMinimo + "€");
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    }
+}
+
+function iniciarNegociacionContrato(jugadorId) {
+    window.location.href = `/fichajes/contrato/${jugadorId}`;
+}
+
+function verAtributos(jugadorId) {
+    const contenedor = document.getElementById('contenidoModalJugador');
+    
+    contenedor.innerHTML = `
+        <div class="text-center p-5">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="mt-2 text-muted">Cargando informe técnico...</p>
+        </div>`;
+
+    const modalElement = document.getElementById('modalAtributos');
+    const bsModal = bootstrap.Modal.getOrCreateInstance(modalElement);
+    bsModal.show();
+
+    fetch(`/jugador/atributos/${jugadorId}`)
+            .then(res => res.text())
+            .then(html => {
+                contenedor.innerHTML = `<div class="p-3">${html}</div>`;
+            });
 }
