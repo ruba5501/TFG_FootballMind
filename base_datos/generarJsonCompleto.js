@@ -157,7 +157,8 @@ const generarDatosUniversales = (clubes) => {
             popularidad: pop,
             reputacion: rep,
             statsTemporada: [],
-            listaObjetivos: []
+            listaObjetivos: [],
+            listaObjetivosEmpleados: []
         };
     });
 

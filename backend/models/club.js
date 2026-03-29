@@ -76,7 +76,9 @@ const clubSchema = new mongoose.Schema({
     cornersIzquierda: { type: mongoose.Schema.Types.ObjectId, ref: 'Jugador', default: null },
     cornersDerecha: { type: mongoose.Schema.Types.ObjectId, ref: 'Jugador', default: null }
   },
-  listaObjetivos: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Jugador' }]
+  listaObjetivos: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Jugador' }],
+  listaObjetivosEmpleados: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Empleado' }]
+
 }, { 
     collection: 'clubes' 
 }

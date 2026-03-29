@@ -5,6 +5,7 @@ const clubesDAO = require('../daos/clubesDAO');
 const empleadosDAO = require('../daos/empleadosDAO');
 const partidasDAO = require('../daos/partidasDAO');
 const Club = require('../models/club');
+const Competicion = require('../models/competicion');
 const { requireLogin } = require('../middleware/autenticacion');
 
 const grupos = {
@@ -47,7 +48,22 @@ empleadoRouter.get('/buscarEmpleado/:id', async (req, res) => {
 empleadoRouter.get('/empleados/:partidaId', requireLogin, async (req, res) => {
     try {
         const partida = await partidasDAO.obtenerPartidaPorId(req.params.partidaId);
-        
+        const ligas = await Competicion.find({ 
+            tipo: 'liga',
+            partidaId: partida._id,
+        }).select('nombre').lean();
+        const filial = await Club.findOne({ clubMatriz: partida.clubSeleccionado }).select('_id');
+        const clubes = await Club.find({
+            _id: { 
+                $ne: partida.clubSeleccionado,
+                $not: { $eq: filial ? filial._id : null }
+            },
+            partidaId: partida._id,
+        }).lean();
+        const clubUsuario = await Club.findById(partida.clubSeleccionado).populate('empleados').populate({
+            path: 'listaObjetivosEmpleados',
+            populate: { path: 'clubActual', select: 'nombre escudo' }
+        });
         const filtros = {
             nombre: req.query.nombre,
             estado: req.query.estado,
@@ -60,31 +76,19 @@ empleadoRouter.get('/empleados/:partidaId', requireLogin, async (req, res) => {
         const empleados = await empleadosDAO.buscarEmpleados(filtros);
 
         res.render('empleados', {
+            partida,
             empleados,
             grupos,
-            partida
+            ligas: ligas,  
+            clubes: clubes,
+            listaObjetivos: clubUsuario.listaObjetivosEmpleados,
+            errorFiltros: null
         });
     } catch (err) {
         res.status(500).send("Error al cargar los empleados");
     }
 });
 
-empleadoRouter.get('/buscar', async (req, res) => {
-    const filtros = {
-        nombre: req.query.nombre,
-        clubActual: req.query.club,
-        estado: req.query.estado,
-        atributos: {
-            nivelFisico: req.query.minFisico, 
-            nivelTecnico: req.query.minTecnico
-        }
-    };
-    
-    if (!filtros.atributos.nivelFisico) delete filtros.atributos.nivelFisico;
-    
-    const empleados = await empleadosDAO.buscarEmpleados(filtros);
-    res.json(empleados);
-});
 
 empleadoRouter.get('/empleado/atributos/:id', async (req, res) => {
     const emp = await empleadosDAO.buscarEmpleadoPorId(req.params.id);
