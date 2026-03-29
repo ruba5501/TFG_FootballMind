@@ -24,7 +24,7 @@
         <div class="tab-pane fade show active" id="tab-buscador">
             <div class="card shadow-sm mb-4">
                 <div class="card-body bg-dark text-white rounded">
-                    <form action="/traspasos/buscar/<%= partida._id %>" method="GET" class="row g-3">
+                    <form action="/traspasos/buscar/<%= partida._id %>" method="GET" class="row g-3" novalidate>
                         <% if (typeof errorFiltros !== 'undefined' && errorFiltros) { %>
                             <small class="text-danger d-block mt-1"><%= errorFiltros %></small>
                         <% } %>

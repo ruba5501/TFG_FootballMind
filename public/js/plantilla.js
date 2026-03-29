@@ -276,3 +276,29 @@ function verAtributos(jugadorId) {
                 contenedor.innerHTML = `<div class="p-3">${html}</div>`;
             });
 }
+document.addEventListener('input', (e) => {
+    const valInput = e.target;
+    
+    if (valInput.name && (valInput.name.includes('Min') || valInput.name.includes('Max'))) {
+        const inputName = valInput.name.replace('Min', '').replace('Max', '');
+        const inputMin = document.querySelector(`input[name="${inputName}Min"]`);
+        const inputMax = document.querySelector(`input[name="${inputName}Max"]`);
+
+        if (!inputMin || !inputMax) return;
+
+        let limiteMax = 1000000000;
+        if (inputName === 'edad') limiteMax = 100;
+        if (inputName !== 'edad' && inputName !== 'valor') limiteMax = 99;
+
+        if (parseInt(valInput.value) < 0) valInput.value = 0;
+        if (parseInt(valInput.value) > limiteMax) valInput.value = limiteMax;
+
+        if (valInput.name.includes('Min')) {
+            inputMax.min = valInput.value || 0;
+        }
+        
+        if (valInput.name.includes('Max')) {
+            inputMin.max = valInput.value || limiteMax;
+        }
+    }
+});
