@@ -89,10 +89,174 @@ empleadoRouter.get('/empleados/:partidaId', requireLogin, async (req, res) => {
     }
 });
 
+const esRangoValido = (valorMin, valorMax, min, max) => {
+    if (valorMin > valorMax) return false;
+    if (valorMin < min) return false;
+    if (valorMax > max) return false;
+    return true;
+}
+
+empleadoRouter.get('/empleados/buscar/:partidaId', requireLogin, async (req, res) => {
+    try {
+        const partida = await partidasDAO.obtenerPartidaPorId(req.params.partidaId);
+        const filtros = req.query;
+        const ligas = await Competicion.find({ 
+            tipo: 'liga',
+            partidaId: partida._id,
+        }).select('nombre').lean();
+        const filial = await Club.findOne({ clubMatriz: partida.clubSeleccionado }).select('_id');
+        const clubes = await Club.find({
+            _id: { 
+                $ne: partida.clubSeleccionado,
+                $not: { $eq: filial ? filial._id : null }
+            },
+            partidaId: partida._id,
+        }).lean();
+        const clubUsuario = await Club.findById(partida.clubSeleccionado).populate('empleados').populate({
+            path: 'listaObjetivosEmpleados',
+            populate: { path: 'clubActual', select: 'nombre escudo' }
+        });
+        const ojeadores = clubUsuario.empleados.filter(emp => 
+            emp.tipo === 'ojeador' 
+        );
+        
+
+        let mongoQuery = { 
+            partidaId: req.params.partidaId,
+            clubActual: { 
+                $ne: partida.clubSeleccionado,
+                $not: { $eq: filial ? filial._id : null }
+            }
+        };
+
+        if (filtros.query) mongoQuery.nombre = { $regex: filtros.query, $options: 'i' };
+        
+        if (filtros.clubId && filtros.clubId !== "") {
+            mongoQuery.clubActual = filtros.clubId;
+        }
+        else if (filtros.liga && filtros.liga !== "") {
+            const clubesEnLiga = await Club.find({ 
+                competiciones: filtros.liga,
+                _id: { 
+                    $ne: partida.clubSeleccionado, 
+                    $not: { $eq: filial ? filial._id : null }
+                }
+            }).select('_id').lean();
+            const idsClubes = clubesEnLiga.map(c => c._id);
+            
+            mongoQuery.clubActual = { $in: idsClubes };
+        }
+        if (filtros.cargo) mongoQuery.tipo = filtros.cargo;
+        if (filtros.estado) mongoQuery.estado = filtros.estado;
+        
+        
+        if (filtros.edadMin || filtros.edadMax) {
+            mongoQuery.edad = {};
+            const valorMin = filtros.edadMin ? parseInt(filtros.edadMin) : 0;
+            const valorMax = filtros.edadMax ? parseInt(filtros.edadMax) : 100;
+            const esValido = esRangoValido(valorMin, valorMax, 0, 100)
+            if (esValido) {
+                if (filtros.edadMin) mongoQuery.edad.$gte = valorMin;
+                if (filtros.edadMax) mongoQuery.edad.$lte = valorMax;
+            }
+            else{
+                return res.render('empleados', {
+                    partida,
+                    clubUsuario,
+                    ojeadores: ojeadores,
+                    ligas: ligas,  
+                    clubes: clubes,
+                    listaObjetivos: clubUsuario.listaObjetivosEmpleados,
+                    errorFiltros: 'El valor introducido esta fuera del rango'
+                });   
+             }
+        }
+
+        const mapaAtributos = [
+            ['nivFis', 'atributos.nivelFisico'],
+            ['nivTec', 'atributos.nivelTecnico'],
+            ['nivTac', 'atributos.nivelTactico'],
+            ['nivPor', 'atributos.nivelPortero'],
+            ['nivPsi', 'atributos.nivelPsicologico'],
+            ['nivMed', 'atributos.nivelMedico'],
+            ['nivRec', 'atributos.nivelRecuperacion'],
+            ['nivPrevLes', 'atributos.nivelPrevencionLesiones'],
+            ['nivDet', 'atributos.nivelDeteccion'],
+            ['nivCan', 'atributos.nivelCantera'],
+            ['nivMot', 'atributos.motivacion'],
+            ['nivDesJov', 'atributos.desarrolloJovenes'],
+            ['nivRep', 'atributos.reputacion'],
+            ['nivExp', 'atributos.experiencia']
+        ];
+
+        for (const [prefijo, rutaDB] of mapaAtributos) {
+            const minVal = filtros[`${prefijo}Min`];
+            const maxVal = filtros[`${prefijo}Max`];
+
+            if (minVal || maxVal) {
+                mongoQuery[rutaDB] = {};
+                const valorMin = minVal ? minVal : 0;
+                const valorMax = maxVal ? maxVal : 99;
+                const esValido = esRangoValido(valorMin, valorMax, 0, 99)
+                if (esValido) {
+                    if (minVal) mongoQuery[rutaDB].$gte = valorMin;
+                    if (maxVal) mongoQuery[rutaDB].$lte = valorMax;
+                }
+                else{
+                    return res.render('empleados', {
+                        partida,
+                        clubUsuario,
+                        ojeadores: ojeadores,
+                        ligas: ligas,  
+                        clubes: clubes,
+                        listaObjetivos: clubUsuario.listaObjetivosEmpleados,
+                        errorFiltros: 'El valor introducido esta fuera del rango'
+                    });   
+                }
+            }
+        }
+
+        const empleadosEncontrados = await Empleado.find(mongoQuery)
+            .populate('clubActual');
+
+        res.render('resultadosBusquedaEmpleados', {
+            empleados: empleadosEncontrados,
+            partida,
+            clubUsuario: await Club.findById(partida.clubSeleccionado)
+        });
+
+    } catch (err) {
+        res.status(500).send("Error en la búsqueda");
+    }
+});
+empleadoRouter.get('/empleado/detalle/:empleadoId', requireLogin, async (req, res) => {
+    try {
+        const empleado = await empleadosDAO.buscarEmpleadoPorId(req.params.empleadoId);   
+        const club = await clubesDAO.buscarClubPorId(empleado.clubActual);
+        const partida = await partidasDAO.obtenerPartidaPorId(empleado.partidaId);
+        const clubSeleccionado = await clubesDAO.buscarClubPorId(partida.clubSeleccionado);     
+        const estaEnListaObjetivos = clubSeleccionado.listaObjetivosEmpleados.some(objId => 
+            objId.equals(empleado._id)
+        ); 
+        res.render('partials/detalleEmpleado', { 
+            empleado,
+            layout: false,
+            club,
+            clubSeleccionado,
+            estaEnListaObjetivos
+        });
+    } catch (err) {
+        res.status(500).send("Error al obtener detalles");
+    }
+});
 
 empleadoRouter.get('/empleado/atributos/:id', async (req, res) => {
-    const emp = await empleadosDAO.buscarEmpleadoPorId(req.params.id);
-    res.json({ atributos: emp.atributos });
+    try {
+        const empleado = await empleadosDAO.buscarEmpleadoPorId(req.params.id);        
+        res.render('partials/atributosEmpleado', { empleado: empleado });
+    } catch (error) {
+        res.status(500).send("Error");
+    }
 });
 
 empleadoRouter.post('/empleados/despedir/:id', async (req, res) => {

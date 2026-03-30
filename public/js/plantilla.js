@@ -17,6 +17,24 @@ function verDetalleJugador(id) {
             })
         });
 }
+function verDetalleEmpleado(id) {
+    const panel = document.getElementById('panelDetalleEmpleado');
+    panel.innerHTML = '<div class="text-center mt-5"><div class="spinner-border"></div></div>';
+
+    fetch(`/empleado/detalle/${id}`)
+        .then(res => res.text())
+        .then(html => {
+            panel.innerHTML = html;
+            const triggerTabList = [].slice.call(document.querySelectorAll('#empleadoTabs button'))
+            triggerTabList.forEach(function (triggerEl) {
+                const tabTrigger = new bootstrap.Tab(triggerEl)
+                triggerEl.addEventListener('click', function (event) {
+                    event.preventDefault()
+                    tabTrigger.show()
+                })
+            })
+        });
+}
 
 async function accionJugador(id, tipo) {
     try {
@@ -69,9 +87,9 @@ async function abrirModalDorsal(jugadorId) {
     }
 }
 
-async function gestionarListaObjetivos(id, accion) {
+async function gestionarListaObjetivos(id, accion, tipo) {
     try {
-        const response = await fetch(`/listaObjetivos/${accion}/${id}`, {
+        const response = await fetch(`/listaObjetivos/${accion}/${tipo}/${id}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' }
         });
@@ -89,11 +107,11 @@ async function gestionarListaObjetivos(id, accion) {
                     }
                 }
                 else{
-                    verDetalleJugador(id);
+                    tipo === 'jugador' ? verDetalleJugador(id) : verDetalleEmpleado(id);
                 }
             }
             else{
-                verDetalleJugador(id);
+                tipo === 'jugador' ? verDetalleJugador(id) : verDetalleEmpleado(id);
             }
         } else {
             alert("Error: " + result.message);
@@ -271,6 +289,25 @@ function verAtributos(jugadorId) {
     bsModal.show();
 
     fetch(`/jugador/atributos/${jugadorId}`)
+            .then(res => res.text())
+            .then(html => {
+                contenedor.innerHTML = `<div class="p-3">${html}</div>`;
+            });
+}
+function verAtributosEmpleado(empleadoId) {
+    const contenedor = document.getElementById('contenidoModalJugador');
+    
+    contenedor.innerHTML = `
+        <div class="text-center p-5">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="mt-2 text-muted">Cargando informe técnico...</p>
+        </div>`;
+
+    const modalElement = document.getElementById('modalAtributos');
+    const bsModal = bootstrap.Modal.getOrCreateInstance(modalElement);
+    bsModal.show();
+
+    fetch(`/empleado/atributos/${empleadoId}`)
             .then(res => res.text())
             .then(html => {
                 contenedor.innerHTML = `<div class="p-3">${html}</div>`;

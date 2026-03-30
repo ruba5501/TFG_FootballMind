@@ -70,11 +70,11 @@
                 </p>
                 <div class="d-grid gap-2" id="contenedor-boton-lista">
                     <% if (estaEnListaObjetivos) { %>
-                        <button class="btn btn-outline-danger" onclick="gestionarListaObjetivos('<%= jugador._id %>', 'quitar')">
+                        <button class="btn btn-outline-danger" onclick="gestionarListaObjetivos('<%= jugador._id %>', 'quitar', 'jugador')">
                             <i class="bi bi-eye-slash-fill me-1"></i> Quitar de la Lista
                         </button>
                     <% } else { %>
-                        <button class="btn btn-outline-primary" onclick="gestionarListaObjetivos('<%= jugador._id %>', 'aniadir')">
+                        <button class="btn btn-outline-primary" onclick="gestionarListaObjetivos('<%= jugador._id %>', 'aniadir', 'jugador')">
                             <i class="bi bi-eye-fill me-1"></i> Añadir a Lista de Objetivos
                         </button>
                     <% } %>

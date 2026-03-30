@@ -38,7 +38,7 @@
                                                     <h6 class="fw-bold"><%= emp.nombre %></h6>
                                                     <small class="text-muted"><%= emp.tipo %></small>
                                                     <div class="mt-2">
-                                                        <button class="btn btn-outline-info btn-sm" onclick="verAtributos('<%= emp._id %>')">
+                                                        <button class="btn btn-outline-info btn-sm" onclick="verAtributosEmpleado('<%= emp._id %>')">
                                                             Detalles
                                                         </button>
                                                         <button class="btn btn-outline-danger btn-sm" onclick="confirmarDespido('<%= emp._id %>')">
@@ -95,7 +95,7 @@
 
                         <div class="col-md-2">
                             <label class="small">Cargo</label>
-                            <select name="posicion" class="form-select form-select-sm">
+                            <select name="cargo" class="form-select form-select-sm">
                                 <option value="">Todas</option>
                                 <option value="preFisico">preparador Físico</option>
                                 <option value="preTecnico">preparador Técnico</option>
@@ -141,7 +141,7 @@
                                     <label class="small">nivelFisico (Min - Max)</label>
                                     <div class="input-group input-group-sm">
                                         <input type="number" name="nivFisMin" class="form-control" placeholder="0">
-                                        <input type="number" name="nivFisgMax" class="form-control" placeholder="99">
+                                        <input type="number" name="nivFisMax" class="form-control" placeholder="99">
                                     </div>
                                 </div>
                                 <div class="col-md-2">
@@ -249,7 +249,7 @@
         <div class="tab-pane fade" id="tab-listaObjetivos">
             <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3">
                 <% listaObjetivos.forEach(empleado => { %>
-                    <div class="col" id="card-objetivo-<%= jugador._id %>">
+                    <div class="col" id="card-objetivo-<%= empleado._id %>">
                         <div class="card h-100 bg-dark text-white border-secondary shadow-sm">
                             <div class="card-body">
                                 <div class="d-flex justify-content-between align-items-start mb-2">
@@ -262,14 +262,14 @@
                                         <p class="text pt-3">
                                             <%= empleado.nacionalidad %> 
                                             <img src="/img/banderas/<%= empleado.nacionalidad %>.png"
-                                                alt="<%= jugador.nacionalidad %>" 
+                                                alt="<%= empleado.nacionalidad %>" 
                                                 class="ms-1 shadow-sm" 
                                                 style="height: 14px; width: auto; vertical-align: middle; border-radius: 2px;"
                                             > 
-                                            | <%= jugador.edad %> años
+                                            | <%= empleado.edad %> años
                                         </p>
                                         <strong>Club:</strong> 
-                                        <span class="<%= jugador.clubActual ? 'text-white' : 'text-success fw-bold' %>">
+                                        <span class="<%= empleado.clubActual ? 'text-white' : 'text-success fw-bold' %>">
                                             <% if (empleado.clubActual) { %>
                                                 <%= empleado.clubActual.nombre %>
                                                 <img src="/img/escudos/<%= empleado.clubActual.escudo %>" 
@@ -287,11 +287,11 @@
 
                                 <div class="d-grid gap-2">
                                     <div class="btn-group w-100">
-                                        <button class="btn btn-sm btn-outline-info" onclick="verAtributos('<%= jugador._id %>')">
+                                        <button class="btn btn-sm btn-outline-info" onclick="verAtributosEmpleado('<%= empleado._id %>')">
                                             <i class="bi bi-bar-chart-fill me-1"></i> Atributos
                                         </button>
                                         
-                                        <button class="btn btn-sm btn-outline-danger" onclick="gestionarListaObjetivos('<%= jugador._id %>', 'quitar')">
+                                        <button class="btn btn-sm btn-outline-danger" onclick="gestionarListaObjetivos('<%= empleado._id %>', 'quitar', 'empleado')">
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     </div>
@@ -315,15 +315,7 @@
     </div>
 </div>
 
-<div class="modal fade" id="modalAtributos" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header"><h5>Atributos del Empleado</h5></div>
-            <div class="modal-body" id="modalBodyAtributos">
-                </div>
-        </div>
-    </div>
-</div>
+<%- include('partials/modal_atributos') %>
 
 <script src="/js/plantilla.js"></script>
 <script src="/js/buscadorTraspasos.js"></script>

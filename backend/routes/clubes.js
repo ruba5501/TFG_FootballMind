@@ -5,6 +5,7 @@ const clubesDAO = require('../daos/clubesDAO');
 const competicionesDAO = require('../daos/competicionesDAO');
 const Club = require('../models/club');
 const Jugador = require('../models/jugador');
+const Empleado = require('../models/empleado');
 const Competicion = require('../models/competicion');
 const { requireLogin } = require('../middleware/autenticacion');
 const { FORMACIONES } = require('../service/cargarFormaciones');
@@ -417,14 +418,17 @@ clubRouter.get('/traspasos/buscar/:partidaId', requireLogin, async (req, res) =>
         res.status(500).send("Error en la búsqueda");
     }
 });
-clubRouter.post('/listaObjetivos/aniadir/:id', async (req, res) => {
+clubRouter.post('/listaObjetivos/aniadir/:tipo/:id', async (req, res) => {
     try {
-        const jugador = await Jugador.findById(req.params.id);
-        const partida = await partidasDAO.obtenerPartidaPorId(jugador.partidaId);
+        const esEmpleado = (req.params.tipo === 'empleado') ? Empleado : Jugador;
+        const esListaEmpleados = (req.params.tipo === 'empleado') ? 'listaObjetivosEmpleados' : 'listaObjetivos';
+        
+        const entidad = await esEmpleado.findById(req.params.id);
+        const partida = await partidasDAO.obtenerPartidaPorId(entidad.partidaId);
         const clubSeleccionado = await clubesDAO.buscarClubPorId(partida.clubSeleccionado);
         
         await clubesDAO.actualizarClub(clubSeleccionado, {
-            $addToSet: { listaObjetivos: jugador._id }
+            $addToSet: { [esListaEmpleados]: entidad._id }
         });
 
         res.json({ success: true });
@@ -432,14 +436,17 @@ clubRouter.post('/listaObjetivos/aniadir/:id', async (req, res) => {
         res.json({ success: false, message: error.message });
     }
 });
-clubRouter.post('/listaObjetivos/quitar/:id', async (req, res) => {
+clubRouter.post('/listaObjetivos/quitar/:tipo/:id', async (req, res) => {
     try {
-        const jugador = await Jugador.findById(req.params.id);
-        const partida = await partidasDAO.obtenerPartidaPorId(jugador.partidaId);
+        const esEmpleado = (req.params.tipo === 'empleado') ? Empleado : Jugador;
+        const esListaEmpleados = (req.params.tipo === 'empleado') ? 'listaObjetivosEmpleados' : 'listaObjetivos';
+        
+        const entidad = await esEmpleado.findById(req.params.id);
+        const partida = await partidasDAO.obtenerPartidaPorId(entidad.partidaId);
         const clubSeleccionado = await clubesDAO.buscarClubPorId(partida.clubSeleccionado);
         
         await clubesDAO.actualizarClub(clubSeleccionado, {
-            $pull: { listaObjetivos: jugador._id }
+            $pull: { [esListaEmpleados]: entidad._id }
         });
 
         res.json({ success: true });

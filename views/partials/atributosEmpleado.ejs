@@ -1,0 +1,19 @@
+<div class="row g-3 mb-4 bg-white rounded p-3 shadow-sm border">
+    <div class="d-flex align-items-center justify-content-center">
+        <span class="badge bg-dark fs-5 me-2" title="cargo">
+            <%= empleado.tipo %>
+        </span>
+    </div>
+</div>
+<div class="row row-cols-2 g-3">
+    <% Object.entries(empleado.atributos).forEach(([attr, valor]) => { %>
+        <div class="col">
+            <li class="d-flex justify-content-between border-bottom py-1">
+                <span><%= attr %></span>
+                <span class="fw-bold <%= valor > 80 ? 'text-success' : (valor > 60 ? 'text-warning' : 'text-danger') %>">
+                    <%= valor %>
+                </span>
+            </li>
+        </div>
+    <% }) %>
+</div>

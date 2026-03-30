@@ -1,0 +1,44 @@
+<div class="p-3">
+    <div class="row border-bottom mb-3">
+        <div>
+            <h2 class="mb-2"><%= empleado.nombre %></h2>
+        </div>
+        <p class="text-muted pt-3">
+                <%= empleado.tipo %> | 
+                <%= empleado.nacionalidad %> 
+                <img src="/img/banderas/<%= empleado.nacionalidad %>.png"
+                    alt="<%= empleado.nacionalidad %>" 
+                    class="ms-1 shadow-sm" 
+                    style="height: 14px; width: auto; vertical-align: middle; border-radius: 2px;"
+                > 
+                | <%= empleado.edad %> años</p>
+    </div>
+
+    <ul class="nav nav-tabs mb-3" id="empleadoTabs" role="tablist">
+        <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-atributos">Atributos</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-fichar">Ojear</button></li>
+    </ul>
+
+    <div class="tab-content">
+        <div class="tab-pane fade show active" id="tab-atributos">
+            <%- include('atributosEmpleado', { empleado: empleado }) %>
+        </div>
+
+        <div class="tab-pane fade" id="tab-fichar">
+            <div class="card p-3 mb-3 border-info">
+                <p><strong>Salario:</strong> <%= (empleado.salario / 12).toLocaleString() %> €/mes (<%= empleado.salario.toLocaleString() %>)</p>
+                <div class="d-grid gap-2" id="contenedor-boton-lista">
+                    <% if (estaEnListaObjetivos) { %>
+                        <button class="btn btn-outline-danger" onclick="gestionarListaObjetivos('<%= empleado._id %>', 'quitar', 'empleado')">
+                            <i class="bi bi-eye-slash-fill me-1"></i> Quitar de la Lista
+                        </button>
+                    <% } else { %>
+                        <button class="btn btn-outline-primary" onclick="gestionarListaObjetivos('<%= empleado._id %>', 'aniadir', 'empleado')">
+                            <i class="bi bi-eye-fill me-1"></i> Añadir a Lista de Objetivos
+                        </button>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
