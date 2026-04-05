@@ -491,7 +491,8 @@ clubRouter.get('/objetivo/detalleTraspaso/:id', requireLogin, async (req, res) =
             tipo: tipo,
             objetivo: objetivo,
             clubObjetivo: objetivo.clubActual || null,
-            miClub: partida.clubSeleccionado 
+            miClub: partida.clubSeleccionado,
+            fechaActual: partida.fechaActual
         });
 
     } catch (error) {

@@ -273,6 +273,8 @@ async function negociarTraspasoClub(jugadorId) {
     const data = await response.json();
     const o = data.objetivo;
     const c = data.clubObjetivo;
+    const cu = data.miClub;
+
     
     // 2. Poblar Modal
     document.getElementById('infoNombre').innerText = o.nombre;
@@ -305,10 +307,26 @@ async function negociarTraspasoClub(jugadorId) {
         imgBandera.style.display = 'none';
     }
     // 3. Lógica de Interés (Frontend-Simulada antes de enviar)
-    const interes = calcularInteres(o, data.miClub.reputacion);
+    const interes = calcularInteres(o, data.clubObjetivo.reputacion, data.miClub.reputacion, data.fechaActual);
     const barra = document.getElementById('barraInteres');
     barra.style.width = interes + '%';
-    barra.className = `progress-bar ${interes < 40 ? 'bg-danger' : (interes < 70 ? 'bg-warning' : 'bg-success')}`;
+    if (interes < 20) {
+        barra.className = 'progress-bar bg-danger'; 
+    } else if (interes < 40) {
+        barra.className = 'progress-bar';
+        barra.style.backgroundColor = '#fd7e14'; 
+    } else if (interes < 60) {
+        // Amarillo
+        barra.className = 'progress-bar bg-warning text-dark';
+        barra.style.backgroundColor = ''; 
+    } else if (interes < 85) {
+        barra.className = 'progress-bar bg-success';
+        barra.style.backgroundColor = '';
+    } else {
+        barra.className = 'progress-bar';
+        barra.style.backgroundColor = '#155724'; 
+    }
+
     document.getElementById('textoInteres').innerText = obtenerLabelInteres(interes);
 
     // 4. Mostrar modal
@@ -331,23 +349,80 @@ document.getElementById('clausulaCompraCheck').addEventListener('change', (e) =>
     document.getElementById('valorClausula').classList.toggle('d-none', !e.target.checked);
 });
 
-function calcularInteres(j, tuRep) {
-    // Lógica que pediste:
+function calcularInteres(j, clubOrigen, tuClub, fechaActualPartida) {
     let score = 50;
-    // Si el jugador es crack y tu club es pequeño
-    if (j.media > tuRep + 10) score -= 30;
-    // Si el jugador es joven promesa y tu club tiene alta reputación
-    if (j.potencial > 85 && tuRep > 70) score += 20;
-    // Si no juega en su club (basado en stats que deberías tener)
-    if (j.minutosJugados < 500) score += 15;
+    const difClubes = tuClub - clubOrigen;
+    const nivelJugadorVsClubActual = j.valoracion - clubOrigen;
+    const esJovenPromesa = j.edad < 23 && j.potencial > 80;
+    const hoy = new Date(fechaActualPartida);
+    const fin = new Date(j.finContrato);
+    const mesesRestantes = (fin.getFullYear() - hoy.getFullYear()) * 12 + (fin.getMonth() - hoy.getMonth());
+
+    // Si tu club es mucho más prestigioso que el suyo
+    if (difClubes > 20){ score += 45; }
+    // Salto importante
+    else if (difClubes > 10){ score += 25; }
+    // Si tu club es inferior 
+    else if (difClubes < -15) {
+        if (j.rolEquipo !== 'clave' && j.rolEquipo !== 'titular') {
+            score += 5;
+        } else {
+            score -= 40; 
+        }
+    }
+    // Si son clubes de nivel similar
+    else score += (difClubes * 2.5); 
+    // Si el jugador es demasiado bueno para su club actual
+    if (nivelJugadorVsClubActual > 5) {
+        score += 15;
+        if (tuClub > clubOrigen) score += 10;
+    }
+    //Si el jugador es demasiado bueno para tu club
+    if (j.valoracion > tuClub + 12) score -= 35;
+    // Si es "Clave" en un club
+    if (j.rolEquipo === 'clave') {
+        if (difClubes < -5) {
+            // Si tu club es peor
+            score -= 25;
+        } else {
+            // Si tu club es mejor
+            score += 15; 
+        }
+    }
+    // Si esta descontento en su club actual
+    if (j.estado.satisfaccion < 40) score += 30;
+    else if (j.estado.satisfaccion < 60) score += 15;
+    else if (j.estado.satisfaccion > 85) score -= 10;
     
+    if (esJovenPromesa) {
+        // Si es juven promesa y tu club es importante
+        if (tuClub > 80) score += 15;
+        // O si tu club no lo es 
+        if (tuClub < 60) score -= 20;
+    }
+    //Le quedan 6 meses o menos
+    if (mesesRestantes <= 6) {
+        if (tuClub >= clubOrigen - 10) score += 30; 
+        else score += 15;
+    } 
+    // Le queda entre 7 y 12 meses 
+    else if (mesesRestantes <= 12) {
+        score += 10;
+    }
+    // Contrato muy largo
+    else if (mesesRestantes > 36) {
+        score -= 10;
+    }
     return Math.min(100, Math.max(0, score));
 }
 
 function obtenerLabelInteres(val) {
-    if (val < 30) return "No está muy convencido de venir.";
-    if (val < 60) return "Dispuesto a escuchar ofertas.";
-    return "Deseando unirse a tu proyecto.";
+    if (val < 20) return "No esta muy dispuesto a negociar asique será difícil ficharle";
+    if (val < 40) return "No está demasiado interesado.";
+    if (val < 60) return "Abierto a negociar.";
+    if (val < 85) return "Esta interesado en negociar.";
+    if (val < 100) return "Muy interesado.";
+
 }
 
 async function enviarOfertaFinal() {
