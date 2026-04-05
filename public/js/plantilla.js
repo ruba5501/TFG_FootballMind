@@ -247,33 +247,134 @@ function subirPrimerEquipo(id) {
     }
 }
 
+
+
+
+
+
+
+
+
+
+
+
+let modalObj;
+
+document.addEventListener('DOMContentLoaded', () => {
+    modalObj = new bootstrap.Modal(document.getElementById('modalNegociacion'));
+});
+
 async function negociarTraspasoClub(jugadorId) {
-    const oferta = prompt("El club pide una negociación. ¿Cuánto ofreces por el traspaso? (€)");
+    let currentJugadorId = jugadorId;
+    const modalObj = new bootstrap.Modal(document.getElementById('modalNegociacion'));
+
+    // 1. Obtener datos extendidos del jugador (necesitas un endpoint que devuelva esto)
+    const response = await fetch(`/objetivo/detalleTraspaso/${jugadorId}`);
+    const data = await response.json();
+    const o = data.objetivo;
+    const c = data.clubObjetivo;
     
-    if (oferta && !isNaN(oferta)) {
-        try {
-            const res = await fetch(`/fichajes/oferta-club/${jugadorId}`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ oferta: parseInt(oferta) })
-            });
-            const data = await res.json();
-            
-            if (data.success) {
-                alert("¡Acuerdo alcanzado con el club! Ahora negocia el contrato con el jugador.");
-                location.reload(); 
-            } else {
-                alert("El club ha rechazado la oferta. Piden al menos " + data.precioMinimo + "€");
-            }
-        } catch (e) {
-            console.error(e);
-        }
+    // 2. Poblar Modal
+    document.getElementById('infoNombre').innerText = o.nombre;
+    document.getElementById('infoClub').innerText = c ? c.nombre : 'Agente Libre';    
+    document.getElementById('infoMedia').innerText = `Media: ${o.valoracion}`;
+    document.getElementById('infoPotencial').innerText = `Pot: ${o.potencial}`;
+    document.getElementById('infoValor').innerText = `${o.valorMercado.toLocaleString()} €`;
+    document.getElementById('infoSalario').innerText = `${(o.salario / 12).toLocaleString()} €/mes (${o.salario.toLocaleString()})`;
+    const fecha = new Date(o.finContrato);
+    const fechaFormateada = fecha.toLocaleDateString('es-ES', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+    });
+    document.getElementById('infoContratoFin').innerText = fechaFormateada;
+
+    const imgEscudo = document.getElementById('infoEscudo');
+    if (c && c.escudo) {
+        imgEscudo.src = `/img/escudos/${c.escudo}`;
+        imgEscudo.style.display = 'block';
+    } else {
+        imgEscudo.style.display = 'none';
     }
+
+    const imgBandera = document.getElementById('infoBandera');
+    if (o.nacionalidad) {
+        imgBandera.src = `/img/banderas/${o.nacionalidad}.png`; 
+        imgBandera.style.display = 'block';
+    } else {
+        imgBandera.style.display = 'none';
+    }
+    // 3. Lógica de Interés (Frontend-Simulada antes de enviar)
+    const interes = calcularInteres(o, data.miClub.reputacion);
+    const barra = document.getElementById('barraInteres');
+    barra.style.width = interes + '%';
+    barra.className = `progress-bar ${interes < 40 ? 'bg-danger' : (interes < 70 ? 'bg-warning' : 'bg-success')}`;
+    document.getElementById('textoInteres').innerText = obtenerLabelInteres(interes);
+
+    // 4. Mostrar modal
+    modalObj.show();
 }
 
-function iniciarNegociacionContrato(jugadorId) {
-    window.location.href = `/fichajes/contrato/${jugadorId}`;
+// Lógica de UI para cambiar entre Traspaso y Cesión
+document.getElementsByName('modoNegoc').forEach(radio => {
+    radio.addEventListener('change', (e) => {
+        document.getElementById('camposTraspaso').classList.toggle('d-none', e.target.id !== 'modoTraspaso');
+        document.getElementById('camposCesion').classList.toggle('d-none', e.target.id !== 'modoCesion');
+    });
+});
+
+document.getElementById('porcentajeSueldo').addEventListener('input', (e) => {
+    document.getElementById('valSueldo').innerText = e.target.value;
+});
+
+document.getElementById('clausulaCompraCheck').addEventListener('change', (e) => {
+    document.getElementById('valorClausula').classList.toggle('d-none', !e.target.checked);
+});
+
+function calcularInteres(j, tuRep) {
+    // Lógica que pediste:
+    let score = 50;
+    // Si el jugador es crack y tu club es pequeño
+    if (j.media > tuRep + 10) score -= 30;
+    // Si el jugador es joven promesa y tu club tiene alta reputación
+    if (j.potencial > 85 && tuRep > 70) score += 20;
+    // Si no juega en su club (basado en stats que deberías tener)
+    if (j.minutosJugados < 500) score += 15;
+    
+    return Math.min(100, Math.max(0, score));
 }
+
+function obtenerLabelInteres(val) {
+    if (val < 30) return "No está muy convencido de venir.";
+    if (val < 60) return "Dispuesto a escuchar ofertas.";
+    return "Deseando unirse a tu proyecto.";
+}
+
+async function enviarOfertaFinal() {
+    const esTraspaso = document.getElementById('modoTraspaso').checked;
+    const body = {
+        tipo: esTraspaso ? 'traspaso' : 'cesion',
+        precio: document.getElementById('ofertaPrecio').value,
+        // ... capturar el resto de campos
+    };
+
+    // Aquí llamarías a tu ruta de backend enviando currentJugadorId
+    console.log("Enviando oferta por:", currentJugadorId, body);
+}
+
+function iniciarNegociacionContrato(id) {
+    window.location.href = `/fichajes/contrato/${id}`;
+}
+
+
+
+
+
+
+
+
+
+
 
 function verAtributos(jugadorId) {
     const contenedor = document.getElementById('contenidoModalJugador');

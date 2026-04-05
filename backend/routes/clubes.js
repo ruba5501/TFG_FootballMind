@@ -3,10 +3,12 @@ const clubRouter = express.Router();
 const partidasDAO = require('../daos/partidasDAO');
 const clubesDAO = require('../daos/clubesDAO');
 const competicionesDAO = require('../daos/competicionesDAO');
+const Partida = require('../models/partida');
 const Club = require('../models/club');
 const Jugador = require('../models/jugador');
 const Empleado = require('../models/empleado');
 const Competicion = require('../models/competicion');
+const Negociocion = require('../models/negociacion');
 const { requireLogin } = require('../middleware/autenticacion');
 const { FORMACIONES } = require('../service/cargarFormaciones');
 
@@ -454,4 +456,85 @@ clubRouter.post('/listaObjetivos/quitar/:tipo/:id', async (req, res) => {
         res.json({ success: false, message: error.message });
     }
 });
+
+
+
+
+
+
+
+
+
+
+clubRouter.get('/objetivo/detalleTraspaso/:id', requireLogin, async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        let objetivo = await Jugador.findById(id).populate('clubActual').lean();
+        let tipo = 'jugador';
+
+        if (!objetivo) {
+            objetivo = await Empleado.findById(id).populate('clubActual').lean();
+            tipo = 'empleado';
+        }
+
+        if (!objetivo) {
+            return res.status(404).json({ success: false, message: "No se encontró el perfil" });
+        }
+
+        const partida = await Partida.findById(objetivo.partidaId)
+                                           .populate('clubSeleccionado')
+                                           .lean();
+
+        res.json({
+            success: true,
+            tipo: tipo,
+            objetivo: objetivo,
+            clubObjetivo: objetivo.clubActual || null,
+            miClub: partida.clubSeleccionado 
+        });
+
+    } catch (error) {
+        console.error("Error en detalleTraspaso:", error);
+        res.status(500).json({ success: false, message: "Error interno del servidor" });
+    }
+});
+
+function calcularValorEstrategico(jugador, clubVendedor) {
+    let multiplicador = 1.0;
+
+    // 1. Importancia en el equipo (Clave, Rotación, Descarte)
+    if (jugador.rol === 'clave') multiplicador += 0.5; 
+    if (jugador.rol === 'descarte') multiplicador -= 0.2;
+
+    // 2. Reputación del Club (Escala 1-100)
+    // Un club top no necesita vender por dinero, pide más.
+    multiplicador += (clubVendedor.reputacion / 200); 
+
+    // 3. Situación de Contrato
+    if (jugador.añosContrato < 1) multiplicador -= 0.3; // Si acaba contrato, venden barato
+
+    return jugador.valorMercado * multiplicador;
+}
+
+clubRouter.post('/fichajes/ofertaTraspaso/:jugadorId', async (req, res) => {
+    const { oferta } = req.body;
+    const jugador = await Jugador.findById(req.params.jugadorId).populate('club');
+    
+    const precioVentaIA = calcularValorEstrategico(jugador, jugador.club);
+
+    if (oferta >= precioVentaIA) {
+        return res.json({ success: true, mensaje: "Aceptamos la oferta." });
+    } else if (oferta >= precioVentaIA * 0.8) {
+        const contraOferta = Math.floor(precioVentaIA);
+        return res.json({ success: false, mensaje: "Es poco, pero podemos negociar.", contraOferta });
+    } else {
+        return res.json({ success: false, mensaje: "Oferta insultante. No vendemos." });
+    }
+});
+
+clubRouter.post('/fichajes/contrato/:id', async (req, res) => {
+    
+});
+
 module.exports = clubRouter;

@@ -45,14 +45,14 @@ async function generarEmpleadosNuevaPartida(partidaId, listaClubes, nombrePartid
 
                 for (let i = 0; i < cantidadACrear; i++) {
                     const idEmpleado = new mongoose.Types.ObjectId();
-                    const resultado = obtenerIdentidad(club.pais, club.reputacion, true, 0);
+                    const resultado = obtenerIdentidad(club.pais, club.reputacion, true, 0, new Date(2025, 6, 1));
                     const nombre = resultado.nombreCompleto;
                     const nacionalidad = resultado.nacionalidad;
                     const nivelBase = calcularNivelBase(club.reputacion);
                     const atributosGenerados = generarAtributosPorRol(conf.rol, nivelBase);
                     const empleadoTemporal = { tipo: conf.rol, atributos: atributosGenerados };
                     const salario = calcularSalarioEmpleado(empleadoTemporal, club.reputacion);
-
+                    const finContrato = resultado.finContrato;
                     todosLosEmpleados.push({
                         _id: idEmpleado,
                         partidaId: partidaId,
@@ -66,7 +66,8 @@ async function generarEmpleadosNuevaPartida(partidaId, listaClubes, nombrePartid
                         estado: 'libre',
                         paisDestino: null,
                         fechaRegreso: null,
-                        salario: salario
+                        salario: salario,
+                        finContrato: finContrato,
                     });
 
                     idsEmpleadosDelClub.push(idEmpleado);

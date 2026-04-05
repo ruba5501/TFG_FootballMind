@@ -47,6 +47,7 @@ const jugadorSchema = new mongoose.Schema({
 
   valorMercado: Number,
   salario: Number,
+  finContrato: { type: Date, required: true },
   valoracion: { type: Number, min: 0, max: 100, default: 0 },
   potencial: { type: Number, min: 0, max: 100, default: 0 },
 

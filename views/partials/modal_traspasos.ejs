@@ -1,0 +1,109 @@
+<div class="modal fade" id="modalNegociacion" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-dark text-white">
+                <h5 class="modal-title" id="tituloModal">Negociación de Fichaje</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-0">
+                <div class="row g-0">
+                    <div class="col-lg-5 bg-light p-4 border-end">
+                        <div class="text-center mb-4">
+                            <div id="avatarTexto" class="fs-1">👤</div>
+                            <div class="d-flex align-items-center justify-content-center mt-1">                                <h3 id="infoNombre" class="mb-0">---</h3>
+                                <img id="infoBandera" src="" alt="Nacionalidad" class="ms-2" style="width: 30px; height: 30px; object-fit: contain; display: none;">
+                            </div>
+                            
+                            <div class="d-flex align-items-center justify-content-center mt-1">
+                                <p id="infoClub" class="text-muted mb-0">---</p>
+                                <img id="infoEscudo" src="" alt="Escudo" class="ms-2" style="width: 30px; height: 30px; object-fit: contain; display: none;">
+                            </div>
+                            <div class="d-flex justify-content-center gap-2">
+                                <span class="badge bg-primary" id="infoMedia">Media: --</span>
+                                <span class="badge bg-info" id="infoPotencial">Pot: --</span>
+                            </div>
+                        </div>
+
+                        <div class="card shadow-sm mb-3">
+                            <div class="card-body">
+                                <label class="small text-uppercase fw-bold text-muted">Interés en unirse</label>
+                                <div class="progress mt-1" style="height: 10px;">
+                                    <div id="barraInteres" class="progress-bar bg-success" style="width: 0%"></div>
+                                </div>
+                                <small id="textoInteres" class="text-muted">Calculando interés...</small>
+                            </div>
+                        </div>
+
+                        <ul class="list-group list-group-flush rounded shadow-sm">
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>Valor de Mercado</span>
+                                <strong id="infoValor">0 €</strong>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>Salario</span>
+                                <strong id="infoSalario">0 €</strong>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>Contrato hasta</span>
+                                <strong id="infoContratoFin">----</strong>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="col-lg-7 p-4">
+                        <div class="btn-group w-100 mb-4" role="group">
+                            <input type="radio" class="btn-check" name="modoNegoc" id="modoTraspaso" checked>
+                            <label class="btn btn-outline-dark" for="modoTraspaso">Traspaso</label>
+                            
+                            <input type="radio" class="btn-check" name="modoNegoc" id="modoCesion">
+                            <label class="btn btn-outline-dark" for="modoCesion">Cesión</label>
+                        </div>
+
+                        <form id="formOferta">
+                            <div id="camposTraspaso">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Precio del Traspaso (€)</label>
+                                    <input type="number" class="form-control form-control-lg" id="ofertaPrecio" placeholder="0">
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label small">Porcentaje Futura Venta (%)</label>
+                                        <input type="number" class="form-control" id="futuraVenta" placeholder="Opcional">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label small">Precio Recompra (€)</label>
+                                        <input type="number" class="form-control" id="precioRecompra" placeholder="Opcional">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="camposCesion" class="d-none">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Duración de la Cesión</label>
+                                    <input type="text" class="form-control" value="1 Temporada (Hasta el 30 de Junio)" readonly>
+                                    <input type="hidden" id="duracionCesion" value="1">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label small">% Sueldo a cargo de tu club</label>
+                                    <input type="range" class="form-range" id="porcentajeSueldo" min="0" max="100" step="10">
+                                    <div class="text-center fw-bold"><span id="valSueldo">50</span>%</div>
+                                </div>
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" id="clausulaCompraCheck">
+                                    <label class="form-check-label">Incluir Cláusula de Compra</label>
+                                </div>
+                                <input type="number" class="form-control d-none mb-3" id="valorClausula" placeholder="Precio de compra (€)">
+                            </div>
+
+                            <div class="d-grid mt-4">
+                                <button type="button" onclick="enviarOfertaFinal()" class="btn btn-success btn-lg">
+                                    Enviar Propuesta Oficial
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

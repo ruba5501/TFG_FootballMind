@@ -188,7 +188,7 @@ async function generarJugadoresNuevaPartida(partidaId, listaClubes, nombrePartid
                 const edad = generarEdad(rolInterno, club.esFilial, posicion);
                 const ratings = calcularRatings(rolInterno, rep, repMatriz, club.esFilial, edad, club.infraestructuras.cantera);
                 const fisico = generarFisico(posicion, arquetipo);
-                const { nombreCompleto, nacionalidad } = obtenerIdentidad(club.pais, rep, false, ratings.ca);      
+                const { nombreCompleto, nacionalidad, finContrato } = obtenerIdentidad(club.pais, rep, false, ratings.ca, new Date(2025, 6, 1));      
                 const idJugador = new mongoose.Types.ObjectId();
                 if (i < 11) {
                     idsTitulares.push(idJugador);
@@ -220,6 +220,7 @@ async function generarJugadoresNuevaPartida(partidaId, listaClubes, nombrePartid
                     atributos: generarAtributos(posicion, ratings.ca, arquetipo),
                     valorMercado: calcularValorMercado(ratings.ca, ratings.pa, edad),
                     salario: calcularSalario(ratings.ca, ratings.pa, edad, rep),
+                    finContrato: finContrato,
                     estado: { forma: 100, moral: Math.floor(Math.random() * 21) + 80, satisfaccion: 100, lesion: null },
                     statsTemporada: competicionesDelClub.map(compId => ({
                         competicionId: compId,

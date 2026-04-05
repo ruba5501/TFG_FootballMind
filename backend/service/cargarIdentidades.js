@@ -381,7 +381,7 @@ const MAPEO_REGIONES = {
 
 const filtrar = (array, paisAExcluir) => array.filter(p => p !== paisAExcluir);
 
-function obtenerIdentidad(paisClub, reputacion, esEmpleado, media = 60) {
+function obtenerIdentidad(paisClub, reputacion, esEmpleado, media = 60, fechaActualPartida) {
     let nacionalidad = paisClub;
     let esExtranjero = false;
     const esSudamerica = PAISES_ALTOS_SUD.includes(paisClub);
@@ -499,7 +499,14 @@ function obtenerIdentidad(paisClub, reputacion, esEmpleado, media = 60) {
 
     const nombre = pool.nombres[Math.floor(Math.random() * pool.nombres.length)];
     const apellido = pool.apellidos[Math.floor(Math.random() * pool.apellidos.length)];
-
-    return { nombreCompleto: `${nombre} ${apellido}`, nacionalidad: nacionalidad };
+    const minAnios = 1;
+    const maxAnios = 5;
+    const aniosContrato = Math.floor(Math.random() * (maxAnios - minAnios + 1)) + minAnios;
+    const fechaFin = new Date(fechaActualPartida);
+    fechaFin.setFullYear(fechaFin.getFullYear() + aniosContrato);
+    fechaFin.setMonth(5);
+    fechaFin.setDate(30);
+    fechaFin.setHours(23, 59, 59);
+    return { nombreCompleto: `${nombre} ${apellido}`, nacionalidad: nacionalidad , finContrato: fechaFin};
 }
 module.exports = { obtenerIdentidad };

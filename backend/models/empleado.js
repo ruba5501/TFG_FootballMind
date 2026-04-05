@@ -19,6 +19,7 @@ const empleadoSchema = new mongoose.Schema({
   paisDestino: { type: String, default: null },
   fechaRegreso: { type: Date, default: null },
   salario: { type: Number, default: 0 },
+  finContrato: { type: Date, required: true },
   tipo: { 
     type: String,
     enum: [

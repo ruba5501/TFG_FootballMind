@@ -188,6 +188,8 @@ partidaRouter.get('/crearPartida/final', requireLogin, async (req, res) => {
       entrenadorId,
       partidaId
     );
+    
+    const fechaFinContrato = new Date(2026, 5, 30, 23, 59, 59);
 
     const entrenador = await empleadoDAO.crearEmpleado({
       _id: entrenadorId,
@@ -200,7 +202,8 @@ partidaRouter.get('/crearPartida/final', requireLogin, async (req, res) => {
       clubActual: clubJugador._id,
       atributos: atributosCompletos,
       salario: salarioUsuario, 
-      estado: 'libre'
+      estado: 'libre',
+      finContrato: fechaFinContrato,
     });
 
     await generarJugadores(partidaId, clubes, datos.nombrePartida);
@@ -333,6 +336,37 @@ partidaRouter.get('/guardar-y-salir/:id', requireLogin, async (req, res) => {
         res.redirect('/opcionPartida');
     }
 });
+
+
+
+
+
+
+async function simularFichajesIA(clubIA) {
+    // 1. Analizar huecos (Ej: ¿Tiene menos de 2 porteros?)
+    const posicionesDebiles = analizarPlantilla(clubIA); 
+
+    if (posicionesDebiles.length > 0) {
+        // 2. Buscar candidatos que pueda pagar
+        const candidatos = await Jugador.find({ 
+            posicion: posicionesDebiles[0],
+            valorMercado: { $lte: clubIA.presupuesto * 0.6 } // No gasta todo en uno
+        }).limit(5);
+
+        // 3. Ejecutar fichaje si encuentra a alguien que mejore lo que tiene
+        if (candidatos.length > 0) {
+            const elegido = candidatos[0];
+            await realizarTraspaso(elegido, clubIA);
+            console.log(`${clubIA.nombre} ha fichado a ${elegido.nombre}`);
+        }
+    }
+}
+
+
+
+
+
+
 
 partidaRouter.get('/avanzar-fecha/:id', requireLogin, async (req, res) => {
     try {
