@@ -63,16 +63,16 @@
                             <div id="camposTraspaso">
                                 <div class="mb-3">
                                     <label class="form-label fw-bold">Precio del Traspaso (€)</label>
-                                    <input type="number" class="form-control form-control-lg" id="ofertaPrecio" placeholder="0">
+                                    <input type="number" class="form-control form-control-lg" id="ofertaPrecio" placeholder="0" min="0">
                                 </div>
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
                                         <label class="form-label small">Porcentaje Futura Venta (%)</label>
-                                        <input type="number" class="form-control" id="futuraVenta" placeholder="Opcional">
+                                        <input type="number" class="form-control" id="futuraVenta" placeholder="Opcional" min="0" max="100">
                                     </div>
                                     <div class="col-md-6 mb-3">
                                         <label class="form-label small">Precio Recompra (€)</label>
-                                        <input type="number" class="form-control" id="precioRecompra" placeholder="Opcional">
+                                        <input type="number" class="form-control" id="precioRecompra" placeholder="Opcional" min="0">
                                     </div>
                                 </div>
                             </div>
@@ -92,11 +92,11 @@
                                     <input class="form-check-input" type="checkbox" id="clausulaCompraCheck">
                                     <label class="form-check-label">Incluir Cláusula de Compra</label>
                                 </div>
-                                <input type="number" class="form-control d-none mb-3" id="valorClausula" placeholder="Precio de compra (€)">
+                                <input type="number" class="form-control d-none mb-3" id="valorClausula" placeholder="Precio de compra (€)" min="0">
                             </div>
 
                             <div class="d-grid mt-4">
-                                <button type="button" onclick="enviarOfertaFinal()" class="btn btn-success btn-lg">
+                                <button type="button" onclick="enviarOferta()" class="btn btn-success btn-lg">
                                     Enviar Propuesta Oficial
                                 </button>
                             </div>

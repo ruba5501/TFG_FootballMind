@@ -265,6 +265,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 async function negociarTraspasoClub(jugadorId) {
+    document.getElementById('formOferta').reset();
     let currentJugadorId = jugadorId;
     const modalObj = new bootstrap.Modal(document.getElementById('modalNegociacion'));
 
@@ -277,6 +278,7 @@ async function negociarTraspasoClub(jugadorId) {
 
     
     // 2. Poblar Modal
+    document.getElementById('formOferta').dataset.jugadorId = jugadorId;
     document.getElementById('infoNombre').innerText = o.nombre;
     document.getElementById('infoClub').innerText = c ? c.nombre : 'Agente Libre';    
     document.getElementById('infoMedia').innerText = `Media: ${o.valoracion}`;
@@ -425,16 +427,43 @@ function obtenerLabelInteres(val) {
 
 }
 
-async function enviarOfertaFinal() {
+function enviarOferta() {
+    const jugadorId = document.getElementById('formOferta').dataset.jugadorId;
     const esTraspaso = document.getElementById('modoTraspaso').checked;
-    const body = {
-        tipo: esTraspaso ? 'traspaso' : 'cesion',
-        precio: document.getElementById('ofertaPrecio').value,
-        // ... capturar el resto de campos
+    
+    let payload = {
+        jugadorId: jugadorId,
+        tipo: esTraspaso ? 'traspaso' : 'cesion'
     };
 
-    // Aquí llamarías a tu ruta de backend enviando currentJugadorId
-    console.log("Enviando oferta por:", currentJugadorId, body);
+    if (esTraspaso) {
+        const precio = parseFloat(document.getElementById('ofertaPrecio').value);
+        if (!precio || precio <= 0) {
+            return alert("Por favor, introduce un precio de traspaso válido (mayor a 0).");
+        }
+        payload.precio = precio;
+        payload.futuraVenta = parseFloat(document.getElementById('futuraVenta').value) || 0;
+        payload.precioRecompra = parseFloat(document.getElementById('precioRecompra').value) || 0;
+
+        // Validar que no pongan -5% en futura venta
+        if (payload.futuraVenta < 0 || payload.precioRecompra < 0) {
+            return alert("Los valores opcionales no pueden ser negativos.");
+        }
+
+    } else {
+        payload.porcentajeSueldo = parseInt(document.getElementById('porcentajeSueldo').value);
+        
+        if (document.getElementById('clausulaCompraCheck').checked) {
+            const clausula = parseFloat(document.getElementById('valorClausula').value);
+            if (!clausula || clausula <= 0) {
+                return alert("Si incluyes cláusula de compra, debe tener un valor mayor a 0.");
+            }
+            payload.clausulaCompra = clausula;
+        }
+    }
+
+    console.log("Enviando propuesta:", payload);
+    // Aquí iría tu fetch('/objetivo/enviarOferta', { method: 'POST', body: JSON.stringify(payload) ... })
 }
 
 function iniciarNegociacionContrato(id) {
