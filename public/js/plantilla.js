@@ -427,47 +427,149 @@ function obtenerLabelInteres(val) {
 
 }
 
-function enviarOferta() {
+async function enviarOferta() {
     const jugadorId = document.getElementById('formOferta').dataset.jugadorId;
     const esTraspaso = document.getElementById('modoTraspaso').checked;
     
-    let payload = {
-        jugadorId: jugadorId,
+    let oferta = {
         tipo: esTraspaso ? 'traspaso' : 'cesion'
     };
 
+    // ... (Mantén tus validaciones de precios negativos aquí) ...
     if (esTraspaso) {
-        const precio = parseFloat(document.getElementById('ofertaPrecio').value);
-        if (!precio || precio <= 0) {
-            return alert("Por favor, introduce un precio de traspaso válido (mayor a 0).");
-        }
-        payload.precio = precio;
-        payload.futuraVenta = parseFloat(document.getElementById('futuraVenta').value) || 0;
-        payload.precioRecompra = parseFloat(document.getElementById('precioRecompra').value) || 0;
-
-        // Validar que no pongan -5% en futura venta
-        if (payload.futuraVenta < 0 || payload.precioRecompra < 0) {
-            return alert("Los valores opcionales no pueden ser negativos.");
-        }
-
+        oferta.precio = parseFloat(document.getElementById('ofertaPrecio').value);
+        oferta.futuraVenta = parseFloat(document.getElementById('futuraVenta').value) || 0;
+        oferta.precioRecompra = parseFloat(document.getElementById('precioRecompra').value) || 0;
     } else {
-        payload.porcentajeSueldo = parseInt(document.getElementById('porcentajeSueldo').value);
-        
+        oferta.porcentajeSueldo = parseInt(document.getElementById('porcentajeSueldo').value);
         if (document.getElementById('clausulaCompraCheck').checked) {
-            const clausula = parseFloat(document.getElementById('valorClausula').value);
-            if (!clausula || clausula <= 0) {
-                return alert("Si incluyes cláusula de compra, debe tener un valor mayor a 0.");
-            }
-            payload.clausulaCompra = clausula;
+            oferta.clausulaCompra = parseFloat(document.getElementById('valorClausula').value);
         }
     }
 
-    console.log("Enviando propuesta:", payload);
-    // Aquí iría tu fetch('/objetivo/enviarOferta', { method: 'POST', body: JSON.stringify(payload) ... })
+    try {
+        const response = await fetch(`/fichajes/ofertaTraspaso/${jugadorId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ oferta })
+        });
+        const data = await response.json();
+
+        if (data.success) {
+            // ÉXITO: El club acepta, pasamos a negociar contrato
+            Swal.fire('¡Aceptada!', data.mensaje, 'success').then(() => {
+                iniciarNegociacionContrato(jugadorId);
+            });
+        } else {
+            // FALLO O NEGOCIACIÓN
+            if (data.contraoferta) {
+                Swal.fire({
+                    title: 'Contraoferta',
+                    text: `${data.mensaje} Piden ${data.contraoferta.toLocaleString()} €`,
+                    icon: 'info',
+                    showCancelButton: true,
+                    confirmButtonText: 'Aceptar Contraoferta'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        document.getElementById('ofertaPrecio').value = data.contraoferta;
+                        enviarOferta(); // Re-enviar con el nuevo precio
+                    }
+                });
+            } else {
+                Swal.fire('Rechazada', data.mensaje, 'error');
+            }
+        }
+    } catch (err) {
+        console.error(err);
+    }
 }
 
-function iniciarNegociacionContrato(id) {
-    window.location.href = `/fichajes/contrato/${id}`;
+async function abrirNegociacionContrato(id) {
+    // 1. Obtener datos usando TU ruta
+    const response = await fetch(`/objetivo/detalleTraspaso/${id}`);
+    const data = await response.json();
+    
+    if (!data.success) return alert("Error al cargar datos");
+
+    const o = data.objetivo;
+    const miClubId = data.miClub._id;
+    const clubSujetoId = data.clubObjetivo ? data.clubObjetivo._id : null;
+
+    // 2. Determinar si es RENOVACIÓN o FICHAJE
+    // Si el ID de su club coincide con el mío, es renovación
+    const esRenovacion = (clubSujetoId === miClubId);
+
+    // 3. Poblar textos del Modal
+    document.getElementById('contNombre').innerText = o.nombre;
+    document.getElementById('contTipo').innerText = `${data.tipo.toUpperCase()} - Media ${o.valoracion}`;
+    document.getElementById('contSueldoActual').innerText = `${o.salario.toLocaleString()} €/año`;
+    
+    // Cambiar el título del modal según el contexto
+    document.getElementById('tituloModalContrato').innerText = esRenovacion ? "🤝 Renovación de Contrato" : "🤝 Negociación de Fichaje";
+
+    // 4. Adaptar Select de Roles (Jugador vs Empleado)
+    const selectRol = document.getElementById('ofertRol');
+    selectRol.innerHTML = '';
+    
+    const opciones = data.tipo === 'jugador' 
+        ? ['Clave', 'Titular', 'Rotación', 'Juvenil', 'Descarte'] 
+        : ['Primer Entrenador', 'Asistente', 'Preparador', 'Ojeador', 'Fisio'];
+
+    opciones.forEach(opt => {
+        const el = document.createElement('option');
+        el.value = opt;
+        el.innerText = opt;
+        if (o.rolEquipo === opt || o.puesto === opt) el.selected = true; // Preseleccionar actual
+        selectRol.appendChild(el);
+    });
+
+    // 5. Guardar metadata necesaria para el envío
+    const form = document.getElementById('formContrato');
+    form.dataset.id = id;
+    form.dataset.tipo = data.tipo; // 'jugador' o 'empleado'
+    form.dataset.esRenovacion = esRenovacion;
+
+    // Mostrar el modal (Asegúrate de que el ID del modal coincida con el HTML)
+    const modalContrato = new bootstrap.Modal(document.getElementById('modalContrato'));
+    modalContrato.show();
+}
+
+async function confirmarContrato() {
+    const form = document.getElementById('formContrato');
+    const id = form.dataset.id;
+
+    const payload = {
+        sueldo: document.getElementById('ofertSueldo').value,
+        anios: document.getElementById('ofertAnios').value,
+        rol: document.getElementById('ofertRol').value,
+        clausula: document.getElementById('ofertClausula').value,
+        tipo: form.dataset.tipo,
+        esRenovacion: form.dataset.esRenovacion
+    };
+
+    // Validar sueldo positivo
+    if (!payload.sueldo || payload.sueldo <= 0) {
+        return Swal.fire("Error", "Introduce un sueldo válido", "warning");
+    }
+
+    try {
+        const res = await fetch(`/objetivo/confirmarContrato/${id}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const result = await res.json();
+
+        if (result.success) {
+            Swal.fire("🤝 ¡Acuerdo!", result.mensaje, "success").then(() => {
+                location.reload();
+            });
+        } else {
+            Swal.fire("❌ Rechazado", result.mensaje, "error");
+        }
+    } catch (err) {
+        console.error(err);
+    }
 }
 
 

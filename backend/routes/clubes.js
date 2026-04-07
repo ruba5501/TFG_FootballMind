@@ -457,15 +457,6 @@ clubRouter.post('/listaObjetivos/quitar/:tipo/:id', async (req, res) => {
     }
 });
 
-
-
-
-
-
-
-
-
-
 clubRouter.get('/objetivo/detalleTraspaso/:id', requireLogin, async (req, res) => {
     try {
         const { id } = req.params;
@@ -501,41 +492,5 @@ clubRouter.get('/objetivo/detalleTraspaso/:id', requireLogin, async (req, res) =
     }
 });
 
-function calcularValorEstrategico(jugador, clubVendedor) {
-    let multiplicador = 1.0;
-
-    // 1. Importancia en el equipo (Clave, Rotación, Descarte)
-    if (jugador.rol === 'clave') multiplicador += 0.5; 
-    if (jugador.rol === 'descarte') multiplicador -= 0.2;
-
-    // 2. Reputación del Club (Escala 1-100)
-    // Un club top no necesita vender por dinero, pide más.
-    multiplicador += (clubVendedor.reputacion / 200); 
-
-    // 3. Situación de Contrato
-    if (jugador.añosContrato < 1) multiplicador -= 0.3; // Si acaba contrato, venden barato
-
-    return jugador.valorMercado * multiplicador;
-}
-
-clubRouter.post('/fichajes/ofertaTraspaso/:jugadorId', async (req, res) => {
-    const { oferta } = req.body;
-    const jugador = await Jugador.findById(req.params.jugadorId).populate('club');
-    
-    const precioVentaIA = calcularValorEstrategico(jugador, jugador.club);
-
-    if (oferta >= precioVentaIA) {
-        return res.json({ success: true, mensaje: "Aceptamos la oferta." });
-    } else if (oferta >= precioVentaIA * 0.8) {
-        const contraOferta = Math.floor(precioVentaIA);
-        return res.json({ success: false, mensaje: "Es poco, pero podemos negociar.", contraOferta });
-    } else {
-        return res.json({ success: false, mensaje: "Oferta insultante. No vendemos." });
-    }
-});
-
-clubRouter.post('/fichajes/contrato/:id', async (req, res) => {
-    
-});
 
 module.exports = clubRouter;

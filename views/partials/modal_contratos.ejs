@@ -1,0 +1,59 @@
+<div class="modal fade" id="modalContrato" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">🤝 Negociación de Contrato</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body bg-light">
+                <div class="row align-items-center mb-4">
+                    <div class="col-auto">
+                        <div class="display-4">👤</div>
+                    </div>
+                    <div class="col">
+                        <h4 id="contNombre" class="mb-0">Nombre del Sujeto</h4>
+                        <p id="contTipo" class="text-muted mb-0">Jugador - Media 82</p>
+                    </div>
+                    <div class="col-auto text-end">
+                        <small class="text-muted d-block">Sueldo Actual</small>
+                        <strong id="contSueldoActual">0 €</strong>
+                    </div>
+                </div>
+
+                <form id="formContrato">
+                    <div class="card border-0 shadow-sm p-4">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Sueldo Anual (€)</label>
+                                <input type="number" id="ofertSueldo" class="form-control form-control-lg" placeholder="Ej: 500000">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Duración (Años)</label>
+                                <select id="ofertAnios" class="form-select form-select-lg">
+                                    <option value="1">1 Año</option>
+                                    <option value="2">2 Años</option>
+                                    <option value="3" selected>3 Años</option>
+                                    <option value="4">4 Años</option>
+                                    <option value="5">5 Años</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Rol Prometido</label>
+                                <select id="ofertRol" class="form-select">
+                                    </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Cláusula de Rescisión (€)</label>
+                                <input type="number" id="ofertClausula" class="form-control" placeholder="0 = Sin cláusula">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 mt-4">
+                        <button type="button" onclick="confirmarContrato()" class="btn btn-primary btn-lg">Firmar Contrato</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
