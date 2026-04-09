@@ -1,5 +1,5 @@
 const express = require('express');
-const clubRouter = express.Router();
+const negociacionRouter = express.Router();
 const partidasDAO = require('../daos/partidasDAO');
 const clubesDAO = require('../daos/clubesDAO');
 const competicionesDAO = require('../daos/competicionesDAO');
@@ -8,39 +8,49 @@ const Club = require('../models/club');
 const Jugador = require('../models/jugador');
 const Empleado = require('../models/empleado');
 const Competicion = require('../models/competicion');
-const Negociocion = require('../models/negociacion');
+const Negociacion = require('../models/negociacion');
 
-function calcularPrecioMinimo(jugador, clubVendedor, ofertaDetalles) {
+function calcularPrecioMinimo(jugador, clubVendedor, ofertaDetalles, fechaActualPartida) {
     let factor = 1.0;
-
-    // 1. Rol en el equipo
+    //rol del jugador en el equipos
     if (jugador.rolEquipo === 'clave') factor += 0.4;
     if (jugador.rolEquipo === 'titular') factor += 0.2;
     if (jugador.rolEquipo === 'reserva') factor -= 0.1;
-    if (jugador.rolEquipo === 'descarte') factor -= 0.25;
+    if (jugador.rolEquipo === 'reserva') factor -= 0.25;
+    if (jugador.rolEquipo === 'promesa') factor += 0.1;
 
-    // 2. Tiempo de contrato (Urgencia de venta)
-    // Usamos mesesRestantes (asumiendo que tienes esa lógica o años)
-    if (jugador.añosContrato < 1) factor -= 0.3;
-    else if (jugador.añosContrato < 2) factor -= 0.1;
+    // tiempo de contrato
+    const hoy = new Date(fechaActualPartida);
+    const fin = new Date(jugador.finContrato);
+    const mesesRestantes = (fin.getFullYear() - hoy.getFullYear()) * 12 + (fin.getMonth() - hoy.getMonth());
 
-    // 3. Estatus del club vendedor
-    // Clubes ricos (Reputación > 85) piden un "impuesto de lujo"
+    if (mesesRestantes <= 6) factor -= 0.4;      
+    else if (mesesRestantes <= 12) factor -= 0.25; 
+    else if (mesesRestantes <= 24) factor -= 0.15; 
+    else if (mesesRestantes > 36) factor += 0.15;
+
+    // reputacion del club vendedor
     if (clubVendedor.reputacion > 85) factor += 0.2;
 
-    let precioBaseIA = jugador.valorMercado * factor;
+    //si el jugador esta interesado en salir reduciria el precio de venta
+    if (ofertaDetalles.interesJugador > 80) {
+        const presion = (ofertaDetalles.interesJugador - 80) * 0.01;
+        factor -= presion;
+    }
 
-    // 4. PESO DE LAS CLÁUSULAS (Esto hace que acepten menos dinero fijo)
-    // Cada 1% de futura venta baja el precio exigido en un 0.5%
+    let precioMinimo = jugador.valorMercado * factor;
+
+    // si se añaden clausulas a la oferta
+    // clausula futura venta, cada 1% baja el precio en un 0.5%
     if (ofertaDetalles.futuraVenta > 0) {
-        precioBaseIA -= (precioBaseIA * (ofertaDetalles.futuraVenta * 0.005));
+        precioMinimo -= (precioMinimo * (ofertaDetalles.futuraVenta * 0.005));
     }
-    // Si incluyes recompra barata, el club vendedor se siente seguro y pide menos
+    // clausula recompra barata, el club vendedor pide menos
     if (ofertaDetalles.precioRecompra > 0 && ofertaDetalles.precioRecompra < jugador.valorMercado * 1.5) {
-        precioBaseIA *= 0.9; 
+        precioMinimo *= 0.9; 
     }
 
-    return precioBaseIA;
+    return Math.max(precioMinimo, jugador.valorMercado * 0.8);
 }
 
 function calcularPretensiones(sujeto, esEmpleado) {
@@ -60,89 +70,163 @@ function calcularPretensiones(sujeto, esEmpleado) {
 
 negociacionRouter.post('/fichajes/ofertaTraspaso/:jugadorId', async (req, res) => {
     try {
-        const { oferta } = req.body; // Viene el objeto completo del frontend
-        const jugador = await Jugador.findById(req.params.jugadorId).populate('club');
-        
-        if (oferta.tipo === 'traspaso') {
-            const precioMinimo = calcularPrecioMinimo(jugador, jugador.club, oferta);
+        const { oferta } = req.body; 
+        const jugador = await Jugador.findById(req.params.jugadorId).populate('clubActual');
+        const partida = await partidasDAO.obtenerPartidaPorId(jugador.partidaId);
+        const miClubId = partida.clubSeleccionado._id;
+
+        const negPrevia = await Negociacion.findOne({ 
+            objetivoId: jugador._id, 
+            clubEmisor: miClubId, 
+            finalizada: false 
+        });
+
+        let rondas = negPrevia ? (negPrevia.rondas || 0) + 1 : 1;
+        const limiteNegociaciones = 5;
+
+        let estado = 'pendiente';
+        let mensaje = "";
+        let contraOferta = 0;
+
+        if (rondas > limiteNegociaciones) {
+            estado = 'rechazado';
+            mensaje = "Se nos ha agotado la paciencia. Habéis enviado demasiadas ofertas insuficientes y nos retiramos de la negociación.";
+        }
+        else if (oferta.tipo === 'traspaso') {
+            const precioMinimo = calcularPrecioMinimo(jugador, jugador.clubActual, oferta, partida.fechaActual);
             const dineroOfrecido = oferta.precio;
 
             if (dineroOfrecido >= precioMinimo) {
-                return res.json({ success: true, estado: 'aceptado', mensaje: "El club acepta las condiciones. Tienes permiso para hablar con el jugador." });
-            } else if (dineroOfrecido >= precioMinimo * 0.8) {
-                return res.json({ success: false, estado: 'negociando', mensaje: "La oferta es insuficiente, pero nos interesa el trato.", contraoferta: Math.ceil(precioMinimo) });
+                estado = 'aceptado';
+                mensaje = "El club acepta las condiciones. Tienes permiso para hablar con el jugador.";
+            } else if (dineroOfrecido >= precioMinimo * 0.5) {
+                estado = 'negociando';
+                const factorAleatorio = 1.08 + (Math.random() * 0.06);
+                const negPrevia = await Negociacion.findOne({ objetivoId: jugador._id, clubEmisor: miClubId, finalizada: false });
+                
+                let pretensionNuevas = precioMinimo * factorAleatorio;
+
+                if (negPrevia && negPrevia.estadoTraspaso === 'negociando') {
+                    pretensionNuevas = Math.max(precioMinimo, negPrevia.ofertaTraspaso * 0.95);
+                    mensaje = "Hemos reconsiderado nuestra postura, pero aún esperamos una oferta mejor.";
+                } else {
+                    mensaje = "Vuestra oferta no es suficiente, pero estamos dispuestos a escuchar otra propuesta.";
+                }
+
+                contraOferta = Math.floor(pretensionNuevas);
             } else {
-                return res.json({ success: false, estado: 'rechazado', mensaje: "No estamos interesados en vender al jugador por esa cantidad." });
+                estado = 'rechazado';
+                mensaje = "No estamos interesados en vender al jugador por esa cantidad.";
             }
         } 
-        
         if (oferta.tipo === 'cesion') {
-            // Lógica de cesión: el club acepta si pagas mucho sueldo o el jugador es un descarte
-            let aceptado = false;
-            if (jugador.rolEquipo === 'descarte' && oferta.porcentajeSueldo >= 50) aceptado = true;
-            if (oferta.porcentajeSueldo >= 80) aceptado = true;
+            const porcentajeOfrecido = oferta.precio; 
+            const porcentajeMinimo = 0;
+            if (jugador.rolEquipo === 'suplente')porcentajeMinimo = 50;
+            else if (jugador.rolEquipo === 'reserva')porcentajeMinimo = 40;
+            else if (jugador.rolEquipo === 'promesa')porcentajeMinimo = 30;
 
-            if (aceptado) {
-                return res.json({ success: true, estado: 'aceptado', mensaje: "Cesión aceptada. El jugador está viajando para negociar su contrato." });
-            } else {
-                return res.json({ success: false, estado: 'rechazado', mensaje: "Solo aceptamos la cesión si os hacéis cargo de una mayor parte de la ficha." });
+            if (jugador.rolEquipo != 'clave' && jugador.rolEquipo != 'importante'){
+                if (porcentajeOfrecido >= porcentajeMinimo) {
+                    estado = 'aceptado';
+                    mensaje = "Cesión aceptada.";
+                } else if (porcentajeOfrecido >= porcentajeMinimo - 20) {
+                    estado = 'negociando';
+                    contraOferta = porcentajeMinimo;
+                    mensaje = "El club pide que cubráis más porcentaje del sueldo.";
+                } else {
+                    estado = 'rechazado';
+                    mensaje = "No nos interesa ceder al jugador en esas condiciones.";
+                }
             }
+            else{
+                estado = 'rechazado';
+                mensaje = "No nos interesa ceder a este jugador.";
+            }
+            
         }
+
+        await Negociacion.findOneAndUpdate(
+            { objetivoId: jugador._id, clubEmisor: miClubId, finalizada: false },
+            {
+                partidaId: partida._id,
+                tipoObjetivo: 'Jugador',
+                objetivoId: jugador._id,
+                clubEmisor: miClubId,
+                clubReceptor: jugador.clubActual._id,
+                estadoTraspaso: estado,
+                tipoOferta: oferta.tipo,
+                rondas: rondas,
+                ofertaTraspaso: contraOferta > 0 ? contraOferta : (oferta.precio || 0),
+                porcentajeFuturaVenta: oferta.futuraVenta || 0,
+                precioRecompra: oferta.precioRecompra || 0,
+                clausulaCompra: oferta.clausulaCompra || 0,
+                ultimaModificacion: Date.now()
+            },
+            { upsert: true }
+        );
+        res.json({ 
+            success: true, 
+            estado: estado, 
+            mensaje: mensaje, 
+            contraoferta: contraOferta > 0 ? contraOferta : null,
+            redirect: `/negociaciones/${partida._id}` 
+        });
 
     } catch (error) {
         res.status(500).json({ success: false, mensaje: "Error en el servidor" });
     }
 });
 
-// negociacionRouter.js
-
 negociacionRouter.post('/objetivo/confirmarContrato/:id', async (req, res) => {
     try {
         const { id } = req.params;
         const { sueldo, anios, rol, clausula, tipo, esRenovacion } = req.body;
 
-        // 1. Buscar al sujeto
         const Model = (tipo === 'jugador') ? Jugador : Empleado;
         const sujeto = await Model.findById(id).populate('clubActual');
 
-        // 2. LÓGICA DE IA (Pretensiones)
-        // El sujeto pide un aumento basado en su valoración y situación
-        let sueldoMinimoAceptable = sujeto.salario * 1.1; // Por defecto pide 10% más
-        
-        if (sujeto.valoracion > 80) sueldoMinimoAceptable *= 1.2; // Los cracks piden más
-        if (sujeto.añosContrato < 1) sueldoMinimoAceptable *= 0.9; // Si acaba contrato, es más flexible
+        const { sueldoEsperado, aniosEsperados } = calcularPretensiones(sujeto, tipo !== 'jugador');
 
-        // 3. TOMA DE DECISIÓN
-        if (parseInt(sueldo) >= sueldoMinimoAceptable) {
-            
-            // SI ACEPTA: Actualizamos en la DB
-            // En un simulador real, aquí actualizarías su contrato
+        if (parseInt(sueldo) >= sueldoEsperado) {
             sujeto.salario = parseInt(sueldo);
             sujeto.añosContrato = parseInt(anios);
             if (tipo === 'jugador') sujeto.rolEquipo = rol;
             else sujeto.puesto = rol;
-            
-            // Si es FICHAJE (no renovación), habría que cambiar el clubActual al club del usuario
-            // sujeto.clubActual = req.session.miClubId; 
+
+            const neg = await Negociacion.findOne({ objetivoId: id, finalizada: false });
+            if (neg) {
+                if (esRenovacion !== "true") {
+                    sujeto.clubActual = neg.clubEmisor; 
+                }
+                neg.estadoContrato = 'aceptado';
+                neg.finalizada = true;
+                await neg.save();
+            }
 
             await sujeto.save();
-
-            return res.json({ 
-                success: true, 
-                mensaje: esRenovacion === "true" 
-                    ? "¡Renovación completada con éxito!" 
-                    : "¡Fichaje cerrado! El jugador se une a tu plantilla." 
-            });
+            return res.json({ success: true, mensaje: "¡Acuerdo cerrado! El contrato ha sido firmado." });
         } else {
             return res.json({ 
                 success: false, 
-                mensaje: "El sueldo ofrecido no cumple las expectativas del representante." 
+                mensaje: `El representante rechaza la oferta. Pide al menos ${Math.round(sueldoEsperado).toLocaleString()} €.` 
             });
         }
-
     } catch (error) {
         console.error(error);
         res.status(500).json({ success: false, mensaje: "Error al procesar el contrato" });
+    }
+});
+
+negociacionRouter.delete('/negociaciones/cancelar/:id', async (req, res) => {
+    try {
+        await Negociacion.findByIdAndUpdate(req.params.id, { 
+            finalizada: true, 
+            estadoTraspaso: 'rechazado' 
+        });
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ success: false });
     }
 });
 

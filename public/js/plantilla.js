@@ -264,27 +264,82 @@ document.addEventListener('DOMContentLoaded', () => {
     modalObj = new bootstrap.Modal(document.getElementById('modalNegociacion'));
 });
 
-async function negociarTraspasoClub(jugadorId) {
-    document.getElementById('formOferta').reset();
-    let currentJugadorId = jugadorId;
-    const modalObj = new bootstrap.Modal(document.getElementById('modalNegociacion'));
+async function negociarTraspasoClub(jugadorId, precioContraI = 0, tipoNegoc = 'traspaso', futuraVentaI = 0, recompraI = 0, clausulaCompraI = 0) {
+    const precioContra = Number(precioContraI);
+    const futuraVenta = Number(futuraVentaI);
+    const recompra = Number(recompraI);
+    const clausulaCompra = Number(clausulaCompraI);
 
-    // 1. Obtener datos extendidos del jugador (necesitas un endpoint que devuelva esto)
+    const form = document.getElementById('formOferta');
+    if (form) {
+        form.reset();
+    }
+
+    const modalObj = new bootstrap.Modal(document.getElementById('modalNegociacion'));
+    const btnTraspaso = document.getElementById('modoTraspaso');
+    const btnCesion = document.getElementById('modoCesion');
+    const tituloModal = document.getElementById('tituloModal');
+    const divTraspaso = document.getElementById('camposTraspaso');
+    const divCesion = document.getElementById('camposCesion');
+
     const response = await fetch(`/objetivo/detalleTraspaso/${jugadorId}`);
     const data = await response.json();
     const o = data.objetivo;
     const c = data.clubObjetivo;
-    const cu = data.miClub;
 
-    
-    // 2. Poblar Modal
+    if (precioContra > 0) {
+        tituloModal.innerText = "Respuesta a la Contraoferta";
+        tituloModal.parentElement.classList.replace('bg-dark', 'bg-primary');
+
+        if (tipoNegoc === 'traspaso') {
+            btnTraspaso.checked = true;
+            btnCesion.disabled = true;
+            divTraspaso.classList.remove('d-none');
+            divCesion.classList.add('d-none');
+            
+            document.getElementById('ofertaPrecio').value = precioContra;
+            document.getElementById('futuraVenta').value = futuraVenta;
+            document.getElementById('precioRecompra').value = recompra;
+
+            document.querySelector('label[for="ofertaPrecio"]').innerHTML = 
+                `Precio Traspaso <span class="badge bg-primary">Sugerido: ${precioContra.toLocaleString()}€</span>`;
+            
+        } else {
+            btnCesion.checked = true;
+            btnTraspaso.disabled = true;
+            divCesion.classList.remove('d-none');
+            divTraspaso.classList.add('d-none');
+
+            document.getElementById('porcentajeSueldo').value = precioContra;
+            document.getElementById('valSueldo').innerText = precioContra;
+
+            if (clausulaCompra > 0) {
+                document.getElementById('clausulaCompraCheck').checked = true;
+                document.getElementById('divClausulaCompra').classList.remove('d-none');
+                document.getElementById('valorClausula').value = clausulaCompra;
+            }
+        }
+    } else {
+        tituloModal.innerText = "Negociación de Fichaje";
+        tituloModal.parentElement.classList.replace('bg-primary', 'bg-dark');
+        btnTraspaso.disabled = false;
+        btnCesion.disabled = false;
+        btnTraspaso.checked = true;
+        divTraspaso.classList.remove('d-none');
+        divCesion.classList.add('d-none');
+        document.querySelector('label[for="ofertaPrecio"]').innerText = "Precio del Traspaso (€)";
+    }
+
     document.getElementById('formOferta').dataset.jugadorId = jugadorId;
+    document.getElementById('formOferta').dataset.tipoActual = tipoNegoc;
     document.getElementById('infoNombre').innerText = o.nombre;
     document.getElementById('infoClub').innerText = c ? c.nombre : 'Agente Libre';    
     document.getElementById('infoMedia').innerText = `Media: ${o.valoracion}`;
     document.getElementById('infoPotencial').innerText = `Pot: ${o.potencial}`;
     document.getElementById('infoValor').innerText = `${o.valorMercado.toLocaleString()} €`;
     document.getElementById('infoSalario').innerText = `${(o.salario / 12).toLocaleString()} €/mes (${o.salario.toLocaleString()})`;
+    
+    //fechas
     const fecha = new Date(o.finContrato);
     const fechaFormateada = fecha.toLocaleDateString('es-ES', {
         day: '2-digit',
@@ -293,22 +348,16 @@ async function negociarTraspasoClub(jugadorId) {
     });
     document.getElementById('infoContratoFin').innerText = fechaFormateada;
 
+    // Imágenes (Escudo y Bandera)
     const imgEscudo = document.getElementById('infoEscudo');
-    if (c && c.escudo) {
-        imgEscudo.src = `/img/escudos/${c.escudo}`;
-        imgEscudo.style.display = 'block';
-    } else {
-        imgEscudo.style.display = 'none';
-    }
+    imgEscudo.src = c && c.escudo ? `/img/escudos/${c.escudo}` : '';
+    imgEscudo.style.display = c && c.escudo ? 'block' : 'none';
 
     const imgBandera = document.getElementById('infoBandera');
-    if (o.nacionalidad) {
-        imgBandera.src = `/img/banderas/${o.nacionalidad}.png`; 
-        imgBandera.style.display = 'block';
-    } else {
-        imgBandera.style.display = 'none';
-    }
-    // 3. Lógica de Interés (Frontend-Simulada antes de enviar)
+    imgBandera.src = o.nacionalidad ? `/img/banderas/${o.nacionalidad}.png` : '';
+    imgBandera.style.display = o.nacionalidad ? 'block' : 'none';
+
+    // Lógica de Interés
     const interes = calcularInteres(o, data.clubObjetivo.reputacion, data.miClub.reputacion, data.fechaActual);
     const barra = document.getElementById('barraInteres');
     barra.style.width = interes + '%';
@@ -318,7 +367,6 @@ async function negociarTraspasoClub(jugadorId) {
         barra.className = 'progress-bar';
         barra.style.backgroundColor = '#fd7e14'; 
     } else if (interes < 60) {
-        // Amarillo
         barra.className = 'progress-bar bg-warning text-dark';
         barra.style.backgroundColor = ''; 
     } else if (interes < 85) {
@@ -331,7 +379,6 @@ async function negociarTraspasoClub(jugadorId) {
 
     document.getElementById('textoInteres').innerText = obtenerLabelInteres(interes);
 
-    // 4. Mostrar modal
     modalObj.show();
 }
 
@@ -374,6 +421,11 @@ function calcularInteres(j, clubOrigen, tuClub, fechaActualPartida) {
     }
     // Si son clubes de nivel similar
     else score += (difClubes * 2.5); 
+
+    //calcular una posible afinidad a tu club de forma aleatoria con los id para que sea siempre la misma
+    const afinidad = (parseInt(j._id.toString().slice(-3), 16) % 31) - 10; 
+    score += afinidad;
+
     // Si el jugador es demasiado bueno para su club actual
     if (nivelJugadorVsClubActual > 5) {
         score += 15;
@@ -396,11 +448,18 @@ function calcularInteres(j, clubOrigen, tuClub, fechaActualPartida) {
     else if (j.estado.satisfaccion < 60) score += 15;
     else if (j.estado.satisfaccion > 85) score -= 10;
     
+    //factor edad
     if (esJovenPromesa) {
         // Si es juven promesa y tu club es importante
         if (tuClub > 80) score += 15;
         // O si tu club no lo es 
         if (tuClub < 60) score -= 20;
+    }
+    if (j.edad >= 34){
+        //si esta cerca de retirarse igual quiere hacerlo en su pais
+        if (j.nacionalidad === tuClub.pais) {
+            score += 20;
+        }
     }
     //Le quedan 6 meses o menos
     if (mesesRestantes <= 6) {
@@ -430,12 +489,13 @@ function obtenerLabelInteres(val) {
 async function enviarOferta() {
     const jugadorId = document.getElementById('formOferta').dataset.jugadorId;
     const esTraspaso = document.getElementById('modoTraspaso').checked;
+    const interes = parseFloat(document.getElementById('barraInteres').style.width) || 50;
     
     let oferta = {
-        tipo: esTraspaso ? 'traspaso' : 'cesion'
+        tipo: esTraspaso ? 'traspaso' : 'cesion',
+        interesJugador: interes
     };
 
-    // ... (Mantén tus validaciones de precios negativos aquí) ...
     if (esTraspaso) {
         oferta.precio = parseFloat(document.getElementById('ofertaPrecio').value);
         oferta.futuraVenta = parseFloat(document.getElementById('futuraVenta').value) || 0;
@@ -454,30 +514,12 @@ async function enviarOferta() {
             body: JSON.stringify({ oferta })
         });
         const data = await response.json();
-
-        if (data.success) {
-            // ÉXITO: El club acepta, pasamos a negociar contrato
-            Swal.fire('¡Aceptada!', data.mensaje, 'success').then(() => {
-                iniciarNegociacionContrato(jugadorId);
-            });
+        console.log("Respuesta del servidor:", data);
+        if (data.redirect) {
+            window.location.href = data.redirect;
         } else {
-            // FALLO O NEGOCIACIÓN
-            if (data.contraoferta) {
-                Swal.fire({
-                    title: 'Contraoferta',
-                    text: `${data.mensaje} Piden ${data.contraoferta.toLocaleString()} €`,
-                    icon: 'info',
-                    showCancelButton: true,
-                    confirmButtonText: 'Aceptar Contraoferta'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        document.getElementById('ofertaPrecio').value = data.contraoferta;
-                        enviarOferta(); // Re-enviar con el nuevo precio
-                    }
-                });
-            } else {
-                Swal.fire('Rechazada', data.mensaje, 'error');
-            }
+            console.warn("No hay redirect en la respuesta, recargando...");
+            location.reload();
         }
     } catch (err) {
         console.error(err);
@@ -488,9 +530,6 @@ async function abrirNegociacionContrato(id) {
     // 1. Obtener datos usando TU ruta
     const response = await fetch(`/objetivo/detalleTraspaso/${id}`);
     const data = await response.json();
-    
-    if (!data.success) return alert("Error al cargar datos");
-
     const o = data.objetivo;
     const miClubId = data.miClub._id;
     const clubSujetoId = data.clubObjetivo ? data.clubObjetivo._id : null;
@@ -572,7 +611,24 @@ async function confirmarContrato() {
     }
 }
 
+async function cancelarNegociacion(negId) {
+    const result = await Swal.fire({
+        title: '¿Retirar oferta?',
+        text: "Perderás el progreso de la negociación",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        confirmButtonText: 'Sí, retirar'
+    });
 
+    if (result.isConfirmed) {
+        const res = await fetch(`/negociaciones/cancelar/${negId}`, { method: 'DELETE' });
+        if (res.ok) {
+            Swal.fire('Cancelada', 'La oferta ha sido retirada', 'success')
+                .then(() => location.reload());
+        }
+    }
+}
 
 
 

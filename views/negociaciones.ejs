@@ -1,0 +1,146 @@
+<%- include('partials/head', {title: 'Centro de Negociaciones'}) %>
+<%- include('partials/navbar') %>
+
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-handshake text-primary"></i> Centro de Negociaciones</h2>
+    </div>
+
+    <ul class="nav nav-tabs mb-4" id="negociacionesTab" role="tablist">
+        <li class="nav-item">
+            <button class="nav-link active" id="enviadas-tab" data-bs-toggle="tab" data-bs-target="#enviadas" type="button">
+                Ofertas Enviadas <span class="badge bg-primary ms-1"><%= ofertasEnviadas.length %></span>
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" id="recibidas-tab" data-bs-toggle="tab" data-bs-target="#recibidas" type="button">
+                Ofertas Recibidas <span class="badge bg-danger ms-1"><%= ofertasRecibidas.length %></span>
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="negociacionesTabContent">
+        
+        <div class="tab-pane fade show active" id="enviadas" role="tabpanel">
+            <% if (ofertasEnviadas.length === 0) { %>
+                <div class="text-center p-5 bg-light rounded border">
+                    <i class="bi bi-folder-x fs-1 text-muted"></i>
+                    <p class="text-muted mt-2">No tienes negociaciones activas en este momento.</p>
+                </div>
+            <% } else { %>
+                <div class="table-responsive bg-white shadow-sm rounded border">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Objetivo</th>
+                                <th>Tipo</th>
+                                <th>Club Propietario</th>
+                                <th>Estado Operación</th>
+                                <th>Estado Contrato</th>
+                                <th>Última Oferta</th>
+                                <th class="text-end">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% ofertasEnviadas.forEach(neg => { %>
+                                <tr>
+                                    <td>
+                                        <div class="fw-bold"><%= neg.objetivoId.nombre %></div>
+                                        <small class="text-muted"><%= neg.objetivoId.valoracion %> Media • <%= neg.objetivoId.posicion %></small>
+                                    </td>
+                                    <td>
+                                        <span class="badge rounded-pill bg-info text-dark">
+                                            <%= neg.tipoObjetivo === 'Jugador' ? 'JUGADOR' : 'EMPLEADO' %>
+                                        </span>
+                                        <div class="small text-muted text-uppercase" style="font-size: 0.7rem;"><%= neg.tipo %></div>
+                                    </td>
+                                    <td>
+                                        <% if (neg.clubReceptor) { %>
+                                            <div class="d-flex align-items-center">
+                                                <% if (neg.clubReceptor.escudo) { %>
+                                                    <img src="/img/escudos/<%= neg.clubReceptor.escudo %>" width="20" class="me-2">
+                                                <% } %>
+                                                <%= neg.clubReceptor.nombre %>
+                                            </div>
+                                        <% } else { %>
+                                            <span class="text-muted italic">Agente Libre</span>
+                                        <% } %>
+                                    </td>
+                                    <td>
+                                        <% 
+                                            let badgeTraspaso = 'bg-warning text-dark';
+                                            if (neg.estadoTraspaso === 'aceptado') badgeTraspaso = 'bg-success';
+                                            if (neg.estadoTraspaso === 'rechazado') badgeTraspaso = 'bg-danger';
+                                        %>
+                                        <span class="badge <%= badgeTraspaso %>">
+                                            <%= neg.estadoTraspaso.toUpperCase().replace('_', ' ') %>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <% 
+                                            let badgeCont = 'border text-muted';
+                                            if (neg.estadoContrato === 'aceptado') badgeCont = 'bg-success text-white';
+                                            if (neg.estadoContrato === 'rechazado') badgeCont = 'bg-danger text-white';
+                                            if (neg.estadoContrato === 'en_negociacion') badgeCont = 'bg-warning text-dark';
+                                        %>
+                                        <span class="badge <%= badgeCont %>">
+                                            <%= neg.estadoContrato.toUpperCase().replace('_', ' ') %>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="small fw-bold text-success">
+                                            <%= neg.tipoOferta === 'traspaso' ? neg.ofertaTraspaso.toLocaleString() + ' €' : 'Cesión' %>
+                                        </div>
+                                        <div class="text-muted" style="font-size: 0.75rem;">
+                                            <%= neg.ofertaSueldo > 0 ? neg.ofertaSueldo.toLocaleString() + ' €/año' : 'Sueldo por negociar' %>
+                                        </div>
+                                    </td>
+                                    <td class="text-end">
+                                        <div class="btn-group">
+                                            <% if (neg.estadoTraspaso === 'aceptado') { %>
+                                                <% if (neg.estadoContrato !== 'aceptado') { %>
+                                                    <button onclick="abrirNegociacionContrato('<%= neg.objetivoId._id %>')" class="btn btn-sm btn-success">
+                                                        <i class="bi bi-pen-fill"></i> Negociar Contrato
+                                                    </button>
+                                                <% } else { %>
+                                                    <button class="btn btn-sm btn-outline-secondary" disabled>Fichado</button>
+                                                <% } %>
+
+                                            <% } else if (neg.estadoTraspaso === 'negociando') { %>
+                                                <button onclick="negociarTraspasoClub(
+                                                    '<%= neg.objetivoId._id %>', 
+                                                    '<%= neg.ofertaTraspaso || 0 %>', 
+                                                    '<%= neg.tipoOferta %>',
+                                                    '<%= neg.porcentajeFuturaVenta || 0 %>',
+                                                    '<%= neg.precioRecompra || 0 %>',
+                                                    '<%= neg.clausulaCompra || 0 %>'
+                                                    )" 
+                                                        class="btn btn-sm btn-primary">
+                                                    Mejorar Oferta
+                                                </button>
+                                                <button onclick="cancelarNegociacion('<%= neg._id %>')" class="btn btn-sm btn-outline-danger">
+                                                    <i class="bi bi-x-lg"></i>
+                                                </button>
+
+                                            <% } else if (neg.estadoTraspaso === 'rechazado') { %>
+                                                <button onclick="cancelarNegociacion('<%= neg._id %>')" class="btn btn-sm btn-outline-secondary">
+                                                    Limpiar
+                                                </button>
+                                            <% } %>
+                                        </div>
+                                    </td>
+                                </tr>
+                            <% }) %>
+                        </tbody>
+                    </table>
+                </div>
+            <% } %>
+        </div>
+
+        <div class="tab-pane fade" id="recibidas" role="tabpanel">
+            </div>
+
+    </div>
+</div>
+<%- include('partials/modal_traspasos') %>
+<script src="/js/plantilla.js"></script>

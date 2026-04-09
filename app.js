@@ -41,7 +41,7 @@ const empleadosRouter = require('./backend/routes/empleados');
 const partidasRouter = require('./backend/routes/partidas');
 const partidosRouter = require('./backend/routes/partidos');
 const juegoRouter = require('./backend/routes/juego');
-
+const negociacionesRouter = require('./backend/routes/negociaciones');
 
 app.use('/', indexRouter);
 app.use('/', usersRouter);
@@ -51,8 +51,8 @@ app.use('/', estadiosRouter);
 app.use('/', empleadosRouter);
 app.use('/', partidasRouter);
 app.use('/', partidosRouter);
-
 app.use('/', juegoRouter);
+app.use('/', negociacionesRouter);
 
 // Middleware Error 404
 app.use((request, response, next) => {

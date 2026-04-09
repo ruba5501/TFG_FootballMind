@@ -1,7 +1,7 @@
 <div class="modal fade" id="modalNegociacion" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content border-0 shadow">
-            <div class="modal-header bg-dark text-white">
+            <div class="modal-header bg-dark text-white" id="headerNegociacion">
                 <h5 class="modal-title" id="tituloModal">Negociación de Fichaje</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
@@ -10,15 +10,16 @@
                     <div class="col-lg-5 bg-light p-4 border-end">
                         <div class="text-center mb-4">
                             <div id="avatarTexto" class="fs-1">👤</div>
-                            <div class="d-flex align-items-center justify-content-center mt-1">                                <h3 id="infoNombre" class="mb-0">---</h3>
-                                <img id="infoBandera" src="" alt="Nacionalidad" class="ms-2" style="width: 30px; height: 30px; object-fit: contain; display: none;">
+                            <div class="d-flex align-items-center justify-content-center mt-1">
+                                <h3 id="infoNombre" class="mb-0">---</h3>
+                                <img id="infoBandera" src="" alt="" class="ms-2" style="width: 30px; height: 20px; object-fit: cover; display: none; border: 1px solid #ddd">
                             </div>
                             
                             <div class="d-flex align-items-center justify-content-center mt-1">
                                 <p id="infoClub" class="text-muted mb-0">---</p>
-                                <img id="infoEscudo" src="" alt="Escudo" class="ms-2" style="width: 30px; height: 30px; object-fit: contain; display: none;">
+                                <img id="infoEscudo" src="" alt="" class="ms-2" style="width: 25px; height: 25px; object-fit: contain; display: none;">
                             </div>
-                            <div class="d-flex justify-content-center gap-2">
+                            <div class="d-flex justify-content-center gap-2 mt-2">
                                 <span class="badge bg-primary" id="infoMedia">Media: --</span>
                                 <span class="badge bg-info" id="infoPotencial">Pot: --</span>
                             </div>
@@ -30,7 +31,7 @@
                                 <div class="progress mt-1" style="height: 10px;">
                                     <div id="barraInteres" class="progress-bar bg-success" style="width: 0%"></div>
                                 </div>
-                                <small id="textoInteres" class="text-muted">Calculando interés...</small>
+                                <small id="textoInteres" class="text-muted text-center d-block mt-1">Calculando...</small>
                             </div>
                         </div>
 
@@ -40,11 +41,11 @@
                                 <strong id="infoValor">0 €</strong>
                             </li>
                             <li class="list-group-item d-flex justify-content-between">
-                                <span>Salario</span>
+                                <span>Salario Actual</span>
                                 <strong id="infoSalario">0 €</strong>
                             </li>
                             <li class="list-group-item d-flex justify-content-between">
-                                <span>Contrato hasta</span>
+                                <span>Fin Contrato</span>
                                 <strong id="infoContratoFin">----</strong>
                             </li>
                         </ul>
@@ -52,41 +53,40 @@
 
                     <div class="col-lg-7 p-4">
                         <div class="btn-group w-100 mb-4" role="group">
-                            <input type="radio" class="btn-check" name="modoNegoc" id="modoTraspaso" checked>
+                            <input type="radio" class="btn-check" name="modoNegoc" id="modoTraspaso" checked onchange="document.getElementById('camposTraspaso').classList.remove('d-none'); document.getElementById('camposCesion').classList.add('d-none')">
                             <label class="btn btn-outline-dark" for="modoTraspaso">Traspaso</label>
                             
-                            <input type="radio" class="btn-check" name="modoNegoc" id="modoCesion">
+                            <input type="radio" class="btn-check" name="modoNegoc" id="modoCesion" onchange="document.getElementById('camposTraspaso').classList.add('d-none'); document.getElementById('camposCesion').classList.remove('d-none')">
                             <label class="btn btn-outline-dark" for="modoCesion">Cesión</label>
                         </div>
 
                         <form id="formOferta">
                             <div id="camposTraspaso">
-                                <div class="mb-3">
-                                    <label class="form-label fw-bold">Precio del Traspaso (€)</label>
-                                    <input type="number" class="form-control form-control-lg" id="ofertaPrecio" placeholder="0" min="0">
+                                <div class="mb-4">
+                                    <label for="ofertaPrecio" class="form-label fw-bold">Precio del Traspaso (€)</label>
+                                    <input type="number" class="form-control form-control-lg shadow-sm" id="ofertaPrecio" placeholder="Ej: 15000000" min="0">
                                 </div>
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
-                                        <label class="form-label small">Porcentaje Futura Venta (%)</label>
-                                        <input type="number" class="form-control" id="futuraVenta" placeholder="Opcional" min="0" max="100">
+                                        <label class="form-label small text-muted text-uppercase fw-bold">Futura Venta (%)</label>
+                                        <input type="number" class="form-control" id="futuraVenta" placeholder="0" min="0" max="100">
                                     </div>
                                     <div class="col-md-6 mb-3">
-                                        <label class="form-label small">Precio Recompra (€)</label>
-                                        <input type="number" class="form-control" id="precioRecompra" placeholder="Opcional" min="0">
+                                        <label class="form-label small text-muted text-uppercase fw-bold">Precio Recompra (€)</label>
+                                        <input type="number" class="form-control" id="precioRecompra" placeholder="No incluir" min="0">
                                     </div>
                                 </div>
                             </div>
 
                             <div id="camposCesion" class="d-none">
                                 <div class="mb-3">
-                                    <label class="form-label fw-bold">Duración de la Cesión</label>
-                                    <input type="text" class="form-control" value="1 Temporada (Hasta el 30 de Junio)" readonly>
-                                    <input type="hidden" id="duracionCesion" value="1">
+                                    <label class="form-label fw-bold">Duración</label>
+                                    <input type="text" class="form-control bg-light" value="1 Temporada" readonly>
                                 </div>
                                 <div class="mb-3">
-                                    <label class="form-label small">% Sueldo a cargo de tu club</label>
-                                    <input type="range" class="form-range" id="porcentajeSueldo" min="0" max="100" step="10">
-                                    <div class="text-center fw-bold"><span id="valSueldo">50</span>%</div>
+                                    <label class="form-label small fw-bold text-uppercase">% Sueldo que pagarás</label>
+                                    <input type="range" class="form-range" id="porcentajeSueldo" min="0" max="100" step="10" oninput="document.getElementById('valSueldo').innerText = this.value">
+                                    <div class="text-center"><span id="valSueldo" class="h4 fw-bold text-primary">50</span><span class="h4 fw-bold text-primary">%</span></div>
                                 </div>
                                 <div class="form-check form-switch mb-3">
                                     <input class="form-check-input" type="checkbox" id="clausulaCompraCheck">
@@ -96,8 +96,8 @@
                             </div>
 
                             <div class="d-grid mt-4">
-                                <button type="button" onclick="enviarOferta()" class="btn btn-success btn-lg">
-                                    Enviar Propuesta Oficial
+                                <button type="button" onclick="enviarOferta()" class="btn btn-success btn-lg shadow">
+                                    <i class="bi bi-send-fill me-2"></i>Enviar Propuesta
                                 </button>
                             </div>
                         </form>

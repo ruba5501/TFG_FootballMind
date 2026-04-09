@@ -8,7 +8,7 @@ const Club = require('../models/club');
 const Jugador = require('../models/jugador');
 const Empleado = require('../models/empleado');
 const Competicion = require('../models/competicion');
-const Negociocion = require('../models/negociacion');
+const Negociacion = require('../models/negociacion');
 const { requireLogin } = require('../middleware/autenticacion');
 const { FORMACIONES } = require('../service/cargarFormaciones');
 
@@ -187,13 +187,16 @@ clubRouter.get('/cantera/:partidaId', requireLogin, async (req, res) => {
 });
 
 clubRouter.get('/traspasos/:partidaId', requireLogin, async (req, res) => {
-   try {
+    try {
         const partida = await partidasDAO.obtenerPartidaPorId(req.params.partidaId);
+        
         const ligas = await Competicion.find({ 
             tipo: 'liga',
             partidaId: partida._id,
         }).select('nombre').lean();
+
         const filial = await Club.findOne({ clubMatriz: partida.clubSeleccionado }).select('_id');
+        
         const clubes = await Club.find({
             _id: { 
                 $ne: partida.clubSeleccionado,
@@ -207,16 +210,28 @@ clubRouter.get('/traspasos/:partidaId', requireLogin, async (req, res) => {
             populate: { path: 'clubActual', select: 'nombre escudo' }
         });
 
-        const ojeadores = clubUsuario.empleados.filter(emp => 
-            emp.tipo === 'ojeador' 
-        );
+        const negociacionesActivas = await Negociacion.find({
+            clubEmisor: partida.clubSeleccionado,
+            finalizada: false
+        }).lean();
+
+        const listaConEstado = clubUsuario.listaObjetivos.map(obj => {
+            const objetivo = obj.toObject(); 
+            objetivo.negociacionActiva = negociacionesActivas.find(n => 
+                n.objetivoId.toString() === objetivo._id.toString()
+            );
+            return objetivo;
+        });
+
+        const ojeadores = clubUsuario.empleados.filter(emp => emp.tipo === 'ojeador');
+
         res.render('traspasos', {
             partida,
             clubUsuario,
             ojeadores: ojeadores,
             ligas: ligas,  
             clubes: clubes,
-            listaObjetivos: clubUsuario.listaObjetivos,
+            listaObjetivos: listaConEstado,
             errorFiltros: null
         });
 
@@ -225,6 +240,36 @@ clubRouter.get('/traspasos/:partidaId', requireLogin, async (req, res) => {
         res.status(500).send("Error al cargar el centro de traspasos");
     }
 });
+clubRouter.get('/negociaciones/:partidaId', requireLogin, async (req, res) => {
+   try {
+        const { partidaId } = req.params;
+        const partida = await Partida.findById(partidaId).populate('clubSeleccionado').lean();
+        const miClubId = partida.clubSeleccionado._id;
+        const ofertasEnviadas = await Negociacion.find({ partidaId, clubEmisor: miClubId, finalizada: false })
+        .populate('objetivoId') 
+        .populate('clubReceptor')
+        .sort({ ultimaModificacion: -1 })
+        .lean();
+
+        const ofertasRecibidas = await Negociacion.find({ partidaId, clubReceptor: miClubId, finalizada: false })
+        .populate('objetivoId')
+        .populate('clubEmisor')
+        .sort({ ultimaModificacion: -1 })
+        .lean();
+
+        res.render('negociaciones', {
+            partida,
+            miClub: partida.clubSeleccionado,
+            ofertasEnviadas,
+            ofertasRecibidas
+        });
+
+    } catch (error) {
+        console.error("Error en vista negociaciones:", error);
+        res.status(500).send("Error interno");
+    }
+});
+
 const esRangoValido = (valorMin, valorMax, min, max) => {
     if (valorMin > valorMax) return false;
     if (valorMin < min) return false;

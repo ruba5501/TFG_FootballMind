@@ -10,9 +10,16 @@ const negociacionSchema = new mongoose.Schema({
     
     tipoObjetivo: { 
         type: String, 
-        enum: ['jugador', 'empleado'], 
+        enum: ['Jugador', 'Empleado'], 
         required: true 
     },
+
+    tipoOferta: { 
+        type: String, 
+        enum: ['traspaso', 'cesion'], 
+        required: true 
+    },
+
     objetivoId: { 
         type: mongoose.Schema.Types.ObjectId, 
         required: true,
@@ -27,7 +34,17 @@ const negociacionSchema = new mongoose.Schema({
         enum: ['no_iniciado', 'pendiente', 'aceptado', 'rechazado'], 
         default: 'pendiente' 
     },
+
+    rondas: { 
+        type: Number, 
+        default: 0 
+    },
+    
     ofertaTraspaso: { type: Number, default: 0 },
+
+    porcentajeFuturaVenta: { type: Number, default: 0 }, 
+    precioRecompra: { type: Number, default: 0 },        
+    clausulaCompra: { type: Number, default: 0 },
 
     estadoContrato: { 
         type: String, 
