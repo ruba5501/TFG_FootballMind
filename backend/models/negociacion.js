@@ -31,8 +31,8 @@ const negociacionSchema = new mongoose.Schema({
 
     estadoTraspaso: { 
         type: String, 
-        enum: ['no_iniciado', 'pendiente', 'aceptado', 'rechazado'], 
-        default: 'pendiente' 
+        enum: ['no_iniciado', 'negociando', 'aceptado', 'rechazado'], 
+        default: 'negociando' 
     },
 
     rondas: { 

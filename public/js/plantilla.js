@@ -519,7 +519,7 @@ async function enviarOferta() {
             window.location.href = data.redirect;
         } else {
             console.warn("No hay redirect en la respuesta, recargando...");
-            location.reload();
+            //location.reload();
         }
     } catch (err) {
         console.error(err);

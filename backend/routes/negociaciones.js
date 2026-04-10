@@ -88,60 +88,129 @@ negociacionRouter.post('/fichajes/ofertaTraspaso/:jugadorId', async (req, res) =
         let mensaje = "";
         let contraOferta = 0;
 
-        if (rondas > limiteNegociaciones) {
-            estado = 'rechazado';
-            mensaje = "Se nos ha agotado la paciencia. Habéis enviado demasiadas ofertas insuficientes y nos retiramos de la negociación.";
-        }
-        else if (oferta.tipo === 'traspaso') {
-            const precioMinimo = calcularPrecioMinimo(jugador, jugador.clubActual, oferta, partida.fechaActual);
+        if (oferta.tipo === 'traspaso') {
+            const precioMinimoVenta = calcularPrecioMinimo(jugador, jugador.clubActual, oferta, partida.fechaActual);
             const dineroOfrecido = oferta.precio;
 
-            if (dineroOfrecido >= precioMinimo) {
-                estado = 'aceptado';
-                mensaje = "El club acepta las condiciones. Tienes permiso para hablar con el jugador.";
-            } else if (dineroOfrecido >= precioMinimo * 0.5) {
-                estado = 'negociando';
-                const factorAleatorio = 1.08 + (Math.random() * 0.06);
-                const negPrevia = await Negociacion.findOne({ objetivoId: jugador._id, clubEmisor: miClubId, finalizada: false });
-                
-                let pretensionNuevas = precioMinimo * factorAleatorio;
-
-                if (negPrevia && negPrevia.estadoTraspaso === 'negociando') {
-                    pretensionNuevas = Math.max(precioMinimo, negPrevia.ofertaTraspaso * 0.95);
-                    mensaje = "Hemos reconsiderado nuestra postura, pero aún esperamos una oferta mejor.";
-                } else {
-                    mensaje = "Vuestra oferta no es suficiente, pero estamos dispuestos a escuchar otra propuesta.";
-                }
-
-                contraOferta = Math.floor(pretensionNuevas);
-            } else {
-                estado = 'rechazado';
-                mensaje = "No estamos interesados en vender al jugador por esa cantidad.";
-            }
-        } 
-        if (oferta.tipo === 'cesion') {
-            const porcentajeOfrecido = oferta.precio; 
-            const porcentajeMinimo = 0;
-            if (jugador.rolEquipo === 'suplente')porcentajeMinimo = 50;
-            else if (jugador.rolEquipo === 'reserva')porcentajeMinimo = 40;
-            else if (jugador.rolEquipo === 'promesa')porcentajeMinimo = 30;
-
-            if (jugador.rolEquipo != 'clave' && jugador.rolEquipo != 'importante'){
-                if (porcentajeOfrecido >= porcentajeMinimo) {
-                    estado = 'aceptado';
-                    mensaje = "Cesión aceptada.";
-                } else if (porcentajeOfrecido >= porcentajeMinimo - 20) {
-                    estado = 'negociando';
-                    contraOferta = porcentajeMinimo;
-                    mensaje = "El club pide que cubráis más porcentaje del sueldo.";
-                } else {
+            if (dineroOfrecido < precioMinimoVenta) {
+                if (rondas > limiteNegociaciones || dineroOfrecido < precioMinimoVenta * 0.5) {
                     estado = 'rechazado';
-                    mensaje = "No nos interesa ceder al jugador en esas condiciones.";
+                    mensaje = dineroOfrecido < precioMinimoVenta * 0.5 
+                        ? "No estamos interesados en vender al jugador por esa cantidad tan baja." 
+                        : "Se nos ha agotado la paciencia con vuestras ofertas por el traspaso.";
+                } else {
+                    estado = 'negociando';
+                    const factorAleatorio = 1.08 + (Math.random() * 0.06);
+                    let pretensionNuevas = precioMinimoVenta * factorAleatorio;
+
+                    if (negPrevia && negPrevia.estadoTraspaso === 'negociando') {
+                        pretensionNuevas = Math.max(precioMinimoVenta, negPrevia.ofertaTraspaso * 0.95);
+                        mensaje = "Hemos reconsiderado nuestra postura, pero aún esperamos una oferta mejor por el precio del traspaso.";
+                    } else {
+                        mensaje = "Vuestra oferta por el traspaso no es suficiente, pero estamos dispuestos a escuchar otra propuesta.";
+                    }
+                    contraOferta = Math.floor(pretensionNuevas);
+                }
+            } 
+            else {
+                if (negPrevia && negPrevia.ofertaTraspaso < precioMinimoVenta) {
+                    rondas = 1; 
+                }
+
+                if (oferta.precioRecompra && oferta.precioRecompra > 0) {
+                    const recompraMinimaAceptable = dineroOfrecido * 1.2; 
+
+                    if (oferta.precioRecompra >= recompraMinimaAceptable) {
+                        estado = 'aceptado';
+                        mensaje = "El club acepta las condiciones de venta y la cláusula de recompra fijada.";
+                    } 
+                    else if (rondas > limiteNegociaciones || oferta.precioRecompra < dineroOfrecido) {
+                        estado = 'aceptado';
+                        oferta.precioRecompra = 0;
+                        mensaje = "Aceptamos el precio de venta, pero hemos rechazado incluir la cláusula de recompra tras no llegar a un acuerdo.";
+                    }
+                    else {
+                        estado = 'negociando';
+                        let pretensionRecompra = recompraMinimaAceptable * 1.1;
+
+                        if (negPrevia && negPrevia.precioRecompra > 0) {
+                            pretensionRecompra = Math.max(recompraMinimaAceptable, negPrevia.ofertaTraspaso * 0.95);
+                            mensaje = "El precio de venta es correcto, pero estamos negociando la cifra de la recompra.";
+                        } else {
+                            mensaje = "Aceptamos el precio de venta. Sin embargo, para incluir una opción de recompra, la cifra debe ser mayor.";
+                        }
+                        contraOferta = Math.floor(pretensionRecompra);
+                    }
+                } else {
+                    estado = 'aceptado';
+                    mensaje = "El club acepta las condiciones. Tienes permiso para hablar con el jugador.";
                 }
             }
-            else{
+        }
+        else if (oferta.tipo === 'cesion') {
+            const porcentajeOfrecido = oferta.porcentajeSueldo; 
+            let porcentajeMinimo = 0;
+            let puedeCederse = false;
+
+            if (jugador.rolEquipo === 'suplente') {
+                porcentajeMinimo = 60; 
+                puedeCederse = true;
+            } else if (jugador.rolEquipo === 'reserva') {
+                porcentajeMinimo = 40;
+                puedeCederse = true;
+            } else if (jugador.rolEquipo === 'promesa') {
+                porcentajeMinimo = 20; 
+                puedeCederse = true;
+            }
+
+            if (!puedeCederse) {
                 estado = 'rechazado';
-                mensaje = "No nos interesa ceder a este jugador.";
+                mensaje = "Este jugador es fundamental en nuestros esquemas y no contemplamos su cesión bajo ningún concepto.";
+            } else {
+                if (porcentajeOfrecido < porcentajeMinimo) {
+                    if (rondas > limiteNegociaciones || porcentajeOfrecido < porcentajeMinimo - 20) {
+                        estado = 'rechazado';
+                        mensaje = "No estamos dispuestos a pagar tanto sueldo por un jugador que no estará aquí.";
+                    } else {
+                        estado = 'negociando';
+                        contraOferta = porcentajeMinimo;
+                        mensaje = `Aceptaríamos la cesión si cubrís al menos el ${porcentajeMinimo}% de su ficha.`;
+                    }
+                } 
+                else {
+                    if (negPrevia && negPrevia.ofertaTraspaso < porcentajeMinimo) {
+                        rondas = 1; 
+                    }
+                    if (oferta.clausulaCompra && oferta.clausulaCompra > 0) {
+                        const valorVenta = calcularPrecioMinimo(jugador, jugador.clubActual, oferta, partida.fechaActual);
+                        const clausulaAceptable = valorVenta * 1.1;
+
+                        if (oferta.clausulaCompra >= clausulaAceptable) {
+                            estado = 'aceptado';
+                            mensaje = "Aceptamos la cesión y el precio fijado para la opción de compra.";
+                        } 
+                        else if (oferta.clausulaCompra < valorVenta * 0.6 || rondas >= limiteNegociaciones) {
+                            estado = 'aceptado';
+                            oferta.clausulaCompra = 0; 
+                            mensaje = "Aceptamos la cesión, pero hemos rechazado la opción de compra al no llegar a un acuerdo económico.";
+                        }
+                        else {
+                            estado = 'negociando';
+                            let pretensionClausula = clausulaAceptable * 1.08;
+                            
+                            if (negPrevia && negPrevia.clausulaCompra > 0) {
+                                pretensionClausula = Math.max(clausulaAceptable, negPrevia.ofertaTraspaso * 0.95);
+                                mensaje = "Estamos dispuestos a bajar el precio de la opción de compra, pero aún es insuficiente.";
+                            } else {
+                                mensaje = "El porcentaje de sueldo es correcto, pero queremos fijar un precio de compra más alto.";
+                            }
+                            contraOferta = Math.floor(pretensionClausula);
+                        }
+                    } else {
+                        estado = 'aceptado';
+                        mensaje = "La propuesta de cesión nos parece justa para ambas partes.";
+                    }
+                }
             }
             
         }
