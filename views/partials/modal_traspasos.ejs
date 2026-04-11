@@ -69,11 +69,11 @@
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
                                         <label class="form-label small text-muted text-uppercase fw-bold">Futura Venta (%)</label>
-                                        <input type="number" class="form-control" id="futuraVenta" placeholder="0" min="0" max="100">
+                                        <input type="number" class="form-control" id="futuraVenta" placeholder="Opcional" min="0" max="100">
                                     </div>
                                     <div class="col-md-6 mb-3">
                                         <label class="form-label small text-muted text-uppercase fw-bold">Precio Recompra (€)</label>
-                                        <input type="number" class="form-control" id="precioRecompra" placeholder="No incluir" min="0">
+                                        <input type="number" class="form-control" id="precioRecompra" placeholder="Opcional" min="0">
                                     </div>
                                 </div>
                             </div>
@@ -84,15 +84,15 @@
                                     <input type="text" class="form-control bg-light" value="1 Temporada" readonly>
                                 </div>
                                 <div class="mb-3">
-                                    <label class="form-label small fw-bold text-uppercase">% Sueldo que pagarás</label>
-                                    <input type="range" class="form-range" id="porcentajeSueldo" min="0" max="100" step="10" oninput="document.getElementById('valSueldo').innerText = this.value">
-                                    <div class="text-center"><span id="valSueldo" class="h4 fw-bold text-primary">50</span><span class="h4 fw-bold text-primary">%</span></div>
+                                    <label class="form-label small fw-bold text-uppercase">Porcentaje de Sueldo que pagarás</label>
+                                    <input type="number" class="form-control" id="porcentajeSueldo" placeholder="Sueldo (%)" min="0" max="100">
                                 </div>
-                                <div class="form-check form-switch mb-3">
-                                    <input class="form-check-input" type="checkbox" id="clausulaCompraCheck">
-                                    <label class="form-check-label">Incluir Cláusula de Compra</label>
+                                <div class="row">
+                                    <div class="mb-3">
+                                        <label class="form-label small text-muted text-uppercase fw-bold">Cláusula de Compra (€)</label>
+                                        <input type="number" class="form-control" id="valorClausula" placeholder="Opcional" min="0">
+                                    </div>
                                 </div>
-                                <input type="number" class="form-control d-none mb-3" id="valorClausula" placeholder="Precio de compra (€)" min="0">
                             </div>
 
                             <div class="d-grid mt-4">

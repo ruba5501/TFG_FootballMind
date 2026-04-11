@@ -245,13 +245,13 @@ clubRouter.get('/negociaciones/:partidaId', requireLogin, async (req, res) => {
         const { partidaId } = req.params;
         const partida = await Partida.findById(partidaId).populate('clubSeleccionado').lean();
         const miClubId = partida.clubSeleccionado._id;
-        const ofertasEnviadas = await Negociacion.find({ partidaId, clubEmisor: miClubId, finalizada: false })
+        const ofertasEnviadas = await Negociacion.find({ partidaId, clubEmisor: miClubId })
         .populate('objetivoId') 
         .populate('clubReceptor')
         .sort({ ultimaModificacion: -1 })
         .lean();
 
-        const ofertasRecibidas = await Negociacion.find({ partidaId, clubReceptor: miClubId, finalizada: false })
+        const ofertasRecibidas = await Negociacion.find({ partidaId, clubReceptor: miClubId })
         .populate('objetivoId')
         .populate('clubEmisor')
         .sort({ ultimaModificacion: -1 })
@@ -521,14 +521,22 @@ clubRouter.get('/objetivo/detalleTraspaso/:id', requireLogin, async (req, res) =
         const partida = await Partida.findById(objetivo.partidaId)
                                            .populate('clubSeleccionado')
                                            .lean();
-
+        const miClubId = partida.clubSeleccionado._id;
+        const negActiva = await Negociacion.findOne({ 
+            objetivoId: id, 
+            clubEmisor: miClubId, 
+            finalizada: false 
+        }).lean();
+        const precioAceptado = negActiva && negActiva.basicoAceptado === true;
         res.json({
             success: true,
             tipo: tipo,
             objetivo: objetivo,
             clubObjetivo: objetivo.clubActual || null,
             miClub: partida.clubSeleccionado,
-            fechaActual: partida.fechaActual
+            fechaActual: partida.fechaActual,
+            basicoAceptado: precioAceptado, 
+            ofertaPrevia: negActiva
         });
 
     } catch (error) {

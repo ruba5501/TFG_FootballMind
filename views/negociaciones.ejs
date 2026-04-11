@@ -25,7 +25,7 @@
             <% if (ofertasEnviadas.length === 0) { %>
                 <div class="text-center p-5 bg-light rounded border">
                     <i class="bi bi-folder-x fs-1 text-muted"></i>
-                    <p class="text-muted mt-2">No tienes negociaciones activas en este momento.</p>
+                    <p class="text-muted mt-2">No tienes negociaciones en este momento.</p>
                 </div>
             <% } else { %>
                 <div class="table-responsive bg-white shadow-sm rounded border">
@@ -37,8 +37,9 @@
                                 <th>Club Propietario</th>
                                 <th>Estado Operación</th>
                                 <th>Estado Contrato</th>
-                                <th>Última Oferta</th>
-                                <th class="text-end">Acciones</th>
+                                <th class="text-center">Última Oferta</th>
+                                <th class="text-center">Última Contraoferta</th>
+                                <th class="text-center">Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -89,27 +90,95 @@
                                     </td>
                                     <td>
                                         <div class="small fw-bold text-success">
-                                            <%= neg.tipoOferta === 'traspaso' ? neg.ofertaTraspaso.toLocaleString() + ' €' : 'Cesión' %>
+                                            <% if (neg.tipoOferta === 'traspaso') { %>
+                                                <div><%= neg.ofertaTraspaso.toLocaleString() %> €</div>
+                                                
+                                                <% if (neg.porcentajeFuturaVenta > 0) { %>
+                                                    <div class="text-muted small">+ <%= neg.porcentajeFuturaVenta %>% futura venta</div>
+                                                <% } %>
+                                                <% if (neg.precioRecompra > 0) { %>
+                                                    <div class="text-muted small">+ <%= neg.precioRecompra.toLocaleString() %> € recompra</div>
+                                                <% } %>
+
+                                            <% } else { %>
+                                                <div><%= neg.ofertaTraspaso %>% sueldo</div>
+                                                
+                                                <% if (neg.clausulaCompra > 0) { %>
+                                                    <div class="text-muted small">+ <%= neg.clausulaCompra.toLocaleString() %> € opción compra</div>
+                                                <% } %>
+                                            <% } %>
                                         </div>
                                         <div class="text-muted" style="font-size: 0.75rem;">
                                             <%= neg.ofertaSueldo > 0 ? neg.ofertaSueldo.toLocaleString() + ' €/año' : 'Sueldo por negociar' %>
                                         </div>
                                     </td>
-                                    <td class="text-end">
-                                        <div class="btn-group">
-                                            <% if (neg.estadoTraspaso === 'aceptado') { %>
-                                                <% if (neg.estadoContrato !== 'aceptado') { %>
-                                                    <button onclick="abrirNegociacionContrato('<%= neg.objetivoId._id %>')" class="btn btn-sm btn-success">
-                                                        <i class="bi bi-pen-fill"></i> Negociar Contrato
-                                                    </button>
-                                                <% } else { %>
-                                                    <button class="btn btn-sm btn-outline-secondary" disabled>Fichado</button>
+                                    <td>
+                                        <div class="small fw-bold text-primary">
+                                            <% if (neg.tipoOferta === 'traspaso') { %>
+                                                
+                                                <% if (neg.estadoTraspaso === 'negociando' && !neg.basicoAceptado) { %>
+                                                    <div class="fs-6"><%= neg.contraofertaTraspaso.toLocaleString() %> €</div>
+                                                <% } else if (neg.basicoAceptado) { %>
+                                                    <% if (neg.precioRecompra > 0) { %>
+                                                        <div class="text-success small"><i class="bi bi-check-circle"></i> <%= neg.ofertaTraspaso.toLocaleString() %> €</div>
+                                                        <% if (neg.porcentajeFuturaVenta > 0) { %>
+                                                            <div class="text-success small"><i class="bi bi-check-circle"></i>+ <%= neg.porcentajeFuturaVenta.toLocaleString() %> % futura venta</div>
+                                                        <% } %>
+                                                        <div class="fs-6">+ <%= neg.contraofertaTraspaso.toLocaleString() %> € recompra</div>
+                                                    <% } 
+                                                    else { %>
+                                                        <div class="fs-6"> <%= neg.contraofertaTraspaso.toLocaleString() %> €</div>
+                                                        <% if (neg.porcentajeFuturaVenta > 0) { %>
+                                                            <div class="fs-6">+ <%= neg.porcentajeFuturaVenta.toLocaleString() %> % futura venta</div>
+                                                        <% } %>
+                                                    <% } %>
                                                 <% } %>
 
+                                            <% } else { %>
+                                                
+                                                <% if (neg.estadoTraspaso === 'negociando' && !neg.basicoAceptado) { %>
+                                                    <div class="fs-6"><%= neg.ofertaTraspaso %>% sueldo</div>
+                                                <% } else if (neg.basicoAceptado) { %>                                                    
+                                                    <% if (neg.clausulaCompra > 0) { %>
+                                                        <div class="text-success small"><i class="bi bi-check-circle"></i> <%= neg.ofertaTraspaso %>%</div>
+                                                        <div class="fs-6">+ <%= neg.contraofertaTraspaso.toLocaleString() %> € compra</div>
+                                                    <% }
+                                                    else { %>
+                                                        <div class="fs-6"> <%= neg.contraofertaTraspaso.toLocaleString() %> % sueldo</div>
+                                                    <% } %>
+                                                <% } %>
+
+                                            <% } %>
+                                        </div>
+                                    </td>
+                                    <td class="text-end">
+                                        <div class="d-grid gap-1">
+                                            <% if (neg.estadoTraspaso === 'aceptado') { %>
+                                                <% if (neg.tipoOferta != 'cesion') { %>
+                                                    <% if (neg.estadoContrato !== 'aceptado') { %>
+                                                        <button onclick="abrirNegociacionContrato('<%= neg.objetivoId._id %>')" class="btn btn-sm btn-success">
+                                                            <i class="bi bi-pen-fill"></i> Negociar Contrato
+                                                        </button>
+                                                        <button onclick="finalizarNegociacion('<%= neg._id %>')" class="btn btn-sm btn-outline-danger">
+                                                            finalizar
+                                                        </button>
+                                                    <% } else { %>
+                                                        <button class="btn btn-sm btn-outline-secondary" disabled>Fichado</button>
+                                                        <button onclick="borrarNegociacion('<%= neg._id %>')" class="btn btn-sm btn-outline-secondary">
+                                                            <i class="bi bi-trash"></i>
+                                                        </button>
+                                                    <% } %>
+                                                <% } else  { %>
+                                                    <button class="btn btn-sm btn-outline-secondary" disabled>Fichado</button>
+                                                    <button onclick="borrarNegociacion('<%= neg._id %>')" class="btn btn-sm btn-outline-secondary">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                <% } %>
                                             <% } else if (neg.estadoTraspaso === 'negociando') { %>
                                                 <button onclick="negociarTraspasoClub(
                                                     '<%= neg.objetivoId._id %>', 
                                                     '<%= neg.ofertaTraspaso || 0 %>', 
+                                                    '<%= neg.contraofertaTraspaso || 0 %>', 
                                                     '<%= neg.tipoOferta %>',
                                                     '<%= neg.porcentajeFuturaVenta || 0 %>',
                                                     '<%= neg.precioRecompra || 0 %>',
@@ -118,13 +187,13 @@
                                                         class="btn btn-sm btn-primary">
                                                     Mejorar Oferta
                                                 </button>
-                                                <button onclick="cancelarNegociacion('<%= neg._id %>')" class="btn btn-sm btn-outline-danger">
-                                                    <i class="bi bi-x-lg"></i>
+                                                <button onclick="finalizarNegociacion('<%= neg._id %>')" class="btn btn-sm btn-outline-danger">
+                                                    finalizar
                                                 </button>
 
                                             <% } else if (neg.estadoTraspaso === 'rechazado') { %>
-                                                <button onclick="cancelarNegociacion('<%= neg._id %>')" class="btn btn-sm btn-outline-secondary">
-                                                    Limpiar
+                                                <button onclick="borrarNegociacion('<%= neg._id %>')" class="btn btn-sm btn-outline-secondary">
+                                                     <i class="bi bi-trash"></i>
                                                 </button>
                                             <% } %>
                                         </div>

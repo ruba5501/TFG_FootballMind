@@ -264,7 +264,8 @@ document.addEventListener('DOMContentLoaded', () => {
     modalObj = new bootstrap.Modal(document.getElementById('modalNegociacion'));
 });
 
-async function negociarTraspasoClub(jugadorId, precioContraI = 0, tipoNegoc = 'traspaso', futuraVentaI = 0, recompraI = 0, clausulaCompraI = 0) {
+async function negociarTraspasoClub(jugadorId, precioOfertaI = 0, precioContraI = 0, tipoNegoc = 'traspaso', futuraVentaI = 0, recompraI = 0, clausulaCompraI = 0) {
+    const precioOferta = Number(precioOfertaI);
     const precioContra = Number(precioContraI);
     const futuraVenta = Number(futuraVentaI);
     const recompra = Number(recompraI);
@@ -286,6 +287,11 @@ async function negociarTraspasoClub(jugadorId, precioContraI = 0, tipoNegoc = 't
     const data = await response.json();
     const o = data.objetivo;
     const c = data.clubObjetivo;
+    const inputPrecio = document.getElementById('ofertaPrecio');
+    const inputPorcentajeFutVenta = document.getElementById('futuraVenta');
+    const inputRecompra = document.getElementById('precioRecompra');
+    const inputSueldo = document.getElementById('porcentajeSueldo');
+    const inputclauCompra = document.getElementById('valorClausula');
 
     if (precioContra > 0) {
         tituloModal.innerText = "Respuesta a la Contraoferta";
@@ -296,10 +302,16 @@ async function negociarTraspasoClub(jugadorId, precioContraI = 0, tipoNegoc = 't
             btnCesion.disabled = true;
             divTraspaso.classList.remove('d-none');
             divCesion.classList.add('d-none');
-            
-            document.getElementById('ofertaPrecio').value = precioContra;
-            document.getElementById('futuraVenta').value = futuraVenta;
-            document.getElementById('precioRecompra').value = recompra;
+            inputPrecio.value = precioOferta;
+            inputPorcentajeFutVenta.value = futuraVenta;
+            inputRecompra.value = recompra;
+
+            if (data.basicoAceptado) {
+                inputPrecio.readOnly = true;
+                inputPrecio.classList.add('bg-light');
+                inputPorcentajeFutVenta.readOnly = true;
+                inputPorcentajeFutVenta.classList.add('bg-light');
+            }
 
             document.querySelector('label[for="ofertaPrecio"]').innerHTML = 
                 `Precio Traspaso <span class="badge bg-primary">Sugerido: ${precioContra.toLocaleString()}€</span>`;
@@ -310,13 +322,12 @@ async function negociarTraspasoClub(jugadorId, precioContraI = 0, tipoNegoc = 't
             divCesion.classList.remove('d-none');
             divTraspaso.classList.add('d-none');
 
-            document.getElementById('porcentajeSueldo').value = precioContra;
-            document.getElementById('valSueldo').innerText = precioContra;
+            inputSueldo.value = precioOferta;
+            inputclauCompra.value = clausulaCompra;
 
-            if (clausulaCompra > 0) {
-                document.getElementById('clausulaCompraCheck').checked = true;
-                document.getElementById('divClausulaCompra').classList.remove('d-none');
-                document.getElementById('valorClausula').value = clausulaCompra;
+            if (data.basicoAceptado) {
+                inputSueldo.readOnly = true;
+                inputSueldo.classList.add('bg-light');
             }
         }
     } else {
@@ -502,9 +513,7 @@ async function enviarOferta() {
         oferta.precioRecompra = parseFloat(document.getElementById('precioRecompra').value) || 0;
     } else {
         oferta.porcentajeSueldo = parseInt(document.getElementById('porcentajeSueldo').value);
-        if (document.getElementById('clausulaCompraCheck').checked) {
-            oferta.clausulaCompra = parseFloat(document.getElementById('valorClausula').value);
-        }
+        oferta.clausulaCompra = parseFloat(document.getElementById('valorClausula').value);
     }
 
     try {
@@ -514,12 +523,11 @@ async function enviarOferta() {
             body: JSON.stringify({ oferta })
         });
         const data = await response.json();
-        console.log("Respuesta del servidor:", data);
         if (data.redirect) {
             window.location.href = data.redirect;
         } else {
             console.warn("No hay redirect en la respuesta, recargando...");
-            //location.reload();
+            location.reload();
         }
     } catch (err) {
         console.error(err);
@@ -611,27 +619,27 @@ async function confirmarContrato() {
     }
 }
 
-async function cancelarNegociacion(negId) {
-    const result = await Swal.fire({
-        title: '¿Retirar oferta?',
-        text: "Perderás el progreso de la negociación",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        confirmButtonText: 'Sí, retirar'
-    });
-
-    if (result.isConfirmed) {
-        const res = await fetch(`/negociaciones/cancelar/${negId}`, { method: 'DELETE' });
-        if (res.ok) {
-            Swal.fire('Cancelada', 'La oferta ha sido retirada', 'success')
-                .then(() => location.reload());
-        }
+async function finalizarNegociacion(negId) {
+    try {
+        const response = await fetch(`/negociaciones/finalizar/${negId}`, {
+            method: 'GET',
+        });
+        location.reload();
+    } catch (err) {
+        console.error(err);
     }
 }
 
-
-
+async function borrarNegociacion(negId) {
+    try {
+        const response = await fetch(`/negociaciones/borrar/${negId}`, {
+            method: 'GET',
+        });
+        location.reload();
+    } catch (err) {
+        console.error(err);
+    }
+}
 
 
 
