@@ -41,6 +41,9 @@
                                                         <button class="btn btn-outline-info btn-sm" onclick="verAtributosEmpleado('<%= emp._id %>')">
                                                             Detalles
                                                         </button>
+                                                        <button class="btn btn-outline-info btn-sm" onclick="NegociarContrato('<%= emp._id %>')">
+                                                            Renovar
+                                                        </button>
                                                         <button class="btn btn-outline-danger btn-sm" onclick="confirmarDespido('<%= emp._id %>')">
                                                             Despedir
                                                         </button>
@@ -295,8 +298,8 @@
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     </div>
-                                    <button class="btn btn-success" onclick="iniciarNegociacionContrato('<%= empleado._id %>')">
-                                        <i class="bi bi-file-earmark-person me-1"></i> Negociar Contrato
+                                    <button class="btn btn-success" onclick="NegociarContrato('<%= empleado._id %>')">
+                                        Negociar Contrato
                                     </button>
                                 </div>
                             </div>
@@ -310,6 +313,7 @@
 
 <%- include('partials/modal_atributos') %>
 <%- include('partials/modal_traspasos') %>
+<%- include('partials/modal_contratos') %>
 
 <script src="/js/plantilla.js"></script>
 <script src="/js/buscadorTraspasos.js"></script>

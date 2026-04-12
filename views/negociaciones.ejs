@@ -156,8 +156,8 @@
                                             <% if (neg.estadoTraspaso === 'aceptado') { %>
                                                 <% if (neg.tipoOferta != 'cesion') { %>
                                                     <% if (neg.estadoContrato !== 'aceptado') { %>
-                                                        <button onclick="abrirNegociacionContrato('<%= neg.objetivoId._id %>')" class="btn btn-sm btn-success">
-                                                            <i class="bi bi-pen-fill"></i> Negociar Contrato
+                                                        <button onclick="NegociarContrato('<%= neg.objetivoId._id %>')" class="btn btn-sm btn-success">
+                                                            Negociar Contrato
                                                         </button>
                                                         <button onclick="finalizarNegociacion('<%= neg._id %>')" class="btn btn-sm btn-outline-danger">
                                                             finalizar
@@ -212,4 +212,5 @@
     </div>
 </div>
 <%- include('partials/modal_traspasos') %>
+<%- include('partials/modal_contratos') %>
 <script src="/js/plantilla.js"></script>

@@ -258,11 +258,6 @@ function subirPrimerEquipo(id) {
 
 
 
-let modalObj;
-
-document.addEventListener('DOMContentLoaded', () => {
-    modalObj = new bootstrap.Modal(document.getElementById('modalNegociacion'));
-});
 
 async function negociarTraspasoClub(jugadorId, precioOfertaI = 0, precioContraI = 0, tipoNegoc = 'traspaso', futuraVentaI = 0, recompraI = 0, clausulaCompraI = 0) {
     const precioOferta = Number(precioOfertaI);
@@ -276,7 +271,8 @@ async function negociarTraspasoClub(jugadorId, precioOfertaI = 0, precioContraI 
         form.reset();
     }
 
-    const modalObj = new bootstrap.Modal(document.getElementById('modalNegociacion'));
+    const modalObj = new bootstrap.Modal(document.getElementById('modalNegociacion'))
+
     const btnTraspaso = document.getElementById('modoTraspaso');
     const btnCesion = document.getElementById('modoCesion');
     const tituloModal = document.getElementById('tituloModal');
@@ -369,7 +365,9 @@ async function negociarTraspasoClub(jugadorId, precioOfertaI = 0, precioContraI 
     imgBandera.style.display = o.nacionalidad ? 'block' : 'none';
 
     // Lógica de Interés
-    const interes = calcularInteres(o, data.clubObjetivo.reputacion, data.miClub.reputacion, data.fechaActual);
+    const reputacionClubObjetivo = data.clubObjetivo ? data.clubObjetivo.reputacion : 0;
+    const reputacionMiClub = data.miClub ? data.miClub.reputacion : 0;
+    const interes = calcularInteres(o, reputacionClubObjetivo, reputacionMiClub, data.fechaActual);
     const barra = document.getElementById('barraInteres');
     barra.style.width = interes + '%';
     if (interes < 20) {
@@ -399,14 +397,6 @@ document.getElementsByName('modoNegoc').forEach(radio => {
         document.getElementById('camposTraspaso').classList.toggle('d-none', e.target.id !== 'modoTraspaso');
         document.getElementById('camposCesion').classList.toggle('d-none', e.target.id !== 'modoCesion');
     });
-});
-
-document.getElementById('porcentajeSueldo').addEventListener('input', (e) => {
-    document.getElementById('valSueldo').innerText = e.target.value;
-});
-
-document.getElementById('clausulaCompraCheck').addEventListener('change', (e) => {
-    document.getElementById('valorClausula').classList.toggle('d-none', !e.target.checked);
 });
 
 function calcularInteres(j, clubOrigen, tuClub, fechaActualPartida) {
@@ -534,33 +524,49 @@ async function enviarOferta() {
     }
 }
 
-async function abrirNegociacionContrato(id) {
-    // 1. Obtener datos usando TU ruta
+async function NegociarContrato(id) {
     const response = await fetch(`/objetivo/detalleTraspaso/${id}`);
     const data = await response.json();
     const o = data.objetivo;
     const miClubId = data.miClub._id;
     const clubSujetoId = data.clubObjetivo ? data.clubObjetivo._id : null;
-
-    // 2. Determinar si es RENOVACIÓN o FICHAJE
-    // Si el ID de su club coincide con el mío, es renovación
     const esRenovacion = (clubSujetoId === miClubId);
+    const modalContrato = new bootstrap.Modal(document.getElementById('modalContrato'))
 
-    // 3. Poblar textos del Modal
     document.getElementById('contNombre').innerText = o.nombre;
-    document.getElementById('contTipo').innerText = `${data.tipo.toUpperCase()} - Media ${o.valoracion}`;
-    document.getElementById('contSueldoActual').innerText = `${o.salario.toLocaleString()} €/año`;
-    
-    // Cambiar el título del modal según el contexto
-    document.getElementById('tituloModalContrato').innerText = esRenovacion ? "🤝 Renovación de Contrato" : "🤝 Negociación de Fichaje";
+    const isJugador = document.getElementById('isJugador');
+    if (data.tipo === 'jugador') {
+        isJugador.classList.remove('d-none');
+        document.getElementById('Media').innerText = `Media: ${o.valoracion}`;
+        document.getElementById('Potencial').innerText = `Pot: ${o.potencial}`;
+    } else {
+        console.log("emp")
+        isJugador.classList.add('d-none');
+    }
+    const finContrato = document.getElementById('finContrato');
+    const txtFin = document.getElementById('contFinContrato');
 
-    // 4. Adaptar Select de Roles (Jugador vs Empleado)
+    if (esRenovacion && o.finContrato) {
+        finContrato.classList.remove('d-none');
+        
+        const fecha = new Date(o.finContrato);
+        txtFin.innerText = fecha.toLocaleDateString('es-ES', {
+            month: 'long',
+            year: 'numeric'
+        });
+    } else {
+        finContrato.classList.add('d-none');
+    }
+    document.getElementById('contTipo').innerText = `${data.tipo.toUpperCase()}`;
+    document.getElementById('contSueldoActual').innerText = `${o.salario.toLocaleString()} €/año`;
+    document.getElementById('tituloModalContrato').innerText = esRenovacion ? "Renovación de Contrato" : "Negociación de Fichaje";
+
     const selectRol = document.getElementById('ofertRol');
     selectRol.innerHTML = '';
     
     const opciones = data.tipo === 'jugador' 
-        ? ['Clave', 'Titular', 'Rotación', 'Juvenil', 'Descarte'] 
-        : ['Primer Entrenador', 'Asistente', 'Preparador', 'Ojeador', 'Fisio'];
+        ? ['clave', 'importante', 'suplente', 'reserva', 'promesa'] 
+        : ['preparadorFisico','preparadorTecnico','preparadorTactico','preparadorPorteros','psicologo','medico','fisio','ojeador','ojeadorCantera','entrenadorCantera','segundoEntrenador'];
 
     opciones.forEach(opt => {
         const el = document.createElement('option');
@@ -569,15 +575,11 @@ async function abrirNegociacionContrato(id) {
         if (o.rolEquipo === opt || o.puesto === opt) el.selected = true; // Preseleccionar actual
         selectRol.appendChild(el);
     });
-
-    // 5. Guardar metadata necesaria para el envío
     const form = document.getElementById('formContrato');
     form.dataset.id = id;
     form.dataset.tipo = data.tipo; // 'jugador' o 'empleado'
     form.dataset.esRenovacion = esRenovacion;
 
-    // Mostrar el modal (Asegúrate de que el ID del modal coincida con el HTML)
-    const modalContrato = new bootstrap.Modal(document.getElementById('modalContrato'));
     modalContrato.show();
 }
 

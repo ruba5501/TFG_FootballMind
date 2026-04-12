@@ -2,7 +2,7 @@
     <div class="modal-dialog modal-lg">
         <div class="modal-content border-0 shadow-lg">
             <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title">🤝 Negociación de Contrato</h5>
+                <h5 class="modal-title" id="tituloModalContrato">Negociación de Contrato</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body bg-light">
@@ -12,11 +12,20 @@
                     </div>
                     <div class="col">
                         <h4 id="contNombre" class="mb-0">Nombre del Sujeto</h4>
-                        <p id="contTipo" class="text-muted mb-0">Jugador - Media 82</p>
+                        <p id="contTipo" class="text-muted mb-0">Jugador</p>
+                        <div class="d-flex gap-2 mt-2 d-none" id="isJugador">
+                            <span class="badge bg-primary" id="Media">Media: --</span>
+                            <span class="badge bg-info" id="Potencial">Pot: --</span>
+                        </div>
                     </div>
                     <div class="col-auto text-end">
                         <small class="text-muted d-block">Sueldo Actual</small>
                         <strong id="contSueldoActual">0 €</strong>
+                        <div id="finContrato" class="d-none">
+                            <hr class="my-1">
+                            <small class="text-muted d-block">Fin de contrato: </small>
+                            <small id="contFinContrato" class="fw-bold text-danger"></small>
+                        </div>
                     </div>
                 </div>
 
@@ -32,7 +41,7 @@
                                 <select id="ofertAnios" class="form-select form-select-lg">
                                     <option value="1">1 Año</option>
                                     <option value="2">2 Años</option>
-                                    <option value="3" selected>3 Años</option>
+                                    <option value="3">3 Años</option>
                                     <option value="4">4 Años</option>
                                     <option value="5">5 Años</option>
                                 </select>
@@ -50,7 +59,7 @@
                     </div>
 
                     <div class="d-grid gap-2 mt-4">
-                        <button type="button" onclick="confirmarContrato()" class="btn btn-primary btn-lg">Firmar Contrato</button>
+                        <button type="button" onclick="confirmarContrato()" class="btn btn-primary btn-lg">Enviar Contrato</button>
                     </div>
                 </form>
             </div>

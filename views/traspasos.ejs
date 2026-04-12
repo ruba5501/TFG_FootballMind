@@ -470,7 +470,7 @@
 
                                     <% if (jugador.negociacionActiva) { %>
                                         <% if (jugador.negociacionActiva.estadoTraspaso === 'aceptado') { %>
-                                            <button class="btn btn-success" onclick="abrirNegociacionContrato('<%= jugador._id %>')">
+                                            <button class="btn btn-success" onclick="NegociarContrato('<%= jugador._id %>')">
                                                 <i class="bi bi-pen-fill me-1"></i> Negociar Contrato
                                             </button>
                                         <% } else { %>
@@ -487,9 +487,9 @@
                                             </button>
                                         <% } %>
 
-                                   <% } else { %>
+                                    <% } else { %>
                                         <% if (!jugador.clubActual || jugador.clubActual.nombre === 'Libre') { %>
-                                            <button class="btn btn-success" onclick="abrirNegociacionContrato('<%= jugador._id %>')">
+                                            <button class="btn btn-success" onclick="NegociarContrato('<%= jugador._id %>')">
                                                 <i class="bi bi-file-earmark-person me-1"></i> Negociar Contrato
                                             </button>
                                         <% } else { %>
@@ -510,6 +510,7 @@
 
 <%- include('partials/modal_atributos') %>
 <%- include('partials/modal_traspasos') %>
+<%- include('partials/modal_contratos') %>
 
 <script src="/js/plantilla.js"></script>
 <script src="/js/buscadorTraspasos.js"></script> 
