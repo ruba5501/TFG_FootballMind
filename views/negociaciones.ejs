@@ -155,9 +155,31 @@
                                         <div class="d-grid gap-1">
                                             <% if (neg.estadoTraspaso === 'aceptado') { %>
                                                 <% if (neg.tipoOferta != 'cesion') { %>
-                                                    <% if (neg.estadoContrato !== 'aceptado') { %>
-                                                        <button onclick="NegociarContrato('<%= neg.objetivoId._id %>')" class="btn btn-sm btn-success">
+                                                    <% if (neg.estadoContrato === 'no_iniciado') { %>
+                                                        <button onclick="NegociarContrato(
+                                                            '<%= neg.objetivoId._id %>', 
+                                                            '<%= neg.ofertaSueldo || 0 %>', 
+                                                            '<%= neg.contraofertaSueldo || 0 %>',
+                                                            '<%= neg.ofertaAnios || 1 %>',
+                                                            '<%= neg.ofertaRol %>',
+                                                            '<%= neg.ofertaClausula || 0 %>'
+                                                            )" class="btn btn-sm btn-success">
                                                             Negociar Contrato
+                                                        </button>
+                                                        <button onclick="finalizarNegociacion('<%= neg._id %>')" class="btn btn-sm btn-outline-danger">
+                                                            finalizar
+                                                        </button>
+                                                    <% } else if(neg.estadoContrato === 'negociando'){ %>
+                                                        <button onclick="NegociarContrato(
+                                                            '<%= neg.objetivoId._id %>', 
+                                                            '<%= neg.ofertaSueldo || 0 %>', 
+                                                            '<%= neg.contraofertaSueldo || 0 %>',
+                                                            '<%= neg.ofertaAnios || 1 %>',
+                                                            '<%= neg.ofertaRol %>',
+                                                            '<%= neg.ofertaClausula || 0 %>'
+                                                            )" 
+                                                             class="btn btn-sm btn-primary">
+                                                            Mejorar oferta Contrato
                                                         </button>
                                                         <button onclick="finalizarNegociacion('<%= neg._id %>')" class="btn btn-sm btn-outline-danger">
                                                             finalizar

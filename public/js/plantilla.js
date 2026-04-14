@@ -478,12 +478,45 @@ function calcularInteres(j, clubOrigen, tuClub, fechaActualPartida) {
     return Math.min(100, Math.max(0, score));
 }
 
+function calcularInteresRenovacion(j, tuClubReputacion, fechaActualPartida) {
+    let score = 70;
+    
+    const hoy = new Date(fechaActualPartida);
+    const fin = new Date(j.finContrato);
+    const mesesRestantes = (fin.getFullYear() - hoy.getFullYear()) * 12 + (fin.getMonth() - hoy.getMonth());
+
+    // Satisfacción actual, si esta satisfecho querrá quedarse, si no se querrá ir
+    score += (j.estado.satisfaccion - 60); 
+
+    // Nivel del jugador vs Club
+    const diferenciaNivel = j.valoracion - tuClubReputacion;
+    if (diferenciaNivel > 5) score -= 20; // Se siente demasiado bueno para el club
+    if (diferenciaNivel > 10) score -= 30; // Quiere irse a un grande ya
+
+    if (j.potencial > tuClubReputacion + 15 && j.valoracion > 70) {
+        score -= 30; 
+    }
+    // Rol en el equipo
+    if (j.rolEquipo === 'clave' || j.rolEquipo === 'titular') score += 15;
+    if (j.rolEquipo === 'suplente') score -= 20;
+    if (j.rolEquipo === 'reserva') score -= 40;
+
+    // Urgencia de contrato, si le queda poco tendra mas interes en renovar y si le queda mucho no tendra tanto interes
+    if (mesesRestantes <= 6) score -= 10;
+    if (mesesRestantes > 24) score += 10;
+
+    // cuando estan mas cerca de retirarse suelen estar mas predispuestos a renovar
+    if (j.edad > 33) score += 15;
+
+    return Math.min(100, Math.max(0, score));
+}
+
 function obtenerLabelInteres(val) {
     if (val < 20) return "No esta muy dispuesto a negociar asique será difícil ficharle";
     if (val < 40) return "No está demasiado interesado.";
     if (val < 60) return "Abierto a negociar.";
     if (val < 85) return "Esta interesado en negociar.";
-    if (val < 100) return "Muy interesado.";
+    if (val <= 100) return "Muy interesado.";
 
 }
 
@@ -516,7 +549,6 @@ async function enviarOferta() {
         if (data.redirect) {
             window.location.href = data.redirect;
         } else {
-            console.warn("No hay redirect en la respuesta, recargando...");
             location.reload();
         }
     } catch (err) {
@@ -524,7 +556,7 @@ async function enviarOferta() {
     }
 }
 
-async function NegociarContrato(id) {
+async function NegociarContrato(id, sueldoOf = 0, sueldoContra = 0, aniosOf = 1, rolOf = '', clauOf = 0) {
     const response = await fetch(`/objetivo/detalleTraspaso/${id}`);
     const data = await response.json();
     const o = data.objetivo;
@@ -533,15 +565,77 @@ async function NegociarContrato(id) {
     const esRenovacion = (clubSujetoId === miClubId);
     const modalContrato = new bootstrap.Modal(document.getElementById('modalContrato'))
 
+    document.getElementById('formContrato').reset();
+
+    // Referencias a inputs
+    const inputSueldo = document.getElementById('ofertaSueldo');
+    const inputAnios = document.getElementById('ofertaAnios');
+    const inputRol = document.getElementById('ofertaRol');
+    const inputClausula = document.getElementById('ofertaClausula');
+    const tituloModal = document.getElementById('tituloModalContrato');
+
+    if (Number(sueldoContra) > 0) {
+        tituloModal.innerText = "Respuesta a Contraoferta del Jugador";
+        tituloModal.parentElement.classList.replace('bg-primary', 'bg-info'); // Color diferente para distinguir
+        
+        inputSueldo.value = sueldoOf > 0 ? sueldoOf : sueldoContra;
+        inputAnios.value = aniosOf;
+        inputClausula.value = clauOf;
+
+        document.querySelector('label[for="ofertaSueldo"]').innerHTML = 
+            `Sueldo Anual (€) <span class="badge bg-primary">Sugerido: ${Number(sueldoContra).toLocaleString()}€</span>`;
+
+        if (data.contratoAceptado) {
+            inputSueldo.readOnly = true;
+            inputSueldo.classList.add('bg-light');
+        }
+    } else {
+        tituloModal.innerText = esRenovacion ? "Renovación de Contrato" : "Negociación de Fichaje";
+        tituloModal.parentElement.classList.replace('bg-info', 'bg-primary');
+        document.querySelector('label[for="ofertaSueldo"]').innerText = "Sueldo Anual (€)";
+        inputSueldo.readOnly = false;
+        inputSueldo.classList.remove('bg-light');
+    }
+
+
+
     document.getElementById('contNombre').innerText = o.nombre;
     const isJugador = document.getElementById('isJugador');
+    const interesJugador = document.getElementById('interesJugador');
     if (data.tipo === 'jugador') {
         isJugador.classList.remove('d-none');
         document.getElementById('Media').innerText = `Media: ${o.valoracion}`;
         document.getElementById('Potencial').innerText = `Pot: ${o.potencial}`;
+        
+        interesJugador.classList.remove('d-none');
+        const reputacionClubObjetivo = data.clubObjetivo ? data.clubObjetivo.reputacion : 0;
+        const reputacionMiClub = data.miClub ? data.miClub.reputacion : 0;
+        console.log(reputacionClubObjetivo);
+        const interes = esRenovacion ? calcularInteresRenovacion(o, reputacionMiClub, data.fechaActual) : calcularInteres(o, reputacionClubObjetivo, reputacionMiClub, data.fechaActual);
+        console.log(interes);
+        const barra = document.getElementById('barraInteresContrato');
+        barra.style.width = interes + '%';
+        if (interes < 20) {
+            barra.className = 'progress-bar bg-danger'; 
+        } else if (interes < 40) {
+            barra.className = 'progress-bar';
+            barra.style.backgroundColor = '#fd7e14'; 
+        } else if (interes < 60) {
+            barra.className = 'progress-bar bg-warning text-dark';
+            barra.style.backgroundColor = ''; 
+        } else if (interes < 85) {
+            barra.className = 'progress-bar bg-success';
+            barra.style.backgroundColor = '';
+        } else {
+            barra.className = 'progress-bar';
+            barra.style.backgroundColor = '#155724'; 
+        }
+
+        document.getElementById('textoInteresContrato').innerText = obtenerLabelInteres(interes);
+
     } else {
-        console.log("emp")
         isJugador.classList.add('d-none');
+        if (interesJugador) interesJugador.classList.add('d-none');
     }
     const finContrato = document.getElementById('finContrato');
     const txtFin = document.getElementById('contFinContrato');
@@ -561,7 +655,7 @@ async function NegociarContrato(id) {
     document.getElementById('contSueldoActual').innerText = `${o.salario.toLocaleString()} €/año`;
     document.getElementById('tituloModalContrato').innerText = esRenovacion ? "Renovación de Contrato" : "Negociación de Fichaje";
 
-    const selectRol = document.getElementById('ofertRol');
+    const selectRol = document.getElementById('ofertaRol');
     selectRol.innerHTML = '';
     
     const opciones = data.tipo === 'jugador' 
@@ -586,35 +680,29 @@ async function NegociarContrato(id) {
 async function confirmarContrato() {
     const form = document.getElementById('formContrato');
     const id = form.dataset.id;
+    const interesActual = parseFloat(document.getElementById('barraInteresContrato').style.width) || 0;
 
     const payload = {
-        sueldo: document.getElementById('ofertSueldo').value,
-        anios: document.getElementById('ofertAnios').value,
-        rol: document.getElementById('ofertRol').value,
-        clausula: document.getElementById('ofertClausula').value,
+        sueldo: document.getElementById('ofertaSueldo').value,
+        anios: document.getElementById('ofertaAnios').value,
+        rol: document.getElementById('ofertaRol').value,
+        clausula: document.getElementById('ofertaClausula').value,
         tipo: form.dataset.tipo,
-        esRenovacion: form.dataset.esRenovacion
+        esRenovacion: form.dataset.esRenovacion,
+        interesJugador: interesActual // Muy importante para el backend
     };
-
-    // Validar sueldo positivo
-    if (!payload.sueldo || payload.sueldo <= 0) {
-        return Swal.fire("Error", "Introduce un sueldo válido", "warning");
-    }
-
     try {
         const res = await fetch(`/objetivo/confirmarContrato/${id}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         });
-        const result = await res.json();
+        const data = await res.json();
 
-        if (result.success) {
-            Swal.fire("🤝 ¡Acuerdo!", result.mensaje, "success").then(() => {
-                location.reload();
-            });
+        if (data.redirect) {
+            window.location.href = data.redirect;
         } else {
-            Swal.fire("❌ Rechazado", result.mensaje, "error");
+            location.reload();
         }
     } catch (err) {
         console.error(err);

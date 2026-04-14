@@ -5,6 +5,7 @@ const Club = require('../models/club');
 const Competicion = require('../models/competicion');
 const Estadio = require('../models/estadio');
 const Partido = require('../models/partido');
+const Negociacion = require('../models/negociacion');
 
 class PartidaDAO {
   async crearPartida(usuarioId, nombrePartida, clubSeleccionado, entrenadorId, _id) {
@@ -45,6 +46,7 @@ class PartidaDAO {
     await Competicion.deleteMany({ partidaId: id });
     await Estadio.deleteMany({ partidaId: id });
     await Partido.deleteMany({ partidaId: id });
+    await Negociacion.deleteMany({ partidaId: id });
     
     return await Partida.findByIdAndDelete(id);
   }

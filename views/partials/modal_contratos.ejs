@@ -28,17 +28,28 @@
                         </div>
                     </div>
                 </div>
+                <div id="interesJugador" class="d-none mb-3">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <label class="small text-uppercase fw-bold text-muted">Interés en unirse</label>
+                            <div class="progress mt-1" style="height: 10px;">
+                                <div id="barraInteresContrato" class="progress-bar bg-success" style="width: 0%"></div>
+                            </div>
+                            <small id="textoInteresContrato" class="text-muted text-center d-block mt-1">Calculando...</small>
+                        </div>
+                    </div>
+                </div>
 
                 <form id="formContrato">
                     <div class="card border-0 shadow-sm p-4">
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label class="form-label fw-bold">Sueldo Anual (€)</label>
-                                <input type="number" id="ofertSueldo" class="form-control form-control-lg" placeholder="Ej: 500000">
+                                <label for="ofertaSueldo" class="form-label fw-bold">Sueldo ofrecido (€)</label>
+                                <input type="number" class="form-control form-control-lg shadow-sm" id="ofertaSueldo" placeholder="Ej: 500000" min="0">
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-bold">Duración (Años)</label>
-                                <select id="ofertAnios" class="form-select form-select-lg">
+                                <select id="ofertaAnios" class="form-select form-select-lg">
                                     <option value="1">1 Año</option>
                                     <option value="2">2 Años</option>
                                     <option value="3">3 Años</option>
@@ -48,12 +59,12 @@
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-bold">Rol Prometido</label>
-                                <select id="ofertRol" class="form-select">
+                                <select id="ofertaRol" class="form-select">
                                     </select>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-bold">Cláusula de Rescisión (€)</label>
-                                <input type="number" id="ofertClausula" class="form-control" placeholder="0 = Sin cláusula">
+                                <input type="number" id="ofertaClausula" class="form-control" placeholder="Opcional">
                             </div>
                         </div>
                     </div>

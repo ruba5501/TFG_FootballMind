@@ -39,9 +39,14 @@ const negociacionSchema = new mongoose.Schema({
         type: Number, 
         default: 0 
     },
+    rondasContrato: { 
+        type: Number, 
+        default: 0 
+    },
     
     ofertaTraspaso: { type: Number, default: 0 },
     contraofertaTraspaso: { type: Number, default: 0 },
+    contraofertaSueldo: { type: Number, default: 0 },
 
 
     porcentajeFuturaVenta: { type: Number, default: 0 }, 
@@ -62,7 +67,8 @@ const negociacionSchema = new mongoose.Schema({
     fechaCreacion: { type: Date, default: Date.now },
     ultimaModificacion: { type: Date, default: Date.now },
     finalizada: { type: Boolean, default: false },
-    basicoAceptado: { type: Boolean, default: false }
+    basicoAceptado: { type: Boolean, default: false },
+    basicoContratoAceptado: { type: Boolean, default: false }
 
 }, { 
     collection: 'negociaciones' 

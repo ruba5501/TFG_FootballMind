@@ -52,19 +52,20 @@ function calcularPrecioMinimo(jugador, clubVendedor, ofertaDetalles, fechaActual
     return Math.max(precioMinimo, jugador.valorMercado * 0.8);
 }
 
-function calcularPretensiones(sujeto, esEmpleado) {
-    let multiplicadorSueldo = 1.1; // Por defecto pide un 10% más de lo que vale
-
-    // Si es un jugador top o empleado con mucha media, pide más
-    if (sujeto.valoracion > 85) multiplicadorSueldo += 0.3;
+function calcularPretensiones(sujeto, esEmpleado, interesJugador) {
+    let factor = 1.1;
     
-    // Si acaba contrato pronto, tiene menos fuerza para negociar (pide menos)
-    if (sujeto.añosContrato < 1) multiplicadorSueldo -= 0.1;
+    // Si el jugador tiene poco interés, pedirá más dinero para compensar
+    if (interesJugador < 40) factor += 0.3;
+    if (interesJugador > 80) factor -= 0.15;
 
-    const sueldoEsperado = (sujeto.salario || 50000) * multiplicadorSueldo;
-    const aniosEsperados = sujeto.edad > 32 ? 1 : 3; // Veteranos piden menos años
+    // Ajuste por valoración (calidad)
+    if (!esEmpleado && sujeto.valoracion > 80) factor += 0.2;
 
-    return { sueldoEsperado, aniosEsperados };
+    return {
+        sueldoEsperado: sujeto.salario * factor,
+        aniosEsperados: esEmpleado ? 2 : 3
+    };
 }
 
 negociacionRouter.post('/fichajes/ofertaTraspaso/:jugadorId', async (req, res) => {
@@ -258,38 +259,115 @@ negociacionRouter.post('/fichajes/ofertaTraspaso/:jugadorId', async (req, res) =
 
 negociacionRouter.post('/objetivo/confirmarContrato/:id', async (req, res) => {
     try {
-        const { id } = req.params;
-        const { sueldo, anios, rol, clausula, tipo, esRenovacion } = req.body;
+        const { sueldo, anios, rol, clausula, tipo, esRenovacion, interesJugador } = req.body;
+        const id = req.params.id;
+        const sOfrecido = parseInt(sueldo);
+        const aOfrecidos = parseInt(anios);
+        const clausulaOfrecida = parseInt(clausula) || 0;
 
         const Model = (tipo === 'jugador') ? Jugador : Empleado;
         const sujeto = await Model.findById(id).populate('clubActual');
+        
+        if (!sujeto) return res.status(404).json({ success: false, mensaje: "Sujeto no encontrado." });
 
-        const { sueldoEsperado, aniosEsperados } = calcularPretensiones(sujeto, tipo !== 'jugador');
+        const partida = await partidasDAO.obtenerPartidaPorId(sujeto.partidaId);
 
-        if (parseInt(sueldo) >= sueldoEsperado) {
-            sujeto.salario = parseInt(sueldo);
-            sujeto.añosContrato = parseInt(anios);
-            if (tipo === 'jugador') sujeto.rolEquipo = rol;
-            else sujeto.puesto = rol;
+        let neg = await Negociacion.findOne({ objetivoId: id, finalizada: false });
 
-            const neg = await Negociacion.findOne({ objetivoId: id, finalizada: false });
-            if (neg) {
-                if (esRenovacion !== "true") {
-                    sujeto.clubActual = neg.clubEmisor; 
+        let rondas = (neg.rondasContrato || 0) + 1;
+        const limiteRondas = 5;
+
+        const { sueldoEsperado, aniosEsperados } = calcularPretensiones(sujeto, tipo !== 'jugador', interesJugador);
+        const sueloNegociable = sueldoEsperado * 0.80; 
+
+        let estado = 'negociando';
+        let mensaje = "";
+        let contraSueldo = 0;
+        let finalizada = false;
+        let isBasicoAceptado = neg.basicoContratoAceptado || false;
+
+        if (!isBasicoAceptado) {
+            if (sOfrecido < sueloNegociable) {
+                if (rondas >= limiteRondas || sOfrecido < sueldoEsperado * 0.6) {
+                    estado = 'rechazado';
+                    finalizada = true;
+                    mensaje = sOfrecido < sueldoEsperado * 0.6 
+                        ? "La oferta salarial es un insulto para alguien de mi prestigio." 
+                        : "He perdido el interés tras tantas vueltas. No habrá acuerdo.";
+                } else {
+                    estado = 'negociando';
+                    const factorPaciencia = 1.05 - (rondas * 0.02);
+                    contraSueldo = Math.floor(sueldoEsperado * factorPaciencia);
+                    mensaje = "El sueldo está lejos de lo que pedimos, pero estamos dispuestos a escuchar una mejora.";
                 }
-                neg.estadoContrato = 'aceptado';
-                neg.finalizada = true;
-                await neg.save();
+            } else {
+                isBasicoAceptado = true;
+                if (sOfrecido < sueldoEsperado) rondas = 1; 
+                
+                if (!clausulaOfrecida) {
+                    estado = 'aceptado';
+                    finalizada = true;
+                    mensaje = "Estamos de acuerdo con las condiciones. ¡Cerrado!";
+                } else {
+                    mensaje = "El sueldo y el rol me parecen correctos. Hablemos de la cláusula.";
+                }
             }
+        } 
+        
+        if (isBasicoAceptado && !finalizada && clausulaOfrecida > 0) {
+            const clausulaMinimaAceptable = sOfrecido * 50; 
 
-            await sujeto.save();
-            return res.json({ success: true, mensaje: "¡Acuerdo cerrado! El contrato ha sido firmado." });
-        } else {
-            return res.json({ 
-                success: false, 
-                mensaje: `El representante rechaza la oferta. Pide al menos ${Math.round(sueldoEsperado).toLocaleString()} €.` 
-            });
+            if (clausulaOfrecida >= clausulaMinimaAceptable) {
+                estado = 'aceptado';
+                finalizada = true;
+                mensaje = "¡Acuerdo cerrado! Tanto el sueldo como la cláusula son satisfactorios.";
+            } else if (rondas >= limiteRondas) {
+                estado = 'aceptado';
+                finalizada = true;
+                neg.clausulaRescision = 0;
+                mensaje = "Aceptamos el contrato, pero no incluiremos esa cláusula de rescisión tan baja.";
+            } else {
+                estado = 'negociando';
+                contraSueldo = Math.floor(clausulaMinimaAceptable); // En este caso devolvemos la cláusula que pide
+                mensaje = "El sueldo está bien, pero para aceptar esa cláusula de rescisión, la cifra debe ser mayor.";
+            }
         }
+
+        if (estado === 'aceptado' && finalizada) {
+            sujeto.salario = sOfrecido;
+            sujeto.añosContrato = aOfrecidos;
+            if (tipo === 'jugador') {
+                sujeto.rolEquipo = rol;
+                if (esRenovacion !== "true") {
+                    sujeto.clubActual = neg.clubEmisor;
+                }
+            } else {
+                sujeto.puesto = rol;
+            }
+            await sujeto.save();
+        }
+
+        neg.estadoContrato = estado;
+        neg.rondasContrato = rondas;
+        neg.ofertaSueldo = sOfrecido;
+        neg.ofertaAnios = aOfrecidos;
+        neg.rolPrometido = rol;
+        neg.clausulaRescision = (estado === 'aceptado') ? clausulaOfrecida : (neg.clausulaRescision || 0);
+        neg.contraofertaSueldo = contraSueldo;
+        neg.basicoContratoAceptado = isBasicoAceptado;
+        neg.finalizada = finalizada;
+        neg.ultimaModificacion = Date.now();
+
+        await neg.save();
+
+        return res.json({ 
+            success: true, 
+            estado, 
+            mensaje, 
+            contraoferta: contraSueldo > 0 ? contraSueldo : null,
+            redirect: `/negociaciones/${partida._id}` 
+        });
+
     } catch (error) {
         console.error(error);
         res.status(500).json({ success: false, mensaje: "Error al procesar el contrato" });
