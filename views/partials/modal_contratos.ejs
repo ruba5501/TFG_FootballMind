@@ -43,6 +43,9 @@
                 <form id="formContrato">
                     <div class="card border-0 shadow-sm p-4">
                         <div class="row g-3">
+                            <div class="col-12 mb-2">
+                                <span class="badge bg-secondary">Condiciones Principales</span>
+                            </div>
                             <div class="col-md-6">
                                 <label for="ofertaSueldo" class="form-label fw-bold">Sueldo ofrecido (€)</label>
                                 <input type="number" class="form-control form-control-lg shadow-sm" id="ofertaSueldo" placeholder="Ej: 500000" min="0">
@@ -59,12 +62,22 @@
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-bold">Rol Prometido</label>
-                                <select id="ofertaRol" class="form-select">
+                                <select id="ofertaRol" class="form-select form-select-lg">
                                     </select>
+                            </div>
+                        </div>
+                        <hr class="my-4 text-muted">
+                        <div class="row g-3">
+                            <div class="col-12 mb-2">
+                                <span class="badge bg-secondary">Cláusulas y Extras</span>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Prima de Contrato (€)</label>
+                                <input type="number" id="ofertaPrima" class="form-control" placeholder="Opcional" min="0">
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-bold">Cláusula de Rescisión (€)</label>
-                                <input type="number" id="ofertaClausula" class="form-control" placeholder="Opcional">
+                                <input type="number" id="ofertaClausula" class="form-control" placeholder="Opcional" min="0">
                             </div>
                         </div>
                     </div>

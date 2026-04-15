@@ -556,7 +556,13 @@ async function enviarOferta() {
     }
 }
 
-async function NegociarContrato(id, sueldoOf = 0, sueldoContra = 0, aniosOf = 1, rolOf = '', clauOf = 0) {
+async function NegociarContrato(id, sueldoOf = 0, sueldoContraI = 0, aniosOf = 1, rolOf = 'suplente', clauOf = 0, primaOf = 0) {
+    const sueldoOferta = Number(sueldoOf);
+    const sueldoContra = Number(sueldoContraI);
+    const aniosOferta = Number(aniosOf);
+    const clauOferta = Number(clauOf);
+    const primaOferta = Number(primaOf);
+
     const response = await fetch(`/objetivo/detalleTraspaso/${id}`);
     const data = await response.json();
     const o = data.objetivo;
@@ -572,18 +578,22 @@ async function NegociarContrato(id, sueldoOf = 0, sueldoContra = 0, aniosOf = 1,
     const inputAnios = document.getElementById('ofertaAnios');
     const inputRol = document.getElementById('ofertaRol');
     const inputClausula = document.getElementById('ofertaClausula');
+    const contenedorClausula = inputClausula.closest('.col-md-6');
+    const inputPrima = document.getElementById('ofertaPrima');
     const tituloModal = document.getElementById('tituloModalContrato');
-
-    if (Number(sueldoContra) > 0) {
+    
+    if (sueldoContra > 0) {
         tituloModal.innerText = "Respuesta a Contraoferta del Jugador";
-        tituloModal.parentElement.classList.replace('bg-primary', 'bg-info'); // Color diferente para distinguir
+        tituloModal.parentElement.classList.replace('bg-primary', 'bg-info');
         
-        inputSueldo.value = sueldoOf > 0 ? sueldoOf : sueldoContra;
-        inputAnios.value = aniosOf;
-        inputClausula.value = clauOf;
+        inputSueldo.value = sueldoOferta > 0 ? sueldoOferta : sueldoContra;
+        inputAnios.value = aniosOferta;
+        inputRol.value = rolOf;
+        inputClausula.value = clauOferta;
+        inputPrima.value = primaOferta;
 
         document.querySelector('label[for="ofertaSueldo"]').innerHTML = 
-            `Sueldo Anual (€) <span class="badge bg-primary">Sugerido: ${Number(sueldoContra).toLocaleString()}€</span>`;
+            `Sueldo Anual (€) <span class="badge bg-primary">Sugerido: ${sueldoContra.toLocaleString()}€</span>`;
 
         if (data.contratoAceptado) {
             inputSueldo.readOnly = true;
@@ -597,13 +607,13 @@ async function NegociarContrato(id, sueldoOf = 0, sueldoContra = 0, aniosOf = 1,
         inputSueldo.classList.remove('bg-light');
     }
 
-
-
     document.getElementById('contNombre').innerText = o.nombre;
     const isJugador = document.getElementById('isJugador');
     const interesJugador = document.getElementById('interesJugador');
     if (data.tipo === 'jugador') {
         isJugador.classList.remove('d-none');
+        if (interesJugador) interesJugador.classList.remove('d-none');
+        if (contenedorClausula) contenedorClausula.classList.remove('d-none');
         document.getElementById('Media').innerText = `Media: ${o.valoracion}`;
         document.getElementById('Potencial').innerText = `Pot: ${o.potencial}`;
         
@@ -636,6 +646,8 @@ async function NegociarContrato(id, sueldoOf = 0, sueldoContra = 0, aniosOf = 1,
     } else {
         isJugador.classList.add('d-none');
         if (interesJugador) interesJugador.classList.add('d-none');
+        if (contenedorClausula) contenedorClausula.classList.add('d-none');
+        inputClausula.value = 0;
     }
     const finContrato = document.getElementById('finContrato');
     const txtFin = document.getElementById('contFinContrato');
@@ -686,10 +698,11 @@ async function confirmarContrato() {
         sueldo: document.getElementById('ofertaSueldo').value,
         anios: document.getElementById('ofertaAnios').value,
         rol: document.getElementById('ofertaRol').value,
+        prima: document.getElementById('ofertaPrima').value,
         clausula: document.getElementById('ofertaClausula').value,
         tipo: form.dataset.tipo,
         esRenovacion: form.dataset.esRenovacion,
-        interesJugador: interesActual // Muy importante para el backend
+        interesJugador: interesActual 
     };
     try {
         const res = await fetch(`/objetivo/confirmarContrato/${id}`, {

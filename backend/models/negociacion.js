@@ -62,7 +62,8 @@ const negociacionSchema = new mongoose.Schema({
     ofertaAnios: { type: Number, default: 1 },
     
     clausulaRescision: { type: Number, default: 0 },
-    rolPrometido: { type: String, default: 'Rotación' }, // Ej: Clave, Titular...
+    PrimaContrato: { type: Number, default: 0 },
+    rolPrometido: { type: String, default: '' },
 
     fechaCreacion: { type: Date, default: Date.now },
     ultimaModificacion: { type: Date, default: Date.now },
