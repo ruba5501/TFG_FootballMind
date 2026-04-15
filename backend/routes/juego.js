@@ -433,4 +433,78 @@ router.get('/ver-competiciones/:idPartida', requireLogin, async (req, res) => {
         res.status(500).send("Error al abrir el explorador");
     }
 });
+
+router.get('/estadisticas/:partidaId', async (req, res) => {
+    try {
+        const partidaId = req.params.partidaId;
+        const partida = await Partida.findById(partidaId).populate('clubSeleccionado');
+
+        // 1. Obtener todos los jugadores y calcular sus estadísticas totales de la temporada
+        const jugadores = await Jugador.find({ partidaId }).populate('clubActual').lean();
+        
+        const jugadoresStats = jugadores.map(j => {
+            const stats = j.statsTemporada.reduce((acc, curr) => {
+                acc.goles += curr.goles || 0;
+                acc.asistencias += curr.asistencias || 0;
+                acc.notaMedia = Math.max(acc.notaMedia, curr.notaMedia || 0); // Nos quedamos con la mejor nota
+                return acc;
+            }, { goles: 0, asistencias: 0, notaMedia: 0 });
+            
+            return { 
+                ...j, 
+                totalGoles: stats.goles, 
+                totalAsistencias: stats.asistencias, 
+                mejorNota: stats.notaMedia 
+            };
+        });
+
+        // Ordenar y limitar para obtener los "Top 5"
+        const topGoleadores = [...jugadoresStats].sort((a,b) => b.totalGoles - a.totalGoles).slice(0, 5);
+        const topAsistentes = [...jugadoresStats].sort((a,b) => b.totalAsistencias - a.totalAsistencias).slice(0, 5);
+        const topMVP = [...jugadoresStats].sort((a,b) => b.mejorNota - a.mejorNota).slice(0, 5);
+        const topValorados = [...jugadoresStats].sort((a,b) => b.valoracion - a.valoracion).slice(0, 5);
+
+        // 2. Calcular las formaciones más exitosas
+        const clubes = await Club.find({ partidaId }).lean();
+        const formacionesStats = {};
+
+        clubes.forEach(c => {
+            const formacion = c.tactica?.formacion || 'Sin definir';
+            const puntosTotales = c.statsTemporada.reduce((acc, curr) => acc + (curr.puntos || 0), 0);
+            const partidosTotales = c.statsTemporada.reduce((acc, curr) => acc + (curr.pj || 0), 0);
+
+            if (!formacionesStats[formacion]) {
+                formacionesStats[formacion] = { formacion, puntos: 0, pj: 0, equipos: 0 };
+            }
+            formacionesStats[formacion].puntos += puntosTotales;
+            formacionesStats[formacion].pj += partidosTotales;
+            formacionesStats[formacion].equipos += 1;
+        });
+
+        // Calcular Puntos Por Partido (PPP)
+        const formacionesRendimiento = Object.values(formacionesStats)
+            .filter(f => f.pj > 0) // Solo formaciones que hayan jugado
+            .map(f => ({
+                formacion: f.formacion,
+                ppp: (f.puntos / f.pj).toFixed(2),
+                equiposQueLaUsan: f.equipos
+            }))
+            .sort((a, b) => b.ppp - a.ppp);
+
+        // Renderizar la vista
+        res.render('estadisticas', {
+            title: 'Centro de Estadísticas - FootballMind',
+            partida,
+            topGoleadores,
+            topAsistentes,
+            topMVP,
+            topValorados,
+            formacionesRendimiento
+        });
+
+    } catch (error) {
+        console.error("Error al cargar estadísticas:", error);
+        res.status(500).render('error500', { message: "Error al generar las estadísticas", stack: error.stack });
+    }
+});
 module.exports = router;
