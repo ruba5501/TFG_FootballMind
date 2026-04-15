@@ -36,8 +36,7 @@ async function seleccionarMejorOnce(clubId) {
     return once;
 }
 
-// RUTA PARA JUGAR EL PARTIDO
-// Se llama por ejemplo: /jugar-partido/ID_PARTIDA?rival=ID_CLUB_RIVAL
+// RUTA PARA JUGAR EL PARTIDO// RUTA PARA JUGAR EL PARTIDO
 router.get('/jugar-partido/:idPartido', requireLogin, async (req, res) => {
     try {
         const partidoId = req.params.idPartido;
@@ -48,9 +47,9 @@ router.get('/jugar-partido/:idPartido', requireLogin, async (req, res) => {
 
         const partidaJuego = await Partida.findById(partidoUsuario.partidaId).populate('clubSeleccionado');
 
-        // 2. Buscar TODOS los partidos de esa misma jornada y competición
+        // 2. NUEVO: Buscar TODOS los partidos de esa misma jornada en TODAS las competiciones de esta partida
         const partidosJornada = await Partido.find({
-            competicionId: partidoUsuario.competicionId,
+            partidaId: partidoUsuario.partidaId, // Importante para no simular partidas de otros usuarios
             jornada: partidoUsuario.jornada,
             jugado: false // Solo los que no se han jugado aún
         }).populate('equipoLocal equipoVisitante');
@@ -59,7 +58,7 @@ router.get('/jugar-partido/:idPartido', requireLogin, async (req, res) => {
         let equipoLocalUsuario = null;
         let equipoVisitanteUsuario = null;
 
-        // 3. Bucle para simular toda la jornada (usamos for...of para poder usar await)
+        // 3. Bucle para simular TODOS los partidos del mundo en esta jornada
         for (let partido of partidosJornada) {
             
             // Seleccionamos los 11 jugadores para los equipos de este partido
@@ -86,8 +85,13 @@ router.get('/jugar-partido/:idPartido', requireLogin, async (req, res) => {
             }
         }
 
-        // 4. Renderizamos la vista con el resultado de tu partido, 
-        // y opcionalmente pasamos "partidosJornada" por si quieres mostrar los otros resultados.
+        // NUEVO: Filtramos para que en la vista solo te muestre los resultados de tu propia liga 
+        // (si pasas todos, la pantalla se llenaría con cientos de partidos de otras ligas)
+        const resultadosMiLiga = partidosJornada.filter(p => 
+            p.competicionId.toString() === partidoUsuario.competicionId.toString()
+        );
+
+        // 4. Renderizamos la vista con el resultado
         res.render('resultadoPartido', {
             title: 'Resultado del Partido',  
             partida: partidaJuego,
@@ -95,11 +99,11 @@ router.get('/jugar-partido/:idPartido', requireLogin, async (req, res) => {
             visitante: equipoVisitanteUsuario,
             resultado: resultadoUsuario,
             partidoBBDD: partidoUsuario,
-            restoJornada: partidosJornada // ¡Te paso toda la jornada por si quieres usarla!
+            restoJornada: resultadosMiLiga // Pasamos solo los de nuestra liga a la vista
         });
 
     } catch (error) {
-        console.error("Error al simular la jornada:", error);
+        console.error("Error al simular la jornada global:", error);
         res.status(500).send("Error al simular la jornada entera");
     }
 });
