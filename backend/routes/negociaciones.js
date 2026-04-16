@@ -165,9 +165,9 @@ negociacionRouter.post('/fichajes/ofertaTraspaso/:jugadorId', async (req, res) =
                 }
             } 
             else {
+                isBasicoAceptado = true;
                 if (negPrevia && negPrevia.ofertaTraspaso < precioMinimoVenta) {
                     rondas = 1; 
-                    isBasicoAceptado = true;
                 }
 
                 if (oferta.precioRecompra && oferta.precioRecompra > 0) {
@@ -232,9 +232,9 @@ negociacionRouter.post('/fichajes/ofertaTraspaso/:jugadorId', async (req, res) =
                     }
                 } 
                 else {
+                    isBasicoAceptado = true;
                     if (negPrevia && negPrevia.ofertaTraspaso < porcentajeMinimo) {
                         rondas = 1; 
-                        isBasicoAceptado = true;
                     }
                     if (oferta.clausulaCompra && oferta.clausulaCompra > 0) {
                         const valorVenta = calcularPrecioMinimo(jugador, jugador.clubActual, oferta, partida.fechaActual);
