@@ -556,9 +556,13 @@ async function enviarOferta() {
     }
 }
 
-async function NegociarContrato(id, sueldoOf = 0, sueldoContraI = 0, aniosOf = 1, rolOf = 'suplente', clauOf = 0, primaOf = 0) {
+async function NegociarContrato(id, sueldoOf = 0, sueldoContraI = 0, aniosContraI = 0,
+     rolContraI = 0, primaContraI = 0, aniosOf = 1, 
+     rolOf = 'suplente', clauOf = 0, primaOf = 0) {
     const sueldoOferta = Number(sueldoOf);
     const sueldoContra = Number(sueldoContraI);
+    const aniosContra = Number(aniosContraI);
+    const primaContra = Number(primaContraI);
     const aniosOferta = Number(aniosOf);
     const clauOferta = Number(clauOf);
     const primaOferta = Number(primaOf);
@@ -595,6 +599,12 @@ async function NegociarContrato(id, sueldoOf = 0, sueldoContraI = 0, aniosOf = 1
         document.querySelector('label[for="ofertaSueldo"]').innerHTML = 
             `Sueldo Anual (€) <span class="badge bg-primary">Sugerido: ${sueldoContra.toLocaleString()}€</span>`;
 
+        document.querySelector('label[for="ofertaAnios"]').innerHTML = 
+           `Duración (Años) <span class="badge bg-primary">max: ${aniosContra}</span>`;
+        
+        document.querySelector('label[for="ofertaRol"]').innerHTML = 
+            `Rol Prometido <span class="badge bg-primary">Pide: ${rolContraI}</span>`;
+        
         if (data.contratoAceptado) {
             inputSueldo.readOnly = true;
             inputSueldo.classList.add('bg-light');
@@ -620,9 +630,7 @@ async function NegociarContrato(id, sueldoOf = 0, sueldoContraI = 0, aniosOf = 1
         interesJugador.classList.remove('d-none');
         const reputacionClubObjetivo = data.clubObjetivo ? data.clubObjetivo.reputacion : 0;
         const reputacionMiClub = data.miClub ? data.miClub.reputacion : 0;
-        console.log(reputacionClubObjetivo);
         const interes = esRenovacion ? calcularInteresRenovacion(o, reputacionMiClub, data.fechaActual) : calcularInteres(o, reputacionClubObjetivo, reputacionMiClub, data.fechaActual);
-        console.log(interes);
         const barra = document.getElementById('barraInteresContrato');
         barra.style.width = interes + '%';
         if (interes < 20) {

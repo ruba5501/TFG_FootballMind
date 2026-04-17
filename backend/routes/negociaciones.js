@@ -56,10 +56,9 @@ function calcularPretensiones(objetivo, esEmpleado, interesJugador, miClub) {
     let factorSueldo = 1.0;
     let aniosEsperados = esEmpleado ? 2 : 3;
     let rolEsperado = '';
-
     //segun la reputacion del club le piden mas o menos sueldo
-    const factorReputacionClub = Math.max(0, (miClub.reputacion / 20) - 1.5); 
-    factorSueldo += factorReputacionClub
+    const factorReputacionClub = Math.max(0, (miClub.reputacion - 50) / 250); 
+    factorSueldo += factorReputacionClub;
 
     if (!esEmpleado) {
         const nivelCorteClub = (miClub.reputacion * 0.85); 
@@ -73,35 +72,35 @@ function calcularPretensiones(objetivo, esEmpleado, interesJugador, miClub) {
         else rolEsperado = 'promesa';
         
         //si el jugador es muy bueno para tu club pedira menos años
-        if (diferenciaCalidad >= 8) aniosEsperados = 2; 
-        else if (diferenciaCalidad >= 0) aniosEsperados = 4;
+        if (diferenciaCalidad >= 21) aniosEsperados = 2; 
+        else if (diferenciaCalidad >= 15) aniosEsperados = 4;
         else aniosEsperados = 5;
 
         //si el jugador es estrella pedira mas dinero
-        if (objetivo.valoracion > 80) factorSueldo += 0.25;
-        if (objetivo.valoracion > 88) factorSueldo += 0.35;
+        if (objetivo.valoracion > 80) factorSueldo += 0.15;
+        if (objetivo.valoracion > 88) factorSueldo += 0.15;
 
         //Si el jugador esta muy interesado en unirse pedira menos dinero sino pedira mas
-        if (interesJugador < 20) factorSueldo += 0.4;
-        else if (interesJugador < 40) factorSueldo += 0.2;
-        else if (interesJugador > 90) factorSueldo -= 0.25;
-        else if (interesJugador > 75) factorSueldo -= 0.1;
+        if (interesJugador < 20) factorSueldo += 0.25;
+        else if (interesJugador < 40) factorSueldo += 0.15;
+        else if (interesJugador > 90) factorSueldo -= 0.15;
+        else if (interesJugador > 75) factorSueldo -= 0.05;
     }
     else{
         rolEsperado = objetivo.tipo; 
 
         const calidadEmpleado = (objetivo.reputacion + objetivo.experiencia) / 2;
 
-        if (calidadEmpleado > 85) factorSueldo += 0.60;
-        else if (calidadEmpleado > 75) factorSueldo += 0.35;
-        else if (calidadEmpleado > 60) factorSueldo += 0.15;
+        if (calidadEmpleado > 85) factorSueldo += 0.30;
+        else if (calidadEmpleado > 75) factorSueldo += 0.20;
+        else if (calidadEmpleado > 60) factorSueldo += 0.10;
 
         aniosEsperados = calidadEmpleado > 80 ? 3 : 5;
     }
-
+    factorSueldo = Math.min(factorSueldo, 2.0);
     return {
-        sueldoMinimoEsperado: objetivo.salario * factorSueldo,
-        aniosMinimosEsperados: aniosEsperados,
+        sueldoMinimoEsperado: Math.round(objetivo.salario * factorSueldo),
+        aniosMaximosEsperados: aniosEsperados,
         rolMinimoEsperado: rolEsperado 
     };
 }
@@ -177,9 +176,9 @@ negociacionRouter.post('/fichajes/ofertaTraspaso/:jugadorId', async (req, res) =
                         mensaje = "El club acepta las condiciones de venta y la cláusula de recompra fijada.";
                     } 
                     else if (rondas > limiteNegociaciones) {
-                        estado = 'aceptado';
-                        oferta.precioRecompra = 0;
-                        mensaje = "Aceptamos el precio de venta, pero hemos rechazado incluir la cláusula de recompra tras no llegar a un acuerdo.";
+                        estado = 'rechazado';
+                        isFinalizada = true;
+                        mensaje = "Rechazamos la oferta porque no se ha conseguido llegar a un acuerdo con la clausula de recompra";
                     }
                     else {
                         estado = 'negociando';
@@ -311,7 +310,7 @@ negociacionRouter.post('/objetivo/confirmarContrato/:id', async (req, res) => {
         const sueldo = Number(req.body.sueldo);
         const anios = Number(req.body.anios);
         const prima = Number(req.body.prima) || 0;
-        let clausula = Number(req.body.clausula) || 0;
+        const clausula = Number(req.body.clausula) || 0;
         const { rol, tipo, esRenovacion, interesJugador } = req.body;
         const id = req.params.id;
 
@@ -319,7 +318,7 @@ negociacionRouter.post('/objetivo/confirmarContrato/:id', async (req, res) => {
         const objetivo = await Model.findById(id).populate('clubActual');
         const partida = await partidasDAO.obtenerPartidaPorId(objetivo.partidaId);
         const miClubId = partida.clubSeleccionado._id;
-
+        const miClub = await clubesDAO.buscarClubPorId(miClubId);
         let negPrevia = await Negociacion.findOne({ 
             objetivoId: objetivo._id, 
             clubEmisor: miClubId, 
@@ -331,7 +330,11 @@ negociacionRouter.post('/objetivo/confirmarContrato/:id', async (req, res) => {
 
         let estado = 'negociando';
         let mensaje = "";
-        let contraOferta = 0;
+        let contraOfertaS = null;
+        let contraOfertaA = null;
+        let contraOfertaR = '';
+        let contraOfertaP = null;
+        let contraOfertaC = null;
         let isFinalizada = false;
         let isBasicoAceptado = false;
         if (negPrevia){
@@ -340,14 +343,13 @@ negociacionRouter.post('/objetivo/confirmarContrato/:id', async (req, res) => {
             }
         }
 
-        const { sueldoMinimoEsperado, aniosMaximosEsperados, rolMinimoEsperado } = calcularPretensiones(objetivo, tipo !== 'jugador', interesJugador, miClubId);
+        const { sueldoMinimoEsperado, aniosMaximosEsperados, rolMinimoEsperado } = calcularPretensiones(objetivo, tipo !== 'jugador', interesJugador, miClub);
         const jerarquiaRoles = { 'clave': 5, 'importante': 4, 'suplente': 3, 'reserva': 2, 'promesa': 1 };
-
+       
         if (!isBasicoAceptado) {
             const sueldoAceptable = sueldo >= (sueldoMinimoEsperado * 0.8);
             const aniosAceptables = anios <= aniosMaximosEsperados;
             const rolAceptable = jerarquiaRoles[rol] >= jerarquiaRoles[rolMinimoEsperado];
-
             if (sueldoAceptable && aniosAceptables && rolAceptable) {
                 isBasicoAceptado = true;
                 rondas = 1; 
@@ -355,7 +357,7 @@ negociacionRouter.post('/objetivo/confirmarContrato/:id', async (req, res) => {
                 if (rondas >= limiteRondas || sueldo < sueldoMinimoEsperado * 0.3) {
                     estado = 'rechazado';
                     isFinalizada = true;
-                    mensaje = sueldoOfrecido < sueldoMinimoEsperado * 0.3 
+                    mensaje = sueldo < sueldoMinimoEsperado * 0.3 
                         ? "Las condiciones propuestas estan muy lejos de nuestras pretensiones." 
                         : "Hemos perdido el interés tras tantas vueltas. No habrá acuerdo.";
                 } else {
@@ -364,24 +366,22 @@ negociacionRouter.post('/objetivo/confirmarContrato/:id', async (req, res) => {
                     let pretensionNuevas = 0;
                     if (!sueldoAceptable){ 
                         pretensionNuevas = sueldoMinimoEsperado * factorAleatorio;
-                        contraOferta = Math.floor(pretensionNuevas);
+                        contraOfertaS = Math.floor(pretensionNuevas);
                         mensaje = "El sueldo ofrecido es insuficiente. ";
                     }
                     if (!aniosAceptables) {
-                        pretensionNuevas = aniosMaximosEsperados;
-                        contraOferta = Math.floor(pretensionNuevas);
+                        contraOfertaA = aniosMaximosEsperados;
                         mensaje += `Espero un contrato de al menos ${aniosMaximosEsperados} años. `;
                     }
                     if (!rolAceptable) {
-                        pretensionNuevas = rolMinimoEsperado;
-                        contraOferta = Math.floor(pretensionNuevas);
+                        contraOfertaR = rolMinimoEsperado;
                         mensaje += `Mi importancia en el equipo debe ser mayor (${rolMinimoEsperado}).`;
                     }
-                    contraOferta = Math.floor(pretensionNuevas);
                 }
             }
         }
         if (isBasicoAceptado && !isFinalizada) {
+            console.log("buenas");
             const esJugador = (tipo === 'jugador');
             const clausulaMinimaSiExiste = esJugador ? objetivo.valorMercado * 1.2 : 0;
             const primaMinimaSiExiste = sueldo * 0.05;
@@ -398,16 +398,14 @@ negociacionRouter.post('/objetivo/confirmarContrato/:id', async (req, res) => {
                 mensaje = "¡Trato hecho! Las condiciones son satisfactorias.";
             } else {
                 if (rondas >= limiteRondas) {
-                    estado = 'aceptado';
+                    estado = 'rechazado';
                     isFinalizada = true;
-                    clausula = 0; 
-                    if (clauMal) clausula = 0; 
-                    if (primaMal) prima = 0;
-                    mensaje = "Aceptamos el sueldo, pero no las condiciones adicionales de primas/cláusulas propuestas.";                
+                    mensaje = "Rechazamos el contrato por no llegar a un acuerdo con las cláusulas";                
                 }
                 else {
                     estado = 'negociando';
-                    contraOferta = sueldo;
+                    contraOfertaP = primaMinimaSiExiste;
+                    contraOfertaC = clausulaMinimaSiExiste;
                     if (clauMal && primaMal) mensaje = "Si queréis incluir esos extras, las cifras deben ser más altas.";
                     else if (clauMal) mensaje = "Esa cláusula de rescisión es demasiado baja para mi valor de mercado.";
                     else mensaje = "La prima de fichaje ofrecida no es suficiente para que la consideremos.";
@@ -430,7 +428,10 @@ negociacionRouter.post('/objetivo/confirmarContrato/:id', async (req, res) => {
                 rolPrometido: rol,
                 PrimaContrato: prima,
                 clausulaRescision: clausula,
-                contraofertaSueldo: contraOferta > 0 ? contraOferta : (negPrevia ? negPrevia.contraofertaSueldo : 0),
+                contraofertaSueldo: contraOfertaS !== null? contraOfertaS : (negPrevia ? negPrevia.contraofertaSueldo : null),
+                contraofertaAños: contraOfertaA !== null ? contraOfertaA : (negPrevia ? negPrevia.contraofertaAños : null),
+                contraofertaRol: (contraOfertaR && contraOfertaR.trim() !== '') ? contraOfertaR : (negPrevia ? negPrevia.contraofertaRol : ''),
+                contraofertaPrima: contraOfertaP !== null? contraOfertaP : (negPrevia ? negPrevia.contraofertaPrima : null),
                 basicoContratoAceptado: isBasicoAceptado,
                 finalizada:isFinalizada,
                 ultimaModificacion: Date.now()
@@ -442,7 +443,11 @@ negociacionRouter.post('/objetivo/confirmarContrato/:id', async (req, res) => {
             success: true, 
             estado, 
             mensaje, 
-            contraoferta: contraOferta > 0 ? contraOferta : null,
+            contraofertaS: contraOfertaS > 0 ? contraOfertaS : null,
+            contraofertaA: contraOfertaA > 0 ? contraOfertaA : null,
+            contraofertaR: contraOfertaR > 0 ? contraOfertaR : null,
+            contraofertaP: contraOfertaP > 0 ? contraOfertaP : null,
+            contraofertaC: contraOfertaC > 0 ? contraOfertaC : null,
             redirect: `/negociaciones/${partida._id}` 
         });
 
@@ -464,9 +469,11 @@ negociacionRouter.get('/negociaciones/borrar/:id', async (req, res) => {
 
 negociacionRouter.get('/negociaciones/finalizar/:id', async (req, res) => {
     try {
+        const negociacion = await Negociacion.findById(req.params.id);
         await Negociacion.findByIdAndUpdate(req.params.id, { 
             finalizada: true,         
-            estadoTraspaso: 'rechazado'
+            estadoTraspaso: negociacion.estadoTraspaso === 'aceptado'? 'aceptado' : 'rechazado',
+            estadoContrato: 'rechazado'
         });
         res.json({ success: true });
     } catch (error) {

@@ -47,6 +47,10 @@ const negociacionSchema = new mongoose.Schema({
     ofertaTraspaso: { type: Number, default: 0 },
     contraofertaTraspaso: { type: Number, default: 0 },
     contraofertaSueldo: { type: Number, default: 0 },
+    contraofertaAños: { type: Number, default: 0 },
+    contraofertaRol: { type: String, default: '' },
+    contraofertaPrima: { type: Number, default: 0 },
+    
 
 
     porcentajeFuturaVenta: { type: Number, default: 0 }, 
@@ -76,6 +80,15 @@ const negociacionSchema = new mongoose.Schema({
 });
 
 // Índice compuesto para evitar que un club haga 2 ofertas activas por el mismo jugador
-negociacionSchema.index({ objetivoId: 1, clubEmisor: 1, finalizada: 1, ultimaModificacion: 1 }, { unique: true });
+negociacionSchema.index({ objetivoId: 1, clubEmisor: 1, finalizada: 1 }, { unique: true, partialFilterExpression: { finalizada: false } });
 
-module.exports = mongoose.model('Negociacion', negociacionSchema);
+const Negociacion = mongoose.model('Negociacion', negociacionSchema);
+
+(async () => {
+    try {
+        await Negociacion.collection.dropIndex("objetivoId_1_clubEmisor_1_finalizada_1");
+    } catch (e) {
+    }
+})();
+
+module.exports = Negociacion;
