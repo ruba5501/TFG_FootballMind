@@ -171,22 +171,32 @@
                                         <% } else { %>
                                             <div class="small fw-bold text-primary">
                                                 <% if (neg.estadoContrato === 'negociando' && !neg.basicoContratoAceptado) { %>
-                                                    <div class="fs-6"><%= neg.contraofertaSueldo.toLocaleString() %> €</div>
-                                                    <div class="fs-6"> <%= neg.contraofertaAños %> años</div>
-                                                    <div class="fs-6"> <%= neg.contraofertaRol %></div>
+                                                    <% if (neg.contraofertaSueldo != null) { %>
+                                                        <div class="fs-6"><%= neg.contraofertaSueldo.toLocaleString() %> €</div>
+                                                    <% } %>
+                                                    <% if (neg.contraofertaAños != null) { %>
+                                                        <div class="fs-6"> <%= neg.contraofertaAños %> años máximo</div>
+                                                    <% } %>  
+                                                    <% if (neg.contraofertaRol != '') { %>
+                                                        <div class="fs-6"> <%= neg.contraofertaRol %></div>
+                                                    <% } %>  
                                                 <% } else if (neg.basicoContratoAceptado) { %>
-                                                    <% if (neg.PrimaContrato > 0 || neg.clausulaRescision > 0) { %>
+                                                    <% if (neg.contraofertaPrima > 0) { %>
                                                         <div class="text-success small"><i class="bi bi-check-circle"></i> <%= neg.ofertaSueldo.toLocaleString() %> €/año</div>
-                                                        <div class="text-success small"><i class="bi bi-check-circle"></i> <%= neg.ofertaAnios %> años</div>
+                                                        <div class="text-success small"><i class="bi bi-check-circle"></i> <%= neg.ofertaAnios %> años máximo</div>
                                                         <div class="text-success small"><i class="bi bi-check-circle"></i> <%= neg.rolPrometido %></div>
-                                                        <% if (neg.PrimaContrato > 0) { %>
-                                                            <div class="fs-6">+ <%= neg.contraofertaPrima.toLocaleString() %> € de prima</div>
-                                                        <% } %>
+                                                        <div class="fs-6">+ <%= neg.contraofertaPrima.toLocaleString() %> € de prima</div>
                                                     <% } 
                                                     else { %>
-                                                        <div class="fs-6"> <%= neg.ofertaSueldo.toLocaleString() %> €/año</div>
-                                                        <div class="fs-6"> <%= neg.ofertaAnios %> años</div>
-                                                        <div class="fs-6"> <%= neg.rolPrometido %></div>
+                                                        <% if (neg.contraofertaSueldo != null) { %>
+                                                            <div class="fs-6"><%= neg.contraofertaSueldo.toLocaleString() %> €</div>
+                                                        <% } %>
+                                                        <% if (neg.contraofertaAños != null) { %>
+                                                            <div class="fs-6"> <%= neg.contraofertaAños %> años máximo</div>
+                                                        <% } %>  
+                                                        <% if (neg.contraofertaRol != '') { %>
+                                                            <div class="fs-6"> <%= neg.contraofertaRol %></div>
+                                                        <% } %>  
                                                     <% } %>
                                                 <% } %>
                                             </div>
@@ -199,12 +209,12 @@
                                                     <% if (neg.estadoContrato === 'no_iniciado') { %>
                                                         <button onclick="NegociarContrato(
                                                             '<%= neg.objetivoId._id %>', 
-                                                            '<%= neg.ofertaSueldo || 0 %>', 
-                                                            '<%= neg.contraofertaSueldo || 0 %>',
-                                                            '<%= neg.ofertaAnios || 1 %>',
+                                                            '<%= neg.ofertaSueldo || null %>', 
+                                                            '<%= neg.contraofertaSueldo || null %>',
+                                                            '<%= neg.ofertaAnios || null %>',
                                                             '<%= neg.rolPrometido %>',
-                                                            '<%= neg.clausulaRescision || 0 %>',
-                                                            '<%= neg.PrimaContrato || 0 %>'
+                                                            '<%= neg.clausulaRescision || null %>',
+                                                            '<%= neg.PrimaContrato || null %>'
                                                             )" class="btn btn-sm btn-success">
                                                             Negociar Contrato
                                                         </button>
@@ -214,15 +224,15 @@
                                                     <% } else if(neg.estadoContrato === 'negociando'){ %>
                                                         <button onclick="NegociarContrato(
                                                             '<%= neg.objetivoId._id %>', 
-                                                            '<%= neg.ofertaSueldo || 0 %>', 
-                                                            '<%= neg.contraofertaSueldo || 0 %>',
-                                                            '<%= neg.contraofertaAños || 0 %>',
+                                                            '<%= neg.ofertaSueldo || null %>', 
+                                                            '<%= neg.contraofertaSueldo || null %>',
+                                                            '<%= neg.contraofertaAños || null %>',
                                                             '<%= neg.contraofertaRol %>',
-                                                            '<%= neg.contraofertaPrima || 0 %>',
-                                                            '<%= neg.ofertaAnios || 1 %>',
+                                                            '<%= neg.contraofertaPrima || null %>',
+                                                            '<%= neg.ofertaAnios || null %>',
                                                             '<%= neg.rolPrometido %>',
-                                                            '<%= neg.clausulaRescision || 0 %>',
-                                                            '<%= neg.PrimaContrato || 0 %>'
+                                                            '<%= neg.clausulaRescision || null %>',
+                                                            '<%= neg.PrimaContrato || null %>'
                                                             )" class="btn btn-sm btn-primary">
                                                             Mejorar oferta Contrato
                                                         </button>

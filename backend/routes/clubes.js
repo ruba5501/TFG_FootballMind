@@ -528,6 +528,7 @@ clubRouter.get('/objetivo/detalleTraspaso/:id', requireLogin, async (req, res) =
             finalizada: false 
         }).lean();
         const precioAceptado = negActiva && negActiva.basicoAceptado === true;
+        const precioContratoAceptado = negActiva && negActiva.basicoContratoAceptado === true;
         res.json({
             success: true,
             tipo: tipo,
@@ -536,6 +537,7 @@ clubRouter.get('/objetivo/detalleTraspaso/:id', requireLogin, async (req, res) =
             miClub: partida.clubSeleccionado,
             fechaActual: partida.fechaActual,
             basicoAceptado: precioAceptado, 
+            basicoContratoAceptado: precioContratoAceptado, 
             ofertaPrevia: negActiva
         });
 

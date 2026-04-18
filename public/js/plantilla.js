@@ -556,16 +556,17 @@ async function enviarOferta() {
     }
 }
 
-async function NegociarContrato(id, sueldoOf = 0, sueldoContraI = 0, aniosContraI = 0,
-     rolContraI = 0, primaContraI = 0, aniosOf = 1, 
-     rolOf = 'suplente', clauOf = 0, primaOf = 0) {
-    const sueldoOferta = Number(sueldoOf);
-    const sueldoContra = Number(sueldoContraI);
-    const aniosContra = Number(aniosContraI);
-    const primaContra = Number(primaContraI);
-    const aniosOferta = Number(aniosOf);
-    const clauOferta = Number(clauOf);
-    const primaOferta = Number(primaOf);
+async function NegociarContrato(id, sueldoOf = null, sueldoContraI = null, aniosContraI = null,
+     rolContraI = '', primaContraI = null, aniosOf = null, 
+     rolOf = '', clauOf = null, primaOf = null) {
+    const sueldoOferta = sueldoOf ? Number(sueldoOf) : null;
+    const sueldoContra = sueldoContraI ? Number(sueldoContraI) : null;
+    const aniosContra = aniosContraI ? Number(aniosContraI) : null;
+    const primaContra = primaContraI ? Number(primaContraI) : null;
+    const aniosOferta = aniosOf ? Number(aniosOf) : null;
+    const clauOferta = clauOf ? Number(clauOf) : null;
+    const primaOferta = primaOf ? Number(primaOf) : null;
+    const jerarquiaRoles = { 'clave': 5, 'importante': 4, 'suplente': 3, 'reserva': 2, 'promesa': 1 };
 
     const response = await fetch(`/objetivo/detalleTraspaso/${id}`);
     const data = await response.json();
@@ -573,8 +574,8 @@ async function NegociarContrato(id, sueldoOf = 0, sueldoContraI = 0, aniosContra
     const miClubId = data.miClub._id;
     const clubSujetoId = data.clubObjetivo ? data.clubObjetivo._id : null;
     const esRenovacion = (clubSujetoId === miClubId);
-    const modalContrato = new bootstrap.Modal(document.getElementById('modalContrato'))
 
+    const modalContrato = new bootstrap.Modal(document.getElementById('modalContrato'))  
     document.getElementById('formContrato').reset();
 
     // Referencias a inputs
@@ -586,35 +587,63 @@ async function NegociarContrato(id, sueldoOf = 0, sueldoContraI = 0, aniosContra
     const inputPrima = document.getElementById('ofertaPrima');
     const tituloModal = document.getElementById('tituloModalContrato');
     
-    if (sueldoContra > 0) {
+    inputRol.innerHTML = '';
+    const opciones = data.tipo === 'jugador' 
+        ? ['clave', 'importante', 'suplente', 'reserva', 'promesa'] 
+        : ['preparadorFisico','preparadorTecnico','preparadorTactico','preparadorPorteros','psicologo','medico','fisio','ojeador','ojeadorCantera','entrenadorCantera','segundoEntrenador'];
+
+    opciones.forEach(opt => {
+        const el = document.createElement('option');
+        el.value = opt;
+        el.innerText = opt;
+        if (rolOf === opt || (!rolOf && (o.rolEquipo === opt || o.puesto === opt))) el.selected = true;
+        inputRol.appendChild(el);
+    });
+    inputSueldo.readOnly = false;
+    inputSueldo.classList.remove('bg-light');
+    inputAnios.disabled = false;
+    inputAnios.classList.remove('bg-light');
+    inputRol.disabled = false;
+    inputRol.classList.remove('bg-light');
+
+    if (sueldoContra > 0 || aniosContra > 0 || rolContraI != '' || primaOferta > 0 ) {
         tituloModal.innerText = "Respuesta a Contraoferta del Jugador";
         tituloModal.parentElement.classList.replace('bg-primary', 'bg-info');
         
         inputSueldo.value = sueldoOferta > 0 ? sueldoOferta : sueldoContra;
         inputAnios.value = aniosOferta;
-        inputRol.value = rolOf;
+        console.log(inputRol.value);
         inputClausula.value = clauOferta;
         inputPrima.value = primaOferta;
 
-        document.querySelector('label[for="ofertaSueldo"]').innerHTML = 
-            `Sueldo Anual (€) <span class="badge bg-primary">Sugerido: ${sueldoContra.toLocaleString()}€</span>`;
-
-        document.querySelector('label[for="ofertaAnios"]').innerHTML = 
-           `Duración (Años) <span class="badge bg-primary">max: ${aniosContra}</span>`;
-        
-        document.querySelector('label[for="ofertaRol"]').innerHTML = 
-            `Rol Prometido <span class="badge bg-primary">Pide: ${rolContraI}</span>`;
-        
-        if (data.contratoAceptado) {
+        if(sueldoContra != null && sueldoContra > sueldoOferta){
+            document.querySelector('label[for="ofertaSueldo"]').innerHTML = 
+                `Sueldo Anual (€) <span class="badge bg-primary">Sugerido: ${sueldoContra.toLocaleString()}€</span>`;
+        }
+        if(aniosContra != null && aniosContra < aniosOferta){
+            document.querySelector('label[for="ofertaAnios"]').innerHTML = 
+            `Duración (Años) <span class="badge bg-primary">max: ${aniosContra}</span>`;
+        }
+        if(rolContraI != '' && jerarquiaRoles[rolContraI] > jerarquiaRoles[rolOf]){
+            document.querySelector('label[for="ofertaRol"]').innerHTML = 
+                `Rol Prometido <span class="badge bg-primary">Pide: ${rolContraI}</span>`;
+        }
+        if (data.basicoContratoAceptado) {
             inputSueldo.readOnly = true;
             inputSueldo.classList.add('bg-light');
+            inputAnios.disabled = true;
+            inputAnios.classList.add('bg-light');
+            inputRol.disabled = true;
+            inputRol.classList.add('bg-light');
+             document.querySelector('label[for="ofertaPrima"]').innerHTML = 
+            `Prima (€) <span class="badge bg-primary">Sugerido: ${primaContra}</span>`;
         }
     } else {
         tituloModal.innerText = esRenovacion ? "Renovación de Contrato" : "Negociación de Fichaje";
         tituloModal.parentElement.classList.replace('bg-info', 'bg-primary');
         document.querySelector('label[for="ofertaSueldo"]').innerText = "Sueldo Anual (€)";
-        inputSueldo.readOnly = false;
-        inputSueldo.classList.remove('bg-light');
+        document.querySelector('label[for="ofertaAnios"]').innerText = "Duración (Años)";
+        document.querySelector('label[for="ofertaRol"]').innerText = "Rol Prometido";
     }
 
     document.getElementById('contNombre').innerText = o.nombre;
@@ -676,19 +705,7 @@ async function NegociarContrato(id, sueldoOf = 0, sueldoContraI = 0, aniosContra
     document.getElementById('tituloModalContrato').innerText = esRenovacion ? "Renovación de Contrato" : "Negociación de Fichaje";
 
     const selectRol = document.getElementById('ofertaRol');
-    selectRol.innerHTML = '';
     
-    const opciones = data.tipo === 'jugador' 
-        ? ['clave', 'importante', 'suplente', 'reserva', 'promesa'] 
-        : ['preparadorFisico','preparadorTecnico','preparadorTactico','preparadorPorteros','psicologo','medico','fisio','ojeador','ojeadorCantera','entrenadorCantera','segundoEntrenador'];
-
-    opciones.forEach(opt => {
-        const el = document.createElement('option');
-        el.value = opt;
-        el.innerText = opt;
-        if (o.rolEquipo === opt || o.puesto === opt) el.selected = true; // Preseleccionar actual
-        selectRol.appendChild(el);
-    });
     const form = document.getElementById('formContrato');
     form.dataset.id = id;
     form.dataset.tipo = data.tipo; // 'jugador' o 'empleado'

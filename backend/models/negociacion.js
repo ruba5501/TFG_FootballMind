@@ -44,29 +44,29 @@ const negociacionSchema = new mongoose.Schema({
         default: 0 
     },
     
-    ofertaTraspaso: { type: Number, default: 0 },
-    contraofertaTraspaso: { type: Number, default: 0 },
-    contraofertaSueldo: { type: Number, default: 0 },
-    contraofertaAños: { type: Number, default: 0 },
+    ofertaTraspaso: { type: Number, default: null },
+    contraofertaTraspaso: { type: Number, default: null },
+    contraofertaSueldo: { type: Number, default: null },
+    contraofertaAños: { type: Number, default: null },
     contraofertaRol: { type: String, default: '' },
-    contraofertaPrima: { type: Number, default: 0 },
+    contraofertaPrima: { type: Number, default: null },
     
 
 
-    porcentajeFuturaVenta: { type: Number, default: 0 }, 
-    precioRecompra: { type: Number, default: 0 },        
-    clausulaCompra: { type: Number, default: 0 },
+    porcentajeFuturaVenta: { type: Number, default: null }, 
+    precioRecompra: { type: Number, default: null },        
+    clausulaCompra: { type: Number, default: null },
 
     estadoContrato: { 
         type: String, 
         enum: ['no_iniciado', 'negociando', 'aceptado', 'rechazado'], 
         default: 'no_iniciado' 
     },
-    ofertaSueldo: { type: Number, default: 0 },
-    ofertaAnios: { type: Number, default: 1 },
+    ofertaSueldo: { type: Number, default: null },
+    ofertaAnios: { type: Number, default: null },
     
-    clausulaRescision: { type: Number, default: 0 },
-    PrimaContrato: { type: Number, default: 0 },
+    clausulaRescision: { type: Number, default: null },
+    PrimaContrato: { type: Number, default: null },
     rolPrometido: { type: String, default: '' },
 
     fechaCreacion: { type: Date, default: Date.now },

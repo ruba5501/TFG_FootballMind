@@ -52,7 +52,7 @@ function calcularPrecioMinimo(jugador, clubVendedor, ofertaDetalles, fechaActual
     return Math.max(precioMinimo, jugador.valorMercado * 0.8);
 }
 
-function calcularPretensiones(objetivo, esEmpleado, interesJugador, miClub) {
+function calcularPretensiones(objetivo, esEmpleado, interesJugador, miClub, ofertaPrima, ofertaClausula) {
     let factorSueldo = 1.0;
     let aniosEsperados = esEmpleado ? 2 : 3;
     let rolEsperado = '';
@@ -65,16 +65,23 @@ function calcularPretensiones(objetivo, esEmpleado, interesJugador, miClub) {
         const diferenciaCalidad = objetivo.valoracion - nivelCorteClub;
 
         // Determinación del Rol en comparacion a la reputacion del club
-        if (diferenciaCalidad >= 5) rolEsperado = 'clave';
-        else if (diferenciaCalidad >= -2) rolEsperado = 'importante';
-        else if (diferenciaCalidad >= -8) rolEsperado = 'suplente';
-        else if (diferenciaCalidad >= -15) rolEsperado = 'reserva';
-        else rolEsperado = 'promesa';
+        if(objetivo.edad <= 23 && diferenciaCalidad < -6) rolEsperado = 'promesa';
+        else if (diferenciaCalidad >= 7) rolEsperado = 'clave';
+        else if (diferenciaCalidad >= 2) rolEsperado = 'importante';
+        else if (diferenciaCalidad >= -6) rolEsperado = 'suplente';
+        else rolEsperado = 'reserva';
         
+        //Cuanto mas cerca de retirarse menos años pedira de contrato
+        if (objetivo.edad > 34) {
+            aniosEsperados = 1;
+        } else if (objetivo.edad > 30) {
+            aniosEsperados = Math.min(2, aniosEsperados);
+        } else {
         //si el jugador es muy bueno para tu club pedira menos años
-        if (diferenciaCalidad >= 21) aniosEsperados = 2; 
-        else if (diferenciaCalidad >= 15) aniosEsperados = 4;
-        else aniosEsperados = 5;
+            if (diferenciaCalidad >= 21) aniosEsperados = 2; 
+            else if (diferenciaCalidad >= 12) aniosEsperados = 4;
+            else aniosEsperados = 5;
+        }
 
         //si el jugador es estrella pedira mas dinero
         if (objetivo.valoracion > 80) factorSueldo += 0.15;
@@ -85,6 +92,11 @@ function calcularPretensiones(objetivo, esEmpleado, interesJugador, miClub) {
         else if (interesJugador < 40) factorSueldo += 0.15;
         else if (interesJugador > 90) factorSueldo -= 0.15;
         else if (interesJugador > 75) factorSueldo -= 0.05;
+
+        //si se añade clausula de rescisión se pedira menos sueldo
+        if (ofertaClausula > 0) {
+            factorSueldo -= 0.05;
+        }
     }
     else{
         rolEsperado = objetivo.tipo; 
@@ -97,6 +109,11 @@ function calcularPretensiones(objetivo, esEmpleado, interesJugador, miClub) {
 
         aniosEsperados = calidadEmpleado > 80 ? 3 : 5;
     }
+    //si se incluye prima se pedira menos sueldo
+    if (ofertaPrima > 0) {
+        factorSueldo -= 0.1;
+    }
+
     factorSueldo = Math.min(factorSueldo, 2.0);
     return {
         sueldoMinimoEsperado: Math.round(objetivo.salario * factorSueldo),
@@ -283,9 +300,9 @@ negociacionRouter.post('/fichajes/ofertaTraspaso/:jugadorId', async (req, res) =
                 rondas: rondas,
                 ofertaTraspaso: oferta.tipo === 'traspaso' ? oferta.precio : oferta.porcentajeSueldo,
                 contraofertaTraspaso: contraOferta > 0 ? contraOferta : (negPrevia ? negPrevia.contraofertaTraspaso : 0),
-                porcentajeFuturaVenta: oferta.futuraVenta || 0,
-                precioRecompra: oferta.precioRecompra || 0,
-                clausulaCompra: oferta.clausulaCompra || 0,
+                porcentajeFuturaVenta: oferta.futuraVenta || null,
+                precioRecompra: oferta.precioRecompra || null,
+                clausulaCompra: oferta.clausulaCompra || null,
                 basicoAceptado: isBasicoAceptado,
                 finalizada: isFinalizada,
                 ultimaModificacion: Date.now()
@@ -334,7 +351,6 @@ negociacionRouter.post('/objetivo/confirmarContrato/:id', async (req, res) => {
         let contraOfertaA = null;
         let contraOfertaR = '';
         let contraOfertaP = null;
-        let contraOfertaC = null;
         let isFinalizada = false;
         let isBasicoAceptado = false;
         if (negPrevia){
@@ -381,34 +397,85 @@ negociacionRouter.post('/objetivo/confirmarContrato/:id', async (req, res) => {
             }
         }
         if (isBasicoAceptado && !isFinalizada) {
-            console.log("buenas");
-            const esJugador = (tipo === 'jugador');
-            const clausulaMinimaSiExiste = esJugador ? objetivo.valorMercado * 1.2 : 0;
             const primaMinimaSiExiste = sueldo * 0.05;
-
-            const hayClausula = esJugador && clausula > 0;
             const hayPrima = prima > 0;
-
-            let clauMal = hayClausula && clausula < clausulaMinimaSiExiste;
             let primaMal = hayPrima && prima < primaMinimaSiExiste;
-
-            if (!clauMal && !primaMal) {
+            if (!primaMal) {
                 estado = 'aceptado';
                 isFinalizada = true;
                 mensaje = "¡Trato hecho! Las condiciones son satisfactorias.";
+                
+                const fechaFin = new Date();
+                fechaFin.setFullYear(fechaFin.getFullYear() + anios);
+
+                const costeTraspaso = negPrevia.ofertaTraspaso || 0;
+                const primaFichaje = prima || 0;
+                const nuevoSueldo = sueldo;
+                const sueldoAnterior = objetivo.salario || 0;
+
+                // Actualizamos el Jugador/Empleado
+                await Model.findByIdAndUpdate(id, {
+                    clubActual: miClubId,
+                    salario: nuevoSueldo,
+                    finContrato: fechaFin,
+                    rolEquipo: tipo === 'jugador' ? rol : undefined,
+                    tipo: tipo !== 'jugador' ? rol : undefined,
+                    "mercado.clausulaRescision": clausula
+                });
+                // Si no es renovación, hay que actualizar las plantillas de los clubes
+                if (esRenovacion === 'false') {
+                    // Quitar del club antiguo 
+                    if (objetivo.clubActual) {
+                        await Club.findByIdAndUpdate(objetivo.clubActual._id, {
+                            $pull: { 
+                                [tipo === 'jugador' ? 'plantilla' : 'empleados']: id,
+                                "tactica.titulares": id,
+                                "tactica.suplentes": id,
+                                "tactica.reservas": id
+                            },
+                            $inc: { 
+                                presupuestoTraspasos: costeTraspaso,
+                                presupuestoSalarios: sueldoAnterior 
+                            }
+                        });
+                    }
+                    // Añadir al club nuevo
+                    const updateClubNuevo = {
+                        $push: { 
+                            [tipo === 'jugador' ? 'plantilla' : 'empleados']: id 
+                        },
+                        $inc: { 
+                            presupuestoTraspasos: -(costeTraspaso + primaFichaje),
+                            presupuestoSalarios: -nuevoSueldo
+                        }
+                    };
+
+                    // Si es jugador, lo metemos directamente en 'reservas' para que aparezca en la gestión táctica
+                    if (tipo === 'jugador') {
+                        updateClubNuevo.$push["tactica.reservas"] = id;
+                    }
+
+                    await Club.findByIdAndUpdate(miClubId, updateClubNuevo);
+                }
+                else {                    
+                    // Solo actualizamos el diferencial del presupuesto y la prima
+                    await Club.findByIdAndUpdate(miClubId, {
+                        $inc: { 
+                            presupuestoTraspasos: -primaFichaje,
+                            presupuestoSalarios: -(nuevoSueldo - sueldoAnterior)
+                        }
+                    });
+                }
             } else {
                 if (rondas >= limiteRondas) {
                     estado = 'rechazado';
                     isFinalizada = true;
-                    mensaje = "Rechazamos el contrato por no llegar a un acuerdo con las cláusulas";                
+                    mensaje = "Rechazamos el contrato por no llegar a un acuerdo con la prima";                
                 }
                 else {
                     estado = 'negociando';
                     contraOfertaP = primaMinimaSiExiste;
-                    contraOfertaC = clausulaMinimaSiExiste;
-                    if (clauMal && primaMal) mensaje = "Si queréis incluir esos extras, las cifras deben ser más altas.";
-                    else if (clauMal) mensaje = "Esa cláusula de rescisión es demasiado baja para mi valor de mercado.";
-                    else mensaje = "La prima de fichaje ofrecida no es suficiente para que la consideremos.";
+                    mensaje = "La prima de fichaje ofrecida no es suficiente para que la consideremos.";
                 }
             }
         }
@@ -447,7 +514,6 @@ negociacionRouter.post('/objetivo/confirmarContrato/:id', async (req, res) => {
             contraofertaA: contraOfertaA > 0 ? contraOfertaA : null,
             contraofertaR: contraOfertaR > 0 ? contraOfertaR : null,
             contraofertaP: contraOfertaP > 0 ? contraOfertaP : null,
-            contraofertaC: contraOfertaC > 0 ? contraOfertaC : null,
             redirect: `/negociaciones/${partida._id}` 
         });
 
