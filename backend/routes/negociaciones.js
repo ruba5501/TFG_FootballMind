@@ -489,6 +489,7 @@ negociacionRouter.post('/objetivo/confirmarContrato/:id', async (req, res) => {
                 clubEmisor: miClubId,
                 clubReceptor: objetivo.clubActual?._id,
                 estadoContrato: estado,
+                estadoTraspaso: 'aceptado',
                 rondasContrato: rondas,
                 ofertaSueldo: sueldo,
                 ofertaAnios: anios,

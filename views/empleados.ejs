@@ -41,9 +41,26 @@
                                                         <button class="btn btn-outline-info btn-sm" onclick="verAtributosEmpleado('<%= emp._id %>')">
                                                             Detalles
                                                         </button>
-                                                        <button class="btn btn-outline-info btn-sm" onclick="NegociarContrato('<%= emp._id %>')">
-                                                            Renovar
-                                                        </button>
+                                                        <% if (emp.negociacionActiva) { %>
+                                                            <button class="btn btn-warning btn-sm" onclick="NegociarContrato(
+                                                                '<%= emp._id %>', 
+                                                                '<%= emp.negociacionActiva.ofertaSueldo || null %>', 
+                                                                '<%= emp.negociacionActiva.contraofertaSueldo || null %>',
+                                                                '<%= emp.negociacionActiva.contraofertaAños || null %>',
+                                                                '<%= emp.negociacionActiva.contraofertaRol %>',
+                                                                '<%= emp.negociacionActiva.contraofertaPrima || null %>',
+                                                                '<%= emp.negociacionActiva.ofertaAnios || null %>',
+                                                                '<%= emp.negociacionActiva.rolPrometido %>',
+                                                                '<%= emp.negociacionActiva.clausulaRescision || null %>',
+                                                                '<%= emp.negociacionActiva.PrimaContrato || null %>'
+                                                            )">
+                                                                <i class="bi bi-pen-fill me-1"></i> Ver Negociación
+                                                            </button>
+                                                        <% } else { %>
+                                                            <button class="btn btn-outline-info btn-sm" onclick="NegociarContrato('<%= emp._id %>')">
+                                                                Renovar
+                                                            </button>
+                                                        <% } %>
                                                         <button class="btn btn-outline-danger btn-sm" onclick="confirmarDespido('<%= emp._id %>')">
                                                             Despedir
                                                         </button>
@@ -298,9 +315,26 @@
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     </div>
-                                    <button class="btn btn-success" onclick="NegociarContrato('<%= empleado._id %>')">
-                                        Negociar Contrato
-                                    </button>
+                                    <% if (empleado.negociacionActiva) { %>
+                                        <button class="btn btn-warning" onclick="NegociarContrato(
+                                            '<%= empleado._id %>', 
+                                            '<%= empleado.negociacionActiva.ofertaSueldo || null %>', 
+                                            '<%= empleado.negociacionActiva.contraofertaSueldo || null %>',
+                                            '<%= empleado.negociacionActiva.contraofertaAños || null %>',
+                                            '<%= empleado.negociacionActiva.contraofertaRol %>',
+                                            '<%= empleado.negociacionActiva.contraofertaPrima || null %>',
+                                            '<%= empleado.negociacionActiva.ofertaAnios || null %>',
+                                            '<%= empleado.negociacionActiva.rolPrometido %>',
+                                            '<%= empleado.negociacionActiva.clausulaRescision || null %>',
+                                            '<%= empleado.negociacionActiva.PrimaContrato || null %>'
+                                            )" class="btn btn-sm btn-primary">
+                                            <i class="bi bi-pen-fill me-1"></i> Ver Negociación Contrato
+                                        </button>
+                                    <% } else { %>
+                                        <button class="btn btn-success" onclick="NegociarContrato('<%= empleado._id %>')">
+                                            <i class="bi bi-file-earmark-person me-1"></i> Negociar Contrato
+                                        </button>
+                                    <% } %>
                                 </div>
                             </div>
                         </div>

@@ -247,18 +247,6 @@ function subirPrimerEquipo(id) {
     }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
 async function negociarTraspasoClub(jugadorId, precioOfertaI = 0, precioContraI = 0, tipoNegoc = 'traspaso', futuraVentaI = 0, recompraI = 0, clausulaCompraI = 0) {
     const precioOferta = Number(precioOfertaI);
     const precioContra = Number(precioContraI);

@@ -4,6 +4,7 @@ const jugadoresDAO = require('../daos/jugadoresDAO');
 const clubesDAO = require('../daos/clubesDAO');
 const partidasDAO = require('../daos/partidasDAO');
 const Jugador = require('../models/jugador');
+const Negociacion = require('../models/negociacion');
 const { requireLogin } = require('../middleware/autenticacion');
 
 jugadoresRouter.post('/jugadores', async (req, res) => {
@@ -26,19 +27,27 @@ jugadoresRouter.get('/jugador/detalle/:jugadorId', requireLogin, async (req, res
         const club = await clubesDAO.buscarClubPorId(jugador.clubActual);
         const partida = await partidasDAO.obtenerPartidaPorId(jugador.partidaId);
         const clubSeleccionado = await clubesDAO.buscarClubPorId(partida.clubSeleccionado);
+        const negociacionActiva = await Negociacion.findOne({
+            objetivoId: jugador._id,
+            clubEmisor: partida.clubSeleccionado,
+            finalizada: false
+        }).lean();
+
+        const jugadorConEstado = jugador.toObject();
+        jugadorConEstado.negociacionActiva = negociacionActiva;
         const estaEnListaObjetivos = clubSeleccionado.listaObjetivos.some(objId => 
             objId.equals(jugador._id)
         );        
         if(club.esFilial){
             res.render('partials/detalleCanterano', { 
-                jugador,
+                jugador: jugadorConEstado,
                 clubSeleccionado,
                 layout: false 
             });
         }
         else{
             res.render('partials/detalleJugador', { 
-                jugador,
+                jugador: jugadorConEstado,
                 layout: false,
                 club,
                 clubSeleccionado,

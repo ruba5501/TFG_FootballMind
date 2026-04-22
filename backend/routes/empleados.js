@@ -6,6 +6,7 @@ const empleadosDAO = require('../daos/empleadosDAO');
 const partidasDAO = require('../daos/partidasDAO');
 const Club = require('../models/club');
 const Competicion = require('../models/competicion');
+const Negociacion = require('../models/negociacion');
 const { requireLogin } = require('../middleware/autenticacion');
 
 const grupos = {
@@ -64,6 +65,19 @@ empleadoRouter.get('/empleados/:partidaId', requireLogin, async (req, res) => {
             path: 'listaObjetivosEmpleados',
             populate: { path: 'clubActual', select: 'nombre escudo' }
         });
+        const negociacionesActivas = await Negociacion.find({
+            clubEmisor: partida.clubSeleccionado,
+            tipoObjetivo: 'Empleado', 
+            finalizada: false
+        }).lean();
+        const listaConEstado = clubUsuario.listaObjetivosEmpleados.map(obj => {
+            const objetivo = obj.toObject(); 
+            objetivo.negociacionActiva = negociacionesActivas.find(n => 
+                n.objetivoId.toString() === objetivo._id.toString()
+            );
+            return objetivo;
+        });
+        
         const filtros = {
             nombre: req.query.nombre,
             estado: req.query.estado,
@@ -74,14 +88,21 @@ empleadoRouter.get('/empleados/:partidaId', requireLogin, async (req, res) => {
         if (req.query.estado === 'libre') delete filtros.clubActual;
 
         const empleados = await empleadosDAO.buscarEmpleados(filtros);
-
+        const empleadosConEstado = empleados.map(emp => {
+            const empleadoObj = typeof emp.toObject === 'function' ? emp.toObject() : emp;
+            
+            empleadoObj.negociacionActiva = negociacionesActivas.find(n => 
+                n.objetivoId.toString() === empleadoObj._id.toString()
+            );
+            return empleadoObj;
+        });
         res.render('empleados', {
             partida,
-            empleados,
+            empleados:empleadosConEstado,
             grupos,
             ligas: ligas,  
             clubes: clubes,
-            listaObjetivos: clubUsuario.listaObjetivosEmpleados,
+            listaObjetivos: listaConEstado,
             errorFiltros: null
         });
     } catch (err) {
