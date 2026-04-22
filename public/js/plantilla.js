@@ -600,7 +600,6 @@ async function NegociarContrato(id, sueldoOf = null, sueldoContraI = null, anios
         
         inputSueldo.value = sueldoOferta > 0 ? sueldoOferta : sueldoContra;
         inputAnios.value = aniosOferta;
-        console.log(inputRol.value);
         inputClausula.value = clauOferta;
         inputPrima.value = primaOferta;
 
@@ -612,7 +611,7 @@ async function NegociarContrato(id, sueldoOf = null, sueldoContraI = null, anios
             document.querySelector('label[for="ofertaAnios"]').innerHTML = 
             `Duración (Años) <span class="badge bg-primary">max: ${aniosContra}</span>`;
         }
-        if(rolContraI != '' && jerarquiaRoles[rolContraI] > jerarquiaRoles[rolOf]){
+        if(rolContraI != ''){
             document.querySelector('label[for="ofertaRol"]').innerHTML = 
                 `Rol Prometido <span class="badge bg-primary">Pide: ${rolContraI}</span>`;
         }
@@ -756,11 +755,6 @@ async function borrarNegociacion(negId) {
         console.error(err);
     }
 }
-
-
-
-
-
 
 function verAtributos(jugadorId) {
     const contenedor = document.getElementById('contenidoModalJugador');

@@ -358,14 +358,24 @@ negociacionRouter.post('/objetivo/confirmarContrato/:id', async (req, res) => {
                 isBasicoAceptado = true;
             }
         }
+        let sueldoAceptable = false;
+        let aniosAceptables = false;
+        let rolAceptable = false;
+        let primaMal = false;
 
         const { sueldoMinimoEsperado, aniosMaximosEsperados, rolMinimoEsperado } = calcularPretensiones(objetivo, tipo !== 'jugador', interesJugador, miClub);
         const jerarquiaRoles = { 'clave': 5, 'importante': 4, 'suplente': 3, 'reserva': 2, 'promesa': 1 };
        
         if (!isBasicoAceptado) {
-            const sueldoAceptable = sueldo >= (sueldoMinimoEsperado * 0.8);
-            const aniosAceptables = anios <= aniosMaximosEsperados;
-            const rolAceptable = jerarquiaRoles[rol] >= jerarquiaRoles[rolMinimoEsperado];
+            sueldoAceptable = sueldo >= (sueldoMinimoEsperado * 0.8);
+            aniosAceptables = anios <= aniosMaximosEsperados;
+            rolAceptable = false;
+
+            if (tipo === 'jugador') {
+                rolAceptable = jerarquiaRoles[rol] >= jerarquiaRoles[rolMinimoEsperado];
+            } else {
+                rolAceptable = (rol === objetivo.tipo); 
+            }
             if (sueldoAceptable && aniosAceptables && rolAceptable) {
                 isBasicoAceptado = true;
                 rondas = 1; 
@@ -391,7 +401,11 @@ negociacionRouter.post('/objetivo/confirmarContrato/:id', async (req, res) => {
                     }
                     if (!rolAceptable) {
                         contraOfertaR = rolMinimoEsperado;
-                        mensaje += `Mi importancia en el equipo debe ser mayor (${rolMinimoEsperado}).`;
+                        if (tipo === 'jugador') {
+                            mensaje += `Mi importancia en el equipo debe ser mayor (${rolMinimoEsperado}).`;
+                        }else {
+                            mensaje += `No estoy interesado en ese puesto. Yo soy ${objetivo.tipo}.`;
+                        }
                     }
                 }
             }
@@ -399,14 +413,24 @@ negociacionRouter.post('/objetivo/confirmarContrato/:id', async (req, res) => {
         if (isBasicoAceptado && !isFinalizada) {
             const primaMinimaSiExiste = sueldo * 0.05;
             const hayPrima = prima > 0;
-            let primaMal = hayPrima && prima < primaMinimaSiExiste;
+            primaMal = hayPrima && prima < primaMinimaSiExiste;
             if (!primaMal) {
                 estado = 'aceptado';
                 isFinalizada = true;
                 mensaje = "¡Trato hecho! Las condiciones son satisfactorias.";
                 
-                const fechaFin = new Date();
-                fechaFin.setFullYear(fechaFin.getFullYear() + anios);
+                const anioActualSimulador = new Date(partida.fechaActual).getFullYear();
+
+                let anioBase;
+
+                if (esRenovacion === 'true' && objetivo.finContrato) {
+                    // Si es renovación, sumamos sobre el año en que ya terminaba
+                    anioBase = new Date(objetivo.finContrato).getFullYear();
+                } else {
+                    // Si es fichaje, sumamos sobre el año actual del simulador
+                    anioBase = anioActualSimulador;
+                }
+                const fechaFin = new Date(Date.UTC(anioBase + anios, 5, 30, 12, 0, 0));
 
                 const costeTraspaso = negPrevia.ofertaTraspaso || 0;
                 const primaFichaje = prima || 0;
@@ -496,10 +520,10 @@ negociacionRouter.post('/objetivo/confirmarContrato/:id', async (req, res) => {
                 rolPrometido: rol,
                 PrimaContrato: prima,
                 clausulaRescision: clausula,
-                contraofertaSueldo: contraOfertaS !== null? contraOfertaS : (negPrevia ? negPrevia.contraofertaSueldo : null),
-                contraofertaAños: contraOfertaA !== null ? contraOfertaA : (negPrevia ? negPrevia.contraofertaAños : null),
-                contraofertaRol: (contraOfertaR && contraOfertaR.trim() !== '') ? contraOfertaR : (negPrevia ? negPrevia.contraofertaRol : ''),
-                contraofertaPrima: contraOfertaP !== null? contraOfertaP : (negPrevia ? negPrevia.contraofertaPrima : null),
+                contraofertaSueldo: sueldoAceptable ? null : (contraOfertaS || (negPrevia ? negPrevia.contraofertaSueldo : null)),
+                contraofertaAños: aniosAceptables ? null : (contraOfertaA || (negPrevia ? negPrevia.contraofertaAños : null)),
+                contraofertaRol: rolAceptable ? null : (contraOfertaR || (negPrevia ? negPrevia.contraofertaRol : '')),
+                contraofertaPrima: !primaMal ? null : (contraOfertaP || (negPrevia ? negPrevia.contraofertaPrima : null)),
                 basicoContratoAceptado: isBasicoAceptado,
                 finalizada:isFinalizada,
                 ultimaModificacion: Date.now()
@@ -513,7 +537,7 @@ negociacionRouter.post('/objetivo/confirmarContrato/:id', async (req, res) => {
             mensaje, 
             contraofertaS: contraOfertaS > 0 ? contraOfertaS : null,
             contraofertaA: contraOfertaA > 0 ? contraOfertaA : null,
-            contraofertaR: contraOfertaR > 0 ? contraOfertaR : null,
+            contraofertaR: (typeof contraOfertaR === 'string' && contraOfertaR.length > 0) ? contraOfertaR : '',
             contraofertaP: contraOfertaP > 0 ? contraOfertaP : null,
             redirect: `/negociaciones/${partida._id}` 
         });
