@@ -251,7 +251,7 @@ clubRouter.get('/negociaciones/:partidaId', requireLogin, async (req, res) => {
         .sort({ ultimaModificacion: -1 })
         .lean();
 
-        const ofertasRecibidas = await Negociacion.find({ partidaId, clubReceptor: miClubId })
+        const ofertasRecibidas = await Negociacion.find({ partidaId, clubReceptor: miClubId, clubEmisor: { $ne: miClubId } })
         .populate('objetivoId')
         .populate('clubEmisor')
         .sort({ ultimaModificacion: -1 })

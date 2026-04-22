@@ -12,6 +12,7 @@ const Competicion = require('../models/competicion');
 const Club = require('../models/club');
 const Partida = require('../models/partida');
 const Partido = require('../models/partido'); 
+const IAFichajesCPU = require('../service/IAFichajesCPU');
 
 const cargarEstadios = require('../service/cargarEstadios'); 
 const cargarCompeticiones = require('../service/cargarCompeticiones');
@@ -337,37 +338,6 @@ partidaRouter.get('/guardar-y-salir/:id', requireLogin, async (req, res) => {
     }
 });
 
-
-
-
-
-
-async function simularFichajesIA(clubIA) {
-    // 1. Analizar huecos (Ej: ¿Tiene menos de 2 porteros?)
-    const posicionesDebiles = analizarPlantilla(clubIA); 
-
-    if (posicionesDebiles.length > 0) {
-        // 2. Buscar candidatos que pueda pagar
-        const candidatos = await Jugador.find({ 
-            posicion: posicionesDebiles[0],
-            valorMercado: { $lte: clubIA.presupuesto * 0.6 } // No gasta todo en uno
-        }).limit(5);
-
-        // 3. Ejecutar fichaje si encuentra a alguien que mejore lo que tiene
-        if (candidatos.length > 0) {
-            const elegido = candidatos[0];
-            await realizarTraspaso(elegido, clubIA);
-            console.log(`${clubIA.nombre} ha fichado a ${elegido.nombre}`);
-        }
-    }
-}
-
-
-
-
-
-
-
 partidaRouter.get('/avanzar-fecha/:id', requireLogin, async (req, res) => {
     try {
         const partidaId = req.params.id;
@@ -383,6 +353,10 @@ partidaRouter.get('/avanzar-fecha/:id', requireLogin, async (req, res) => {
         // Guardamos el cambio en la base de datos (asegúrate de que tu modelo tenga save o haz un update)
         await Partida.findByIdAndUpdate(partidaId, { fechaActual: nuevaFecha });
 
+        //fichajes y renovaciones por parte de CPU
+        await IAFichajesCPU.procesarAccionesCPU(partidaId, nuevaFecha);
+        await IAFichajesCPU.intentarFicharAlUsuario(partidaId, partida.clubSeleccionado._id);
+
         // Recargamos el menú de inicio
         res.redirect('/inicioJuego/' + partidaId);
 
@@ -392,13 +366,19 @@ partidaRouter.get('/avanzar-fecha/:id', requireLogin, async (req, res) => {
     }
 });
 
+function calcularDiferenciaDias(fechaInicio, fechaFin) {
+    const diffTime = Math.abs(fechaFin - fechaInicio);
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+}
+
 partidaRouter.get('/avanzar-hasta-partido/:id', requireLogin, async (req, res) => {
     try {
         const partidaId = req.params.id;
         const partida = await partidaDAO.obtenerPartidaPorId(partidaId);
         if (!partida) return res.redirect('/listarPartidas');
 
-        // 1. Buscamos el próximo partido del usuario
+        // Buscamos el próximo partido del usuario
+        const fechaAntigua = new Date(partida.fechaActual);
         const clubUsuarioId = partida.clubSeleccionado._id;
         const proximoPartido = await Partido.findOne({
             partidaId: partidaId,
@@ -406,13 +386,24 @@ partidaRouter.get('/avanzar-hasta-partido/:id', requireLogin, async (req, res) =
             jugado: false
         }).sort({ fecha: 1 });
 
-        // 2. Si hay un partido futuro, actualizamos la fecha del juego a la fecha de ese partido
+        // Si hay un partido futuro, actualizamos la fecha del juego a la fecha de ese partido
         if (proximoPartido) {
-            partida.fechaActual = new Date(proximoPartido.fecha);
-            await Partida.findByIdAndUpdate(partidaId, { fechaActual: partida.fechaActual });
+          const fechaNueva = new Date(proximoPartido.fecha);
+          const diasSaltados = calcularDiferenciaDias(fechaAntigua, fechaNueva);
+          //fichajes y renovaciones por parte de CPU
+          for (let i = 0; i < diasSaltados; i++) {
+              // Creamos una fecha temporal para cada día del bucle
+              let fechaSimulada = new Date(fechaAntigua);
+              fechaSimulada.setDate(fechaSimulada.getDate() + i);
+
+              await IAFichajesCPU.procesarAccionesCPU(partidaId, fechaSimulada);
+              await IAFichajesCPU.intentarFicharAlUsuario(partidaId, clubUsuarioId);
+          }
+          partida.fechaActual = fechaNueva;
+          await Partida.findByIdAndUpdate(partidaId, { fechaActual: fechaNueva });
         }
 
-        // 3. Recargamos la página
+        // Recargamos la página
         res.redirect('/inicioJuego/' + partidaId);
 
     } catch (error) {
