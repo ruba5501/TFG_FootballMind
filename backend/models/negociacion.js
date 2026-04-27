@@ -16,7 +16,7 @@ const negociacionSchema = new mongoose.Schema({
 
     tipoOferta: { 
         type: String, 
-        enum: ['traspaso', 'cesion'], 
+        enum: ['traspaso', 'cesion', 'renovacion'], 
         required: true 
     },
 

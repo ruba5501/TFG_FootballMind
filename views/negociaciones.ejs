@@ -54,7 +54,7 @@
                                         <span class="badge rounded-pill bg-info text-dark">
                                             <%= neg.tipoObjetivo === 'Jugador' ? 'JUGADOR' : 'EMPLEADO' %>
                                         </span>
-                                        <div class="small text-muted text-uppercase" style="font-size: 0.7rem;"><%= neg.tipo %></div>
+                                        <div class="small text-muted text-uppercase" style="font-size: 0.7rem;"><%= neg.tipoOferta %></div>
                                     </td>
                                     <td>
                                         <% if (neg.clubReceptor) { %>
@@ -92,7 +92,9 @@
                                     <td>
                                         <div class="small fw-bold text-cyan">
                                             <% if (neg.tipoOferta === 'traspaso') { %>
-                                                <div><%= neg.ofertaTraspaso.toLocaleString() %> €</div>
+                                                <% if (neg.ofertaTraspaso > 0) { %>
+                                                    <div><%= neg.ofertaTraspaso.toLocaleString() %> €</div>
+                                                <% } %>
                                                 
                                                 <% if (neg.porcentajeFuturaVenta > 0) { %>
                                                     <div class="text-muted small">+ <%= neg.porcentajeFuturaVenta %>% futura venta</div>
@@ -101,7 +103,7 @@
                                                     <div class="text-muted small">+ <%= neg.precioRecompra.toLocaleString() %> € recompra</div>
                                                 <% } %>
 
-                                            <% } else { %>
+                                            <% } else if (neg.tipoOferta === 'cesion'){ %>
                                                 <div><%= neg.ofertaTraspaso %>% sueldo</div>
                                                 
                                                 <% if (neg.clausulaCompra > 0) { %>
@@ -284,7 +286,6 @@
                 </div>
             <% } %>
         </div>
-
         <div class="tab-pane fade" id="recibidas" role="tabpanel">
             <% if (ofertasRecibidas.length === 0) { %>
                 <div class="text-center p-5 bg-light rounded border">
@@ -297,9 +298,11 @@
                         <thead class="table-light">
                             <tr>
                                 <th>Objetivo</th>
+                                <th>Tipo</th>
                                 <th>Club Interesado</th>
-                                <th>Estado</th>
+                                <th>Estado Operación</th>
                                 <th class="text-center">Oferta Recibida</th>
+                                <th class="text-center">Tu Contraoferta</th>
                                 <th class="text-center">Acciones</th>
                             </tr>
                         </thead>
@@ -310,20 +313,29 @@
                                         <% if (neg.objetivoId) { %>
                                             <div class="fw-bold"><%= neg.objetivoId.nombre %></div>
                                             <small class="text-muted">
-                                                <%= neg.objetivoId.posicion %> • Valor: <%= (neg.objetivoId.valorMercado || 0).toLocaleString() %> € • Media <%= neg.objetivoId.valoracion %> • Posicion Principal <%= neg.objetivoId.posicionPrincipal %>
+                                                • Media <%= neg.objetivoId.valoracion %> • <%= neg.objetivoId.posicionPrincipal %>
                                             </small>
                                         <% } else { %>
                                             <span class="text-danger">Jugador no encontrado</span>
                                         <% } %>
                                     </td>
+
+                                    <td>
+                                        <span class="badge rounded-pill bg-info text-dark">
+                                            <%= neg.tipoObjetivo === 'Jugador' ? 'JUGADOR' : 'EMPLEADO' %>
+                                        </span>
+                                        <div class="small text-muted text-uppercase" style="font-size: 0.7rem;"><%= neg.tipoOferta %></div>
+                                    </td>
+
                                     <td>
                                         <div class="d-flex align-items-center">
                                             <% if (neg.clubEmisor && neg.clubEmisor.escudo) { %>
-                                                <img src="/img/escudos/<%= neg.clubEmisor.escudo %>" width="25" class="me-2">
+                                                <img src="/img/escudos/<%= neg.clubEmisor.escudo %>" width="20" class="me-2">
                                             <% } %>
-                                            <span><%= neg.clubEmisor ? neg.clubEmisor.nombre : 'Club Desconocido' %></span>
+                                            <%= neg.clubEmisor ? neg.clubEmisor.nombre : 'Desconocido' %>
                                         </div>
                                     </td>
+
                                     <td>
                                         <% 
                                             let badgeColor = 'bg-warning text-dark';
@@ -332,27 +344,49 @@
                                             if (estadoStr === 'rechazado') badgeColor = 'bg-danger';
                                         %>
                                         <span class="badge <%= badgeColor %>">
-                                            <%= estadoStr.toUpperCase() %>
+                                            <%= estadoStr.toUpperCase().replace('_', ' ') %>
                                         </span>
                                     </td>
-                                    <td class="text-center">
-                                        <div class="fw-bold text-primary fs-5">
-                                            <%= (neg.ofertaTraspaso || 0).toLocaleString() %> €
+
+                                    <td>
+                                        <div class="small fw-bold text-cyan text-center">
+                                            <% if (neg.tipoOferta === 'traspaso') { %>
+                                                <div><%= (neg.ofertaTraspaso || 0).toLocaleString() %> €</div>
+                                                <% if (neg.porcentajeFuturaVenta > 0) { %>
+                                                    <div class="text-muted small">+ <%= neg.porcentajeFuturaVenta %>% f.v.</div>
+                                                <% } %>
+                                            <% } else { %>
+                                                <div><%= neg.ofertaTraspaso %>% sueldo</div>
+                                                <% if (neg.clausulaCompra > 0) { %>
+                                                    <div class="text-muted small">Op. Compra: <%= neg.clausulaCompra.toLocaleString() %> €</div>
+                                                <% } %>
+                                            <% } %>
                                         </div>
-                                        <% if (neg.contraofertaTraspaso > 0 && neg.estadoTraspaso === 'negociando') { %>
-                                            <small class="text-muted text-decoration-line-through">
-                                                Original: <%= (neg.ofertaTraspaso || 0).toLocaleString() %> €
-                                            </small>
-                                            <div class="text-info small">Tu contraoferta: <%= (neg.contraofertaTraspaso || 0).toLocaleString() %> €</div>
+                                    </td>
+
+                                    <td class="text-center">
+                                        <% if (neg.estadoTraspaso === 'negociando' && neg.contraofertaTraspaso > 0) { %>
+                                            <div class="small fw-bold text-primary">
+                                                <%= neg.contraofertaTraspaso.toLocaleString() %> €
+                                                <div class="text-muted" style="font-size: 0.65rem;">ESPERANDO RESPUESTA</div>
+                                            </div>
+                                        <% } else { %>
+                                            <span class="text-muted small">-</span>
                                         <% } %>
                                     </td>
-                                    <td class="text-end">
-                                        <div class="d-flex gap-2 justify-content-center">
-                                            <% if (neg.estadoTraspaso === 'pendiente' || neg.estadoTraspaso === 'negociando') { %>
-                                                <button onclick="responderOferta('<%= neg._id %>', 'aceptar')" class="btn btn-sm btn-success">
-                                                    <i class="bi bi-check-lg"></i> Aceptar
-                                                </button>
 
+                                    <td class="text-end">
+                                        <div class="d-grid gap-1">
+                                            <% if (neg.estadoTraspaso === 'pendiente' || neg.estadoTraspaso === 'negociando') { %>
+                                                <div class="d-flex gap-1">
+                                                    <button onclick="responderOferta('<%= neg._id %>', 'aceptar')" class="btn btn-sm btn-success w-100">
+                                                        Aceptar
+                                                    </button>
+                                                    <button onclick="responderOferta('<%= neg._id %>', 'rechazar')" class="btn btn-sm btn-danger">
+                                                        <i class="bi bi-x-lg"></i>
+                                                    </button>
+                                                </div>
+                                                
                                                 <button onclick="negociarTraspasoClub(
                                                     '<%= neg.objetivoId._id %>',
                                                     '<%= neg.ofertaTraspaso || 0 %>', 
@@ -361,16 +395,12 @@
                                                     '<%= neg.porcentajeFuturaVenta || 0 %>',
                                                     '<%= neg.precioRecompra || 0 %>',
                                                     '<%= neg.clausulaCompra || 0 %>'
-                                                )" class="btn btn-sm btn-primary">
+                                                )" class="btn btn-sm btn-outline-primary">
                                                     Contraofertar
-                                                </button>
-
-                                                <button onclick="responderOferta('<%= neg._id %>', 'rechazar')" class="btn btn-sm btn-danger">
-                                                    <i class="bi bi-x-lg"></i>
                                                 </button>
                                             <% } else { %>
                                                 <button onclick="borrarNegociacion('<%= neg._id %>')" class="btn btn-sm btn-outline-secondary">
-                                                    <i class="bi bi-trash"></i>
+                                                    <i class="bi bi-trash"></i> Borrar
                                                 </button>
                                             <% } %>
                                         </div>
@@ -382,6 +412,7 @@
                 </div>
             <% } %>
         </div>
+        
     </div>
 </div>
 <%- include('partials/modal_traspasos') %>

@@ -432,7 +432,7 @@ negociacionRouter.post('/objetivo/confirmarContrato/:id', async (req, res) => {
                 }
                 const fechaFin = new Date(Date.UTC(anioBase + anios, 5, 30, 12, 0, 0));
 
-                const costeTraspaso = negPrevia.ofertaTraspaso || 0;
+                const costeTraspaso = negPrevia?.ofertaTraspaso || 0;
                 const primaFichaje = prima || 0;
                 const nuevoSueldo = sueldo;
                 const sueldoAnterior = objetivo.salario || 0;
@@ -526,7 +526,8 @@ negociacionRouter.post('/objetivo/confirmarContrato/:id', async (req, res) => {
                 contraofertaPrima: !primaMal ? null : (contraOfertaP || (negPrevia ? negPrevia.contraofertaPrima : null)),
                 basicoContratoAceptado: isBasicoAceptado,
                 finalizada:isFinalizada,
-                ultimaModificacion: Date.now()
+                ultimaModificacion: Date.now(),
+                tipoOferta: esRenovacion === 'true' ? 'renovacion' : 'traspaso'
             },
             { upsert: true }
         );
