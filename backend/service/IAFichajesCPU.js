@@ -4,140 +4,202 @@ const Club = require('../models/club');
 const Partida = require('../models/partida');
 
 class IAFichajesCPU {
-    static async procesarAccionesCPU(partidaId, fechaActual) {
+    
+    static generarCondicionesTraspaso(jugador) {
+        const variacion = 0.8 + Math.random() * 0.4;
+        return {
+            precio: Math.floor(jugador.valorMercado * variacion),
+            futuraVenta: Math.random() > 0.7 ? Math.floor(Math.random() * 20) : 0,
+            precioRecompra: Math.random() > 0.9 ? Math.floor(jugador.valorMercado * 2) : 0
+        };
+    }
+
+    static generarCondicionesCesion() {
+        return {
+            porcentajeSueldo: [50, 60, 70, 80, 100][Math.floor(Math.random() * 5)],
+            clausulaCompra: Math.random() > 0.8 ? true : false 
+        };
+    }
+
+    static async procesarAccionesCPU(partidaId, fechaActual, clubUsuarioId) {
+        if (!clubUsuarioId) {
+            console.error("Error: clubUsuarioId es undefined en procesarAccionesCPU");
+            return;
+        }
+
         const mes = fechaActual.getMonth();
-        const esMercado = (mes === 0 || mes === 6 || mes === 7);
+        const esMercado = [0, 6, 7].includes(mes);
 
-        // Revisar renovaciones internas de la CPU
-        await IAFichajesCPU.revisarRenovacionesCPU(partidaId, fechaActual);
+        // 1. Renovaciones (Pasamos el ID directamente)
+        await this.revisarRenovacionesCPU(partidaId, fechaActual, clubUsuarioId);
 
-        // Simular movimientos automáticos entre clubes de la CPU
+        // 2. Resolver negociaciones CPU-CPU
+        await this.resolverNegociacionesPendientes(partidaId, clubUsuarioId);
+
         if (esMercado) {
-            // Un 30% de probabilidad de que ocurra un movimiento entre CPUs cada día que avanzas
-            if (Math.random() > 0.7) { 
-                await IAFichajesCPU.simularMovimientosEntreCPU(partidaId);
+            // 3. Movimientos entre CPUs
+            const numIntentos = Math.floor(Math.random() * 6) + 3;
+            for (let i = 0; i < numIntentos; i++) {
+                await this.simularMovimientosEntreCPU(partidaId, clubUsuarioId);
             }
+
+            // 4. Intentar fichar al usuario
+            await this.intentarFicharAlUsuario(partidaId, clubUsuarioId);
         }
     }
 
     static async intentarFicharAlUsuario(partidaId, clubUsuarioId) {
-        // Cuántos jugadores hay en tu club
-        const conteo = await Jugador.countDocuments({ 
-            clubActual: clubUsuarioId, 
-            partidaId 
+        // SOLUCIÓN AL ERROR: Validar existencia
+        if (!clubUsuarioId) return;
+        const idUsuario = clubUsuarioId._id || clubUsuarioId;
+
+        // Buscamos un jugador aleatorio del usuario
+        const misJugadores = await Jugador.aggregate([
+            { $match: { clubActual: idUsuario, partidaId: partidaId } },
+            { $sample: { size: 1 } }
+        ]);
+
+        const miJugador = misJugadores[0];
+        if (!miJugador) return;
+
+        const clubComprador = await Club.findOne({ _id: { $ne: idUsuario }, partidaId });
+        if (!clubComprador) return;
+
+        const esTraspaso = Math.random() > 0.4;
+        const condiciones = esTraspaso ? 
+            this.generarCondicionesTraspaso(miJugador) : 
+            this.generarCondicionesCesion();
+
+        await Negociacion.create({
+            partidaId,
+            objetivoId: miJugador._id,
+            tipoObjetivo: 'Jugador',
+            clubEmisor: clubComprador._id,
+            clubReceptor: idUsuario,
+            tipoOferta: esTraspaso ? 'traspaso' : 'cesion',
+            ofertaTraspaso: esTraspaso ? condiciones.precio : condiciones.porcentajeSueldo,
+            porcentajeVenta: condiciones.futuraVenta || 0,
+            precioRecompra: condiciones.precioRecompra || 0,
+            clausulaCompra: condiciones.clausulaCompra ? Math.floor(miJugador.valorMercado * 1.5) : 0,
+            estadoTraspaso: 'negociando', 
+            finalizada: false,
+            leidaPorUsuario: false,
+            ultimaModificacion: new Date()
         });
-
-        if (conteo === 0) return;
-
-        //Generar un índice aleatorio
-        const randomIndex = Math.floor(Math.random() * conteo);
-
-        //Obtener el jugador
-        const miJugador = await Jugador.findOne({ 
-            clubActual: clubUsuarioId, 
-            partidaId 
-        }).skip(randomIndex);
-
-        if (miJugador /*&& Math.random() > 0.9*/) { 
-            const clubComprador = await Club.findOne({ _id: { $ne: clubUsuarioId }, partidaId });
-            if (!clubComprador) return;
-
-            const esTraspaso = Math.random() > 0.4;
-            const tipo = esTraspaso ? 'traspaso' : 'cesion';
-
-            await Negociacion.create({
-                partidaId,
-                objetivoId: miJugador._id,
-                tipoObjetivo: 'Jugador',
-                clubEmisor: clubComprador._id,
-                clubReceptor: clubUsuarioId,
-                tipoOferta: tipo,
-                ofertaTraspaso: esTraspaso ? Math.floor(miJugador.valorMercado * (0.9 + Math.random() * 0.2)) : 0,
-                estadoTraspaso: 'negociando', 
-                finalizada: false,
-                ultimaModificacion: new Date()
-            });
-            
-            console.log(`[IA] Oferta recibida: ${clubComprador.nombre} quiere a ${miJugador.nombre} (${tipo})`);
-        }
+        
+        console.log(`[IA -> USUARIO] Oferta creada por ${miJugador.nombre}`);
     }
 
-    static async simularMovimientosEntreCPU(partidaId) {
-        const partida = await Partida.findById(partidaId).lean();
-        const miClubId = partida.clubSeleccionado;
+    static async simularMovimientosEntreCPU(partidaId, clubUsuarioId) {
+        const idUsuario = clubUsuarioId._id || clubUsuarioId;
+        
+        // Clubes que no son del usuario
+        const clubes = await Club.find({ partidaId, _id: { $ne: idUsuario } });
+        if (clubes.length < 2) return;
 
-        // Elegir un comprador (que no sea el usuario)
-        const clubes = await Club.find({ partidaId, _id: { $ne: miClubId } });
-        if (clubes.length === 0) return;
         const comprador = clubes[Math.floor(Math.random() * clubes.length)];
+        const vendedor = clubes[Math.floor(Math.random() * clubes.length)];
+        
+        if (comprador._id.equals(vendedor._id)) return;
 
-        // Elegir un objetivo (que no sea del comprador ni del usuario)
         const objetivo = await Jugador.findOne({
             partidaId,
-            clubActual: { $exists: true, $ne: comprador._id, $nin: [miClubId] },
+            clubActual: vendedor._id,
             valorMercado: { $gt: 0 }
-        }).sort({ valorMercado: 1 }); // Empezamos por jugadores asequibles
+        });
 
         if (!objetivo) return;
 
-        const esTraspaso = comprador.presupuestoTraspasos >= (objetivo.valorMercado || 0) && Math.random() > 0.3;
-        const vendedorId = objetivo.clubActual;
+        const esTraspaso = Math.random() > 0.4;
+        const condiciones = esTraspaso ? 
+            this.generarCondicionesTraspaso(objetivo) : 
+            this.generarCondicionesCesion();
 
-        // Crear el registro de Negociación
         await Negociacion.create({
             partidaId,
             objetivoId: objetivo._id,
             tipoObjetivo: 'Jugador',
             clubEmisor: comprador._id,
-            clubReceptor: vendedorId,
+            clubReceptor: vendedor._id,
             tipoOferta: esTraspaso ? 'traspaso' : 'cesion',
-            ofertaTraspaso: esTraspaso ? objetivo.valorMercado : 0,
-            estadoTraspaso: 'aceptado', 
-            finalizada: true,
+            ofertaTraspaso: esTraspaso ? condiciones.precio : condiciones.porcentajeSueldo,
+            porcentajeVenta: condiciones.futuraVenta || 0,
+            precioRecompra: condiciones.precioRecompra || 0,
+            clausulaCompra: condiciones.clausulaCompra ? Math.floor(objetivo.valorMercado * 1.2) : 0,
+            estadoTraspaso: 'negociando',
+            finalizada: false,
             ultimaModificacion: new Date()
         });
-
-        if (esTraspaso) {
-            // Actualizar presupuestos
-            await Club.findByIdAndUpdate(comprador._id, { $inc: { presupuestoTraspasos: -objetivo.valorMercado } });
-            await Club.findByIdAndUpdate(vendedorId, { $inc: { presupuestoTraspasos: objetivo.valorMercado } });
-            
-            // Cambiar club y renovar contrato 3 años
-            const nuevaFecha = new Date();
-            nuevaFecha.setFullYear(nuevaFecha.getFullYear() + 3);
-
-            await Jugador.findByIdAndUpdate(objetivo._id, { 
-                clubActual: comprador._id,
-                finContrato: nuevaFecha,
-                estadoClub: 'primerEquipo'
-            });
-        } else {
-            // Caso de cesión
-            await Jugador.findByIdAndUpdate(objetivo._id, { 
-                clubActual: comprador._id,
-                estadoClub: 'cedido' 
-            });
-        }
-
-        console.log(`[IA - AUTO] Movimiento entre CPUs: ${objetivo.nombre} al ${comprador.nombre} (${esTraspaso ? 'Traspaso' : 'Cesión'})`);
+        console.log(`[IA-IA] Oferta de ${comprador.nombre} a ${vendedor.nombre} por ${objetivo.nombre}`);
     }
 
-    static async revisarRenovacionesCPU(partidaId, fechaActual) {
-        const partida = await Partida.findById(partidaId).lean();
-        const miClubId = partida.clubSeleccionado;
+    static async resolverNegociacionesPendientes(partidaId, clubUsuarioId) {
+        const idUsuario = clubUsuarioId._id || clubUsuarioId;
+
+        // Solo resolvemos donde el RECEPTOR (vendedor) sea una CPU
+        const pendientes = await Negociacion.find({
+            partidaId,
+            finalizada: false,
+            clubReceptor: { $ne: idUsuario }
+        });
+
+        for (let neg of pendientes) {
+            if (Math.random() > 0.6) { 
+                const aceptada = Math.random() > 0.3; 
+                if (aceptada) {
+                    await this.ejecutarTraspasoEfectivo(neg);
+                } else {
+                    await Negociacion.findByIdAndUpdate(neg._id, { 
+                        estadoTraspaso: 'rechazado', 
+                        finalizada: true 
+                    });
+                }
+            }
+        }
+    }
+
+    static async ejecutarTraspasoEfectivo(neg) {
+        const objetivo = await Jugador.findById(neg.objetivoId);
+        if (!objetivo) return;
+
+        const esTraspaso = neg.tipoOferta === 'traspaso';
+
+        if (esTraspaso) {
+            await Club.findByIdAndUpdate(neg.clubEmisor, { $inc: { presupuestoTraspasos: -neg.ofertaTraspaso } });
+            await Club.findByIdAndUpdate(neg.clubReceptor, { $inc: { presupuestoTraspasos: neg.ofertaTraspaso } });
+        }
+
+        const nuevaFechaFin = new Date();
+        nuevaFechaFin.setFullYear(nuevaFechaFin.getFullYear() + (esTraspaso ? 3 : 1));
+
+        await Jugador.findByIdAndUpdate(objetivo._id, {
+            clubActual: neg.clubEmisor,
+            finContrato: nuevaFechaFin,
+            estadoClub: esTraspaso ? 'primerEquipo' : 'cedido',
+            salario: esTraspaso ? Math.floor(objetivo.salario * 1.1) : objetivo.salario
+        });
+
+        await Negociacion.findByIdAndUpdate(neg._id, { 
+            estadoTraspaso: 'aceptado', 
+            finalizada: true 
+        });
+        console.log(`[IA-COMPLETADO] ${objetivo.nombre} se une al ${neg.clubEmisor}`);
+    }
+
+    static async revisarRenovacionesCPU(partidaId, fechaActual, clubUsuarioId) {
+        const idUsuario = clubUsuarioId._id || clubUsuarioId;
 
         const seisMesesDespues = new Date(fechaActual);
         seisMesesDespues.setMonth(seisMesesDespues.getMonth() + 6);
 
-        // Jugadores que terminan contrato pronto y no son del usuario
         const jugadoresAExpirar = await Jugador.find({
             partidaId,
-            clubActual: { $ne: miClubId },
+            clubActual: { $ne: idUsuario },
             finContrato: { $lte: seisMesesDespues }
         });
 
         for (let jugador of jugadoresAExpirar) {
-            if (Math.random() > 0.5) { // 50% de probabilidad de que el club quiera renovarle
+            if (Math.random() > 0.5) {
                 const nuevaFecha = new Date(jugador.finContrato);
                 nuevaFecha.setFullYear(nuevaFecha.getFullYear() + 2);
                 

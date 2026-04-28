@@ -354,8 +354,7 @@ partidaRouter.get('/avanzar-fecha/:id', requireLogin, async (req, res) => {
         await Partida.findByIdAndUpdate(partidaId, { fechaActual: nuevaFecha });
 
         //fichajes y renovaciones por parte de CPU
-        await IAFichajesCPU.procesarAccionesCPU(partidaId, nuevaFecha);
-        await IAFichajesCPU.intentarFicharAlUsuario(partidaId, partida.clubSeleccionado._id);
+        await IAFichajesCPU.procesarAccionesCPU(partidaId, nuevaFecha, partida.clubSeleccionado);
 
         // Recargamos el menú de inicio
         res.redirect('/inicioJuego/' + partidaId);
@@ -396,8 +395,7 @@ partidaRouter.get('/avanzar-hasta-partido/:id', requireLogin, async (req, res) =
               let fechaSimulada = new Date(fechaAntigua);
               fechaSimulada.setDate(fechaSimulada.getDate() + i);
 
-              await IAFichajesCPU.procesarAccionesCPU(partidaId, fechaSimulada);
-              await IAFichajesCPU.intentarFicharAlUsuario(partidaId, clubUsuarioId);
+              await IAFichajesCPU.procesarAccionesCPU(partidaId, fechaSimulada, partida.clubSeleccionado);
           }
           partida.fechaActual = fechaNueva;
           await Partida.findByIdAndUpdate(partidaId, { fechaActual: fechaNueva });
