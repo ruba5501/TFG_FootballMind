@@ -30,6 +30,9 @@
           <li class="nav-item">
             <a class="nav-link" href="/negociaciones/<%= partida._id %>"><i class="bi bi-file-earmark-text me-1"></i> Negociaciones</a>
           </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/historialFichajes/<%= partida._id %>"><i class="bi bi-file-earmark-text me-1"></i> Historial Fichajes</a>
+          </li>
           <% if (typeof partida.clubSeleccionado !== 'undefined' && !partida.clubSeleccionado.esFilial) { %>
             <li class="nav-item">
               <a class="nav-link" href="/cantera/<%= partida._id %>"><i class="bi bi-mortarboard me-1"></i> Cantera</a>

@@ -9,6 +9,7 @@ const Jugador = require('../models/jugador');
 const Empleado = require('../models/empleado');
 const Competicion = require('../models/competicion');
 const Negociacion = require('../models/negociacion');
+const { requireLogin } = require('../middleware/autenticacion');
 
 function calcularPrecioMinimo(jugador, clubVendedor, ofertaDetalles, fechaActualPartida) {
     let factor = 1.0;
@@ -122,7 +123,7 @@ function calcularPretensiones(objetivo, esEmpleado, interesJugador, miClub, ofer
     };
 }
 
-negociacionRouter.post('/fichajes/ofertaTraspaso/:jugadorId', async (req, res) => {
+negociacionRouter.post('/fichajes/ofertaTraspaso/:jugadorId', requireLogin, async (req, res) => {
     try {
         const oferta = {
             tipo: req.body.oferta.tipo,
@@ -305,7 +306,7 @@ negociacionRouter.post('/fichajes/ofertaTraspaso/:jugadorId', async (req, res) =
                 clausulaCompra: oferta.clausulaCompra || null,
                 basicoAceptado: isBasicoAceptado,
                 finalizada: isFinalizada,
-                ultimaModificacion: Date.now()
+                ultimaModificacion: new Date(partida.fechaActual)
             },
             { upsert: true }
         );
@@ -322,7 +323,7 @@ negociacionRouter.post('/fichajes/ofertaTraspaso/:jugadorId', async (req, res) =
     }
 });
 
-negociacionRouter.post('/objetivo/confirmarContrato/:id', async (req, res) => {
+negociacionRouter.post('/objetivo/confirmarContrato/:id', requireLogin, async (req, res) => {
     try {
         const sueldo = Number(req.body.sueldo);
         const anios = Number(req.body.anios);
@@ -526,7 +527,7 @@ negociacionRouter.post('/objetivo/confirmarContrato/:id', async (req, res) => {
                 contraofertaPrima: !primaMal ? null : (contraOfertaP || (negPrevia ? negPrevia.contraofertaPrima : null)),
                 basicoContratoAceptado: isBasicoAceptado,
                 finalizada:isFinalizada,
-                ultimaModificacion: Date.now(),
+                ultimaModificacion: new Date(partida.fechaActual),
                 tipoOferta: esRenovacion === 'true' ? 'renovacion' : 'traspaso'
             },
             { upsert: true }
@@ -549,7 +550,34 @@ negociacionRouter.post('/objetivo/confirmarContrato/:id', async (req, res) => {
     }
 });
 
-negociacionRouter.get('/negociaciones/borrar/:id', async (req, res) => {
+negociacionRouter.get('/historialFichajes/:id', requireLogin, async (req, res) => {
+    try {
+        const partidaId = req.params.id;
+        const partida = await Partida.findById(partidaId).populate('clubSeleccionado');
+
+        const negociacionesEnCurso = await Negociacion.find({
+            partidaId,
+            finalizada: false,
+        }).populate('objetivoId clubEmisor clubReceptor').sort({ ultimaModificacion: -1 });
+
+        const negociacionesCerradas = await Negociacion.find({
+            partidaId,
+            finalizada: true,
+        }).populate('objetivoId clubEmisor clubReceptor').sort({ ultimaModificacion: -1 });
+
+        res.render('fichajes', {
+            partida,
+            user: req.user,
+            enCurso: negociacionesEnCurso,
+            historial: negociacionesCerradas
+        });
+    } catch (error) {
+        console.error(error);
+        res.redirect('/inicioJuego/' + req.params.id);
+    }
+});
+
+negociacionRouter.get('/negociaciones/borrar/:id', requireLogin, async (req, res) => {
     try {
         await Negociacion.findByIdAndDelete(req.params.id);
         res.json({ success: true });
@@ -559,7 +587,7 @@ negociacionRouter.get('/negociaciones/borrar/:id', async (req, res) => {
     }
 });
 
-negociacionRouter.get('/negociaciones/finalizar/:id', async (req, res) => {
+negociacionRouter.get('/negociaciones/finalizar/:id', requireLogin, async (req, res) => {
     try {
         const negociacion = await Negociacion.findById(req.params.id);
         await Negociacion.findByIdAndUpdate(req.params.id, { 

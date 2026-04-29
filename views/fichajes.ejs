@@ -1,0 +1,105 @@
+<%- include('partials/head', {title: 'Historial Fichajes'}) %>
+<%- include('partials/navbar') %>
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-white"><i class="bi bi-file-earmark-text me-2"></i> Centro de Negociaciones</h2>
+        <span class="badge bg-primary">Temporada <%= new Date(partida.fechaActual).getFullYear() %></span>
+    </div>
+
+    <ul class="nav nav-tabs mb-4" id="negociacionesTab" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active fw-bold" id="enCurso-tab" data-bs-toggle="tab" data-bs-target="#enCurso" type="button" role="tab">
+                En Curso <span class="badge bg-danger ms-1"><%= enCurso.length %></span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link fw-bold" id="historial-tab" data-bs-toggle="tab" data-bs-target="#historial" type="button" role="tab">
+                Historial de Fichajes <span class="badge bg-primary ms-1"><%= historial.length %></span>
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="negociacionesTabContent">
+        
+        <div class="tab-pane fade show active" id="enCurso" role="tabpanel">
+            <% if (enCurso.length === 0) { %>
+                <div class="alert alert-dark text-center">No hay negociaciones activas en este momento.</div>
+            <% } else { %>
+                <div class="row">
+                    <% enCurso.forEach(neg => { %>
+                        <div class="col-md-6 mb-3">
+                            <div class="card bg-dark text-white border-secondary shadow-sm">
+                                <div class="card-body">
+                                    <h5 class="card-title text-warning"><%= neg.objetivoId.nombre %></h5>
+                                    <p class="card-text mb-1">
+                                        <strong>De:</strong> <%= neg.clubEmisor.nombre %> <img src="/img/escudos/<%= neg.clubEmisor.escudo %>" width="20" class="me-2"><br>
+                                        <strong>Para:</strong> <%= neg.clubReceptor.nombre %> <img src="/img/escudos/<%= neg.clubReceptor.escudo %>" width="20" class="me-2"><br>
+                                        <strong>Tipo:</strong> <%= neg.tipoOferta.toUpperCase() %><br>
+                                        <% if (neg.tipoOferta === "traspaso") { %>
+                                            <strong>Oferta:</strong> <%= neg.ofertaTraspaso.toLocaleString() %> €
+                                            <% if (neg.porcentajeFuturaVenta > 0) { %>
+                                                <div class="text-light small">+ <%= neg.porcentajeFuturaVenta %>% futura venta</div>
+                                            <% } %>
+                                            <% if (neg.precioRecompra > 0) { %>
+                                                <div class="text-light small">+ <%= neg.precioRecompra.toLocaleString() %> € recompra</div>
+                                            <% } %>
+                                        <% } else if (neg.tipoOferta === 'cesion'){ %>
+                                            <strong>Oferta:</strong> <%= neg.ofertaTraspaso.toLocaleString() %> % sueldo
+                                            <% if (neg.clausulaCompra > 0) { %>
+                                                <div class="text-light small">+ <%= neg.clausulaCompra.toLocaleString() %> € opción compra</div>
+                                            <% } %>
+                                        <% } %>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    <% }) %>
+                </div>
+            <% } %>
+        </div>
+
+        <div class="tab-pane fade" id="historial" role="tabpanel">
+            <div class="table-responsive">
+                <table class="table table-dark table-hover border-secondary">
+                    <thead class="table-secondary text-dark">
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Jugador</th>
+                            <th>Emisor</th>
+                            <th>Receptor</th>
+                            <th>Precio</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% historial.forEach(neg => { %>
+                            <tr>
+                                <td><%= neg.ultimaModificacion.toLocaleDateString() %></td>
+                                <td class="fw-bold"><%= neg.objetivoId ? neg.objetivoId.nombre : 'Jugador Retirado' %></td>
+                                <td><%= neg.clubEmisor.nombre %> <img src="/img/escudos/<%= neg.clubEmisor.escudo %>" width="20" class="me-2"></td>
+                                <td><%= neg.clubReceptor.nombre %> <img src="/img/escudos/<%= neg.clubReceptor.escudo %>" width="20" class="me-2"></td>
+                                <td>
+                                    <% if (neg.tipoOferta === "traspaso") { %>
+                                        <strong>Oferta:</strong> <%= neg.ofertaTraspaso.toLocaleString() %> €
+                                        <% if (neg.porcentajeFuturaVenta > 0) { %>
+                                            <div class="text-light small">+ <%= neg.porcentajeFuturaVenta %>% futura venta</div>
+                                        <% } %>
+                                        <% if (neg.precioRecompra > 0) { %>
+                                            <div class="text-light small">+ <%= neg.precioRecompra.toLocaleString() %> € recompra</div>
+                                        <% } %>
+                                    <% } else if (neg.tipoOferta === 'cesion'){ %>
+                                        <strong>Oferta:</strong> <%= neg.ofertaTraspaso.toLocaleString() %> % sueldo
+                                        <% if (neg.clausulaCompra > 0) { %>
+                                            <div class="text-light small">+ <%= neg.clausulaCompra.toLocaleString() %> € opción compra</div>
+                                        <% } %>
+                                    <% } %>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
