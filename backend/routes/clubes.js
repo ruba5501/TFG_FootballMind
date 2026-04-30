@@ -547,5 +547,37 @@ clubRouter.get('/objetivo/detalleTraspaso/:id', requireLogin, async (req, res) =
     }
 });
 
+clubRouter.get('/objetivo/detalleOfertaRecibida/:negociacionId', requireLogin, async (req, res) => {
+    try {
+        const { negociacionId } = req.params;
+
+        const neg = await Negociacion.findById(negociacionId)
+            .populate('objetivoId')
+            .populate('clubEmisor')
+            .lean();
+
+        if (!neg) {
+            return res.status(404).json({ success: false, message: "No se encontró la negociación" });
+        }
+
+        const partida = await Partida.findById(neg.partidaId)
+            .populate('clubSeleccionado')
+            .lean();
+
+        res.json({
+            success: true,
+            negociacion: neg, 
+            objetivo: neg.objetivoId, 
+            clubEmisor: neg.clubEmisor,
+            miClub: partida.clubSeleccionado,
+            fechaActual: partida.fechaActual
+        });
+
+    } catch (error) {
+        console.error("Error en detalleOfertaRecibida:", error);
+        res.status(500).json({ success: false, message: "Error interno del servidor" });
+    }
+});
+
 
 module.exports = clubRouter;

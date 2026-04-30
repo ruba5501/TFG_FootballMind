@@ -74,7 +74,7 @@ class IAFichajesCPU {
         await this.resolverNegociacionesPendientes(partidaId, clubUsuarioId, fechaActual);
 
         if (esMercado) {
-            // Movimientos entre CPUs
+            // Movimientos entre CPU
             const numIntentos = Math.floor(Math.random() * 6) + 3;
             for (let i = 0; i < numIntentos; i++) {
                 await this.simularMovimientosEntreCPU(partidaId, clubUsuarioId, fechaActual);
@@ -117,7 +117,7 @@ class IAFichajesCPU {
         const probabilidad = esDeLista ? 0.8 : 0.15;
         if (Math.random() > probabilidad) return;
 
-        // Selección ALEATORIA del Club Comprador
+        // Selección aleatoria del Club Comprador
         const conteoClubes = await Club.countDocuments({ 
             partidaId: idPartida, 
             _id: { $ne: idUsuario },

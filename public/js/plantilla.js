@@ -379,6 +379,98 @@ async function negociarTraspasoClub(jugadorId, precioOfertaI = 0, precioContraI 
     modalObj.show();
 }
 
+async function verOfertaRecibida(negociacionId) {
+    const form = document.getElementById('formOferta');
+    if (form) form.reset();
+
+    const response = await fetch(`/objetivo/detalleOfertaRecibida/${negociacionId}`);
+    const data = await response.json();
+    
+    const neg = data.negociacion;
+    const jugador = data.objetivo; 
+    const clubEmisor = data.clubEmisor; 
+    const miClub = data.miClub;
+
+    const tituloModal = document.getElementById('tituloModal');
+    const headerModal = document.getElementById('headerNegociacion');     
+    const contenedorInteres = document.getElementById('contenedorInteres');
+    const btnTraspaso = document.getElementById('modoTraspaso');
+    const btnCesion = document.getElementById('modoCesion');
+    const divTraspaso = document.getElementById('camposTraspaso');
+    const divCesion = document.getElementById('camposCesion');
+
+    btnTraspaso.disabled = false;
+    btnCesion.disabled = false;
+
+    // Info Básica
+    tituloModal.innerText = "Oferta Recibida ";
+    headerModal.classList.remove('bg-dark', 'bg-primary');
+    headerModal.classList.add('bg-success');
+    if (contenedorInteres) contenedorInteres.classList.add('d-none');
+
+    document.getElementById('infoNombre').innerText = jugador.nombre;
+    document.getElementById('infoClub').innerText = miClub.nombre;
+    document.getElementById('infoMedia').innerText = `Media: ${jugador.valoracion}`;
+    document.getElementById('infoPotencial').innerText = `Pot: ${jugador.potencial}`;
+    document.getElementById('infoValor').innerText = `${jugador.valorMercado.toLocaleString()} €`;
+    document.getElementById('infoSalario').innerText = `${(jugador.salario / 12).toLocaleString()} €/mes`;
+
+    //fechas
+    const fecha = new Date(jugador.finContrato);
+    const fechaFormateada = fecha.toLocaleDateString('es-ES', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+    });
+    document.getElementById('infoContratoFin').innerText = fechaFormateada;
+    
+    // Imágenes (Escudo y Bandera)
+    const imgEscudo = document.getElementById('infoEscudo');
+    imgEscudo.src = miClub && miClub.escudo ? `/img/escudos/${miClub.escudo}` : '';
+    imgEscudo.style.display = miClub && miClub.escudo ? 'block' : 'none';
+
+    const imgBandera = document.getElementById('infoBandera');
+    imgBandera.src = jugador.nacionalidad ? `/img/banderas/${jugador.nacionalidad}.png` : '';
+    imgBandera.style.display = jugador.nacionalidad ? 'block' : 'none';
+    
+    tipoEfectivo = neg.tipoOferta || neg.tipo; 
+
+    if (tipoEfectivo === 'traspaso') {
+        btnTraspaso.checked = true;
+        btnCesion.disabled = true; 
+        divTraspaso.classList.remove('d-none');
+        divCesion.classList.add('d-none');
+
+        document.getElementById('ofertaPrecio').value = neg.ofertaTraspaso || 0;
+        document.getElementById('futuraVenta').value = neg.porcentajeFuturaVenta || 0;
+        document.getElementById('precioRecompra').value = neg.precioRecompra || 0;
+        
+        document.querySelector('label[for="ofertaPrecio"]').innerHTML = 
+            `Oferta de traspaso (€) del ${clubEmisor.nombre} <img src="/img/escudos/${clubEmisor.escudo}" alt="Escudo" 
+            style="width: 20px; height: 20px; object-fit: contain; vertical-align: middle; margin-left: 5px;">`;
+    } else {
+        btnCesion.checked = true;
+        btnTraspaso.disabled = true;
+        divCesion.classList.remove('d-none');
+        divTraspaso.classList.add('d-none');
+
+        document.getElementById('porcentajeSueldo').value = neg.ofertaTraspaso || neg.porcentajeSueldo || 0;
+        document.getElementById('valorClausula').value = neg.clausulaCompra || 0;
+    }
+
+    form.dataset.negociacionId = negociacionId;
+    form.dataset.modoEnvio = 'respuestaVenta';
+
+    const btnAccion = document.querySelector('#formOferta button[onclick*="enviar"]');
+    if (btnAccion) {
+        btnAccion.innerText = "Enviar Contraoferta";
+        btnAccion.setAttribute('onclick', `responderOfertaCPU('${negociacionId}')`);
+    }
+
+    const modalObj = new bootstrap.Modal(document.getElementById('modalNegociacion'));
+    modalObj.show();
+}
+
 // Lógica de UI para cambiar entre Traspaso y Cesión
 document.getElementsByName('modoNegoc').forEach(radio => {
     radio.addEventListener('change', (e) => {

@@ -351,14 +351,22 @@
                                     <td>
                                         <div class="small fw-bold text-cyan text-center">
                                             <% if (neg.tipoOferta === 'traspaso') { %>
-                                                <div><%= (neg.ofertaTraspaso || 0).toLocaleString() %> €</div>
-                                                <% if (neg.porcentajeFuturaVenta > 0) { %>
-                                                    <div class="text-muted small">+ <%= neg.porcentajeFuturaVenta %>% f.v.</div>
+                                                <% if (neg.ofertaTraspaso > 0) { %>
+                                                    <div><%= neg.ofertaTraspaso.toLocaleString() %> €</div>
                                                 <% } %>
-                                            <% } else { %>
+                                                
+                                                <% if (neg.porcentajeFuturaVenta > 0) { %>
+                                                    <div class="text-muted small">+ <%= neg.porcentajeFuturaVenta %>% futura venta</div>
+                                                <% } %>
+                                                <% if (neg.precioRecompra > 0) { %>
+                                                    <div class="text-muted small">+ <%= neg.precioRecompra.toLocaleString() %> € recompra</div>
+                                                <% } %>
+
+                                            <% } else if (neg.tipoOferta === 'cesion'){ %>
                                                 <div><%= neg.ofertaTraspaso %>% sueldo</div>
+                                                
                                                 <% if (neg.clausulaCompra > 0) { %>
-                                                    <div class="text-muted small">Op. Compra: <%= neg.clausulaCompra.toLocaleString() %> €</div>
+                                                    <div class="text-muted small">+ <%= neg.clausulaCompra.toLocaleString() %> € opción compra</div>
                                                 <% } %>
                                             <% } %>
                                         </div>
@@ -387,15 +395,7 @@
                                                     </button>
                                                 </div>
                                                 
-                                                <button onclick="negociarTraspasoClub(
-                                                    '<%= neg.objetivoId._id %>',
-                                                    '<%= neg.ofertaTraspaso || 0 %>', 
-                                                    '<%= neg.contraofertaTraspaso || 0 %>', 
-                                                    '<%= neg.tipoOferta %>',
-                                                    '<%= neg.porcentajeFuturaVenta || 0 %>',
-                                                    '<%= neg.precioRecompra || 0 %>',
-                                                    '<%= neg.clausulaCompra || 0 %>'
-                                                )" class="btn btn-sm btn-outline-primary">
+                                                <button onclick="verOfertaRecibida('<%= neg._id %>')" class="btn btn-sm btn-outline-primary">
                                                     Contraofertar
                                                 </button>
                                             <% } else { %>
@@ -412,7 +412,6 @@
                 </div>
             <% } %>
         </div>
-        
     </div>
 </div>
 <%- include('partials/modal_traspasos') %>
