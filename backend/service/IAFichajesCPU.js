@@ -77,18 +77,18 @@ class IAFichajesCPU {
             // Movimientos entre CPUs
             const numIntentos = Math.floor(Math.random() * 6) + 3;
             for (let i = 0; i < numIntentos; i++) {
-                await this.simularMovimientosEntreCPU(partidaId, clubUsuarioId);
+                await this.simularMovimientosEntreCPU(partidaId, clubUsuarioId, fechaActual);
             }
 
             // Intentar fichar al usuario
             const numOfertasAlUsuario = Math.floor(Math.random() * 5); 
             for (let i = 0; i < numOfertasAlUsuario; i++) {
-                await this.intentarFicharAlUsuario(partidaId, clubUsuarioId);
+                await this.intentarFicharAlUsuario(partidaId, clubUsuarioId, fechaActual);
             }
         }
     }
 
-    static async intentarFicharAlUsuario(partidaId, clubUsuarioId) {
+    static async intentarFicharAlUsuario(partidaId, clubUsuarioId, fechaActual) {
         if (!clubUsuarioId || !partidaId) return;
 
         const idUsuario = clubUsuarioId._id || clubUsuarioId;
@@ -114,7 +114,7 @@ class IAFichajesCPU {
         }
 
         // Probabilidad de éxito de la oferta (para no saturar)
-        const probabilidad = esDeLista ? 0.9 : 0.15;
+        const probabilidad = esDeLista ? 0.8 : 0.15;
         if (Math.random() > probabilidad) return;
 
         // Selección ALEATORIA del Club Comprador
@@ -123,13 +123,13 @@ class IAFichajesCPU {
             _id: { $ne: idUsuario },
             esFilial: false
         });
-
         if (conteoClubes === 0) return;
 
         const randomIndex = Math.floor(Math.random() * conteoClubes);
         const clubComprador = await Club.findOne({ 
             partidaId: idPartida, 
-            _id: { $ne: idUsuario } 
+            _id: { $ne: idUsuario },
+            esFilial: false
         }).skip(randomIndex);
 
         if (!clubComprador) return;
@@ -141,9 +141,10 @@ class IAFichajesCPU {
         });
         if (existe) return;
 
-        let esTraspaso = Math.random() > 0.5;
+        let esTraspaso = Math.random() > 0.3;
         if (objetivo.mercado?.transferible) esTraspaso = true;
-        if (objetivo.mercado?.cedible) esTraspaso = false;
+        else if (objetivo.mercado?.cedible) esTraspaso = false;
+        else if (objetivo.edad < 21 && Math.random() > 0.3) esTraspaso = false;
 
         const condiciones = esTraspaso ? 
             this.generarCondicionesTraspaso(objetivo) : 
@@ -163,42 +164,77 @@ class IAFichajesCPU {
             estadoTraspaso: 'negociando', 
             finalizada: false,
             leidaPorUsuario: false,
-            ultimaModificacion: new Date()
+            ultimaModificacion: new Date(fechaActual)
         });
 
         console.log(`[IA -> USUARIO] ${clubComprador.nombre} oferta por ${objetivo.nombre}`);
     }
 
-    static async simularMovimientosEntreCPU(partidaId, clubUsuarioId) {
+    static async simularMovimientosEntreCPU(partidaId, clubUsuarioId, fechaActual) {
         const idUsuario = clubUsuarioId._id || clubUsuarioId;
-        
         const idPartida = partidaId._id || partidaId;
-        
-        const compradores = await Club.find({ partidaId: idPartida, _id: { $ne: idUsuario }, esFilial: false });
-        const vendedores = await Club.find({ partidaId: idPartida, _id: { $ne: idUsuario } });
-        
-        if (compradores.length < 1 || vendedores.length < 2) return;
+
+        const compradores = await Club.find({ 
+            partidaId: idPartida, 
+            _id: { $ne: idUsuario },
+            esFilial: false 
+        });
+        const vendedores = await Club.find({ 
+            partidaId: idPartida, 
+            _id: { $ne: idUsuario } 
+        });
+
+        if (compradores.length < 1 || vendedores.length < 1) return;
 
         const comprador = compradores[Math.floor(Math.random() * compradores.length)];
         const vendedor = vendedores[Math.floor(Math.random() * vendedores.length)];
         
         if (comprador._id.equals(vendedor._id)) return;
 
-        const objetivo = await Jugador.findOne({
-            partidaId,
-            clubActual: vendedor._id,
-            valorMercado: { $gt: 0 }
+        const rep = comprador.reputacion || 45;
+        const mediaObjetivoBase = 58 + ((rep - 45) * 0.55);
+        
+        const randomPerfil = Math.random();
+        let requisitos = { 
+            partidaId: idPartida, 
+            clubActual: vendedor._id, 
+            valorMercado: { $gt: 0 } 
+        };
+
+        if (randomPerfil > 0.3) {
+            const rangoBajo = rep > 80 ? 13 : 9; 
+            const rangoAlto = rep > 80 ? 13 : 11;
+            requisitos.valoracion = { 
+                $gte: Math.floor(mediaObjetivoBase - rangoBajo), 
+                $lte: Math.floor(mediaObjetivoBase + rangoAlto)
+            };
+        } else {
+            requisitos.edad = { $lte: 21 };
+            requisitos.potencial = { $gte: mediaObjetivoBase - 2 }; 
+        }
+
+        const candidatos = await Jugador.find(requisitos);
+
+        if (!candidatos || candidatos.length === 0) return;
+
+        if (vendedor.esFilial && Math.random() > 0.25) return;
+
+        const objetivo = candidatos[Math.floor(Math.random() * candidatos.length)];
+
+        const existe = await Negociacion.findOne({
+            objetivoId: objetivo._id,
+            clubEmisor: comprador._id,
+            finalizada: false
         });
-
-        if (!objetivo) return;
-
+        if (existe) return;
+        
         const esTraspaso = Math.random() > 0.4;
         const condiciones = esTraspaso ? 
             this.generarCondicionesTraspaso(objetivo) : 
             this.generarCondicionesCesion(objetivo);
 
         await Negociacion.create({
-            partidaId,
+            partidaId: idPartida,
             objetivoId: objetivo._id,
             tipoObjetivo: 'Jugador',
             clubEmisor: comprador._id,
@@ -207,12 +243,13 @@ class IAFichajesCPU {
             ofertaTraspaso: esTraspaso ? condiciones.precio : condiciones.porcentajeSueldo,
             porcentajeVenta: condiciones.futuraVenta || 0,
             precioRecompra: condiciones.precioRecompra || 0,
-            clausulaCompra: condiciones.clausulaCompra ? Math.floor(objetivo.valorMercado * 1.2) : 0,
+            clausulaCompra: condiciones.clausulaCompra || 0,
             estadoTraspaso: 'negociando',
             finalizada: false,
-            ultimaModificacion: new Date()
+            ultimaModificacion: new Date(fechaActual)
         });
-        console.log(`[IA-IA] Oferta de ${comprador.nombre} a ${vendedor.nombre} por ${objetivo.nombre}`);
+
+        console.log(`[IA-IA] ${comprador.nombre} negocia por ${objetivo.nombre} (${randomPerfil > 0.3 ? 'Primer Equipo' : 'Promesa'})`);
     }
 
     static async resolverNegociacionesPendientes(partidaId, clubUsuarioId, fechaActual) {
@@ -225,15 +262,44 @@ class IAFichajesCPU {
         });
 
         for (let neg of pendientes) {
-            if (Math.random() > 0.6) { 
-                const aceptada = Math.random() > 0.3; 
+            if (Math.random() < 0.2) { 
+                const objetivo = await Jugador.findById(neg.objetivoId);
+                if (!objetivo) continue;
+
+                const vendedor = await Club.findById(neg.clubReceptor);
+                const valorReal = objetivo.valorMercado;
+                const oferta = neg.ofertaTraspaso;
+                let aceptada = false;
+
+                if (neg.tipoOferta === 'traspaso') {
+                    let umbralAceptacion = 0.85;
+
+                    if (objetivo.rolEquipo === 'clave') umbralAceptacion += 0.20; 
+                    if (objetivo.rolEquipo === 'importante') umbralAceptacion += 0.10;
+
+                    if (vendedor && vendedor.reputacion > 80) {
+                        umbralAceptacion += 0.15; 
+                    }
+
+                    const ratioAceptacion = oferta / valorReal;
+                    if (ratioAceptacion >= umbralAceptacion) aceptada = true;
+                    else if (ratioAceptacion < (umbralAceptacion - 0.30)) aceptada = false; 
+                    else  aceptada = Math.random() > 0.85; 
+                } else {
+                    if (oferta >= 60) aceptada = true;
+                    else if (oferta >= 40) aceptada = Math.random() > 0.7;
+                    else aceptada = false;
+                }
+
                 if (aceptada) {
                     await this.ejecutarTraspasoEfectivo(neg, fechaActual);
                 } else {
                     await Negociacion.findByIdAndUpdate(neg._id, { 
                         estadoTraspaso: 'rechazado', 
-                        finalizada: true 
+                        finalizada: true,
+                        ultimaModificacion: new Date(fechaActual)
                     });
+                    console.log(`[IA-RECHAZADO] ${objetivo.nombre}`);
                 }
             }
         }
