@@ -348,39 +348,80 @@
                                         </span>
                                     </td>
 
-                                    <td>
-                                        <div class="small fw-bold text-cyan text-center">
+                                    <td class="text-center">
+                                        <div class="small fw-bold text-primary">
                                             <% if (neg.tipoOferta === 'traspaso') { %>
-                                                <% if (neg.ofertaTraspaso > 0) { %>
-                                                    <div><%= neg.ofertaTraspaso.toLocaleString() %> €</div>
-                                                <% } %>
                                                 
-                                                <% if (neg.porcentajeFuturaVenta > 0) { %>
-                                                    <div class="text-muted small">+ <%= neg.porcentajeFuturaVenta %>% futura venta</div>
-                                                <% } %>
-                                                <% if (neg.precioRecompra > 0) { %>
-                                                    <div class="text-muted small">+ <%= neg.precioRecompra.toLocaleString() %> € recompra</div>
+                                                <% if (neg.estadoTraspaso === 'negociando' && !neg.basicoAceptado) { %>
+                                                    <% if (neg.ofertaTraspaso > 0) { %>
+                                                        <div class="fs-6"><%= neg.ofertaTraspaso.toLocaleString() %> €</div>
+                                                    <% } %>
+                                                    <% if (neg.porcentajeFuturaVenta > 0) { %>
+                                                        <div class="text-muted small">+ <%= neg.porcentajeFuturaVenta %>% futura venta</div>
+                                                    <% } %>
+                                                    <% if (neg.precioRecompra > 0) { %>
+                                                        <div class="text-muted small">+ <%= neg.precioRecompra %>€ recompra</div>
+                                                    <% } %>
+                                                <% } else if (neg.basicoAceptado) { %>
+                                                    <% if (neg.precioRecompra > 0) { %>
+                                                        <div class="text-success small"><i class="bi bi-check-circle"></i> <%= neg.ofertaTraspaso.toLocaleString() %> €</div>
+                                                        <% if (neg.porcentajeFuturaVenta > 0) { %>
+                                                            <div class="text-success small"><i class="bi bi-check-circle"></i>+ <%= neg.porcentajeFuturaVenta.toLocaleString() %> % futura venta</div>
+                                                        <% } %>
+                                                        <div class="fs-6">+ <%= neg.tuContraofertaRecompra.toLocaleString() %> € recompra</div>
+                                                    <% } else { %>
+                                                        <div class="fs-6"> <%= neg.contraofertaTraspaso.toLocaleString() %> €</div>
+                                                        <% if (neg.porcentajeFuturaVenta > 0) { %>
+                                                            <div class="fs-6">+ <%= neg.porcentajeFuturaVenta.toLocaleString() %> % futura venta</div>
+                                                        <% } %>
+                                                    <% } %>
                                                 <% } %>
 
-                                            <% } else if (neg.tipoOferta === 'cesion'){ %>
-                                                <div><%= neg.ofertaTraspaso %>% sueldo</div>
+                                            <% } else { %>
                                                 
-                                                <% if (neg.clausulaCompra > 0) { %>
-                                                    <div class="text-muted small">+ <%= neg.clausulaCompra.toLocaleString() %> € opción compra</div>
+                                                <% if (neg.estadoTraspaso === 'negociando' && !neg.basicoAceptado) { %>
+                                                    <% if (neg.ofertaTraspaso > 0) { %>
+                                                        <div class="fs-6"><%= neg.ofertaTraspaso %>% sueldo</div>
+                                                    <% } %>
+                                                    <% if (neg.clausulaCompra > 0) { %>
+                                                        <div class="text-muted small">+ <%= neg.clausulaCompra %>€ compra</div>
+                                                    <% } %>
+                                                <% } else if (neg.basicoAceptado) { %>                                                    
+                                                    <% if (neg.clausulaCompra > 0) { %>
+                                                        <div class="text-success small"><i class="bi bi-check-circle"></i> <%= neg.ofertaTraspaso %>%</div>
+                                                        <div class="fs-6">+ <%= neg.tuContraofertaClausulaCompra.toLocaleString() %> € compra</div>
+                                                    <% }
+                                                    else { %>
+                                                        <div class="fs-6"> <%= neg.contraofertaTraspaso.toLocaleString() %> % sueldo</div>
+                                                    <% } %>
                                                 <% } %>
                                             <% } %>
                                         </div>
                                     </td>
 
-                                    <td class="text-center">
-                                        <% if (neg.estadoTraspaso === 'negociando' && neg.contraofertaTraspaso > 0) { %>
-                                            <div class="small fw-bold text-primary">
-                                                <%= neg.contraofertaTraspaso.toLocaleString() %> €
-                                                <div class="text-muted" style="font-size: 0.65rem;">ESPERANDO RESPUESTA</div>
-                                            </div>
-                                        <% } else { %>
-                                            <span class="text-muted small">-</span>
-                                        <% } %>
+                                    <td>
+                                        <div class="small fw-bold text-cyan text-center">
+                                            <% if (neg.tipoOferta === 'traspaso') { %>
+                                                <% if (neg.contraofertaTraspaso > 0) { %>
+                                                    <div><%= neg.contraofertaTraspaso.toLocaleString() %> €</div>
+                                                <% } %>
+                                                
+                                                <% if (neg.porcentajeFuturaVenta > 0) { %>
+                                                    <div class="text-muted small">+ <%= neg.porcentajeFuturaVenta %>% futura venta</div>
+                                                <% } %>
+                                                <% if (neg.tuContraofertaRecompra > 0) { %>
+                                                    <div class="text-muted small">+ <%= neg.tuContraofertaRecompra.toLocaleString() %> € recompra</div>
+                                                <% } %>
+
+                                            <% } else if (neg.tipoOferta === 'cesion'){ %>
+                                                <% if (neg.contraofertaTraspaso > 0) { %>
+                                                    <div><%= neg.contraofertaTraspaso.toLocaleString() %> % sueldo</div>
+                                                <% } %>
+                                                <% if (neg.tuContraofertaClausulaCompra > 0) { %>
+                                                    <div class="text-muted small">+ <%= neg.tuContraofertaClausulaCompra.toLocaleString() %> € opción compra</div>
+                                                <% } %>
+                                            <% } %>
+                                        </div>
                                     </td>
 
                                     <td class="text-end">

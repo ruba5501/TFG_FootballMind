@@ -247,6 +247,136 @@ function subirPrimerEquipo(id) {
     }
 }
 
+
+function calcularInteres(j, clubOrigen, tuClub, fechaActualPartida) {
+    let score = 50;
+    const difClubes = tuClub - clubOrigen;
+    const nivelJugadorVsClubActual = j.valoracion - clubOrigen;
+    const esJovenPromesa = j.edad < 23 && j.potencial > 80;
+    const hoy = new Date(fechaActualPartida);
+    const fin = new Date(j.finContrato);
+    const mesesRestantes = (fin.getFullYear() - hoy.getFullYear()) * 12 + (fin.getMonth() - hoy.getMonth());
+
+    // Si tu club es mucho más prestigioso que el suyo
+    if (difClubes > 20){ score += 45; }
+    // Salto importante
+    else if (difClubes > 10){ score += 25; }
+    // Si tu club es inferior 
+    else if (difClubes < -15) {
+        if (j.rolEquipo !== 'clave' && j.rolEquipo !== 'titular') {
+            score += 5;
+        } else {
+            score -= 40; 
+        }
+    }
+    // Si son clubes de nivel similar
+    else score += (difClubes * 2.5); 
+
+    //calcular una posible afinidad a tu club de forma aleatoria con los id para que sea siempre la misma
+    const afinidad = (parseInt(j._id.toString().slice(-3), 16) % 31) - 10; 
+    score += afinidad;
+
+    // Si el jugador es demasiado bueno para su club actual
+    if (nivelJugadorVsClubActual > 5) {
+        score += 15;
+        if (tuClub > clubOrigen) score += 10;
+    }
+    //Si el jugador es demasiado bueno para tu club
+    if (j.valoracion > tuClub + 12) score -= 35;
+    // Si es "Clave" en un club
+    if (j.rolEquipo === 'clave') {
+        if (difClubes < -5) {
+            // Si tu club es peor
+            score -= 25;
+        } else {
+            // Si tu club es mejor
+            score += 15; 
+        }
+    }
+    // Si esta descontento en su club actual
+    if (j.estado.satisfaccion < 40) score += 30;
+    else if (j.estado.satisfaccion < 60) score += 15;
+    else if (j.estado.satisfaccion > 85) score -= 10;
+    
+    //factor edad
+    if (esJovenPromesa) {
+        // Si es juven promesa y tu club es importante
+        if (tuClub > 80) score += 15;
+        // O si tu club no lo es 
+        if (tuClub < 60) score -= 20;
+    }
+    if (j.edad >= 34){
+        //si esta cerca de retirarse igual quiere hacerlo en su pais
+        if (j.nacionalidad === tuClub.pais) {
+            score += 20;
+        }
+    }
+    //Le quedan 6 meses o menos
+    if (mesesRestantes <= 6) {
+        if (tuClub >= clubOrigen - 10) score += 30; 
+        else score += 15;
+    } 
+    // Le queda entre 7 y 12 meses 
+    else if (mesesRestantes <= 12) {
+        score += 10;
+    }
+    // Contrato muy largo
+    else if (mesesRestantes > 36) {
+        score -= 10;
+    }
+    return Math.min(100, Math.max(0, score));
+}
+
+function calcularInteresRenovacion(j, tuClubReputacion, fechaActualPartida) {
+    let score = 70;
+    
+    const hoy = new Date(fechaActualPartida);
+    const fin = new Date(j.finContrato);
+    const mesesRestantes = (fin.getFullYear() - hoy.getFullYear()) * 12 + (fin.getMonth() - hoy.getMonth());
+
+    // Satisfacción actual, si esta satisfecho querrá quedarse, si no se querrá ir
+    score += (j.estado.satisfaccion - 60); 
+
+    // Nivel del jugador vs Club
+    const diferenciaNivel = j.valoracion - tuClubReputacion;
+    if (diferenciaNivel > 5) score -= 20; // Se siente demasiado bueno para el club
+    if (diferenciaNivel > 10) score -= 30; // Quiere irse a un grande ya
+
+    if (j.potencial > tuClubReputacion + 15 && j.valoracion > 70) {
+        score -= 30; 
+    }
+    // Rol en el equipo
+    if (j.rolEquipo === 'clave' || j.rolEquipo === 'titular') score += 15;
+    if (j.rolEquipo === 'suplente') score -= 20;
+    if (j.rolEquipo === 'reserva') score -= 40;
+
+    // Urgencia de contrato, si le queda poco tendra mas interes en renovar y si le queda mucho no tendra tanto interes
+    if (mesesRestantes <= 6) score -= 10;
+    if (mesesRestantes > 24) score += 10;
+
+    // cuando estan mas cerca de retirarse suelen estar mas predispuestos a renovar
+    if (j.edad > 33) score += 15;
+
+    return Math.min(100, Math.max(0, score));
+}
+
+function obtenerLabelInteres(val) {
+    if (val < 20) return "No esta muy dispuesto a negociar asique será difícil ficharle";
+    if (val < 40) return "No está demasiado interesado.";
+    if (val < 60) return "Abierto a negociar.";
+    if (val < 85) return "Esta interesado en negociar.";
+    if (val <= 100) return "Muy interesado.";
+
+}
+
+// Lógica de UI para cambiar entre Traspaso y Cesión
+document.getElementsByName('modoNegoc').forEach(radio => {
+    radio.addEventListener('change', (e) => {
+        document.getElementById('camposTraspaso').classList.toggle('d-none', e.target.id !== 'modoTraspaso');
+        document.getElementById('camposCesion').classList.toggle('d-none', e.target.id !== 'modoCesion');
+    });
+});
+
 async function negociarTraspasoClub(jugadorId, precioOfertaI = 0, precioContraI = 0, tipoNegoc = 'traspaso', futuraVentaI = 0, recompraI = 0, clausulaCompraI = 0) {
     const precioOferta = Number(precioOfertaI);
     const precioContra = Number(precioContraI);
@@ -379,6 +509,43 @@ async function negociarTraspasoClub(jugadorId, precioOfertaI = 0, precioContraI 
     modalObj.show();
 }
 
+
+async function enviarOferta() {
+    const jugadorId = document.getElementById('formOferta').dataset.jugadorId;
+    const esTraspaso = document.getElementById('modoTraspaso').checked;
+    const interes = parseFloat(document.getElementById('barraInteres').style.width) || 50;
+    
+    let oferta = {
+        tipo: esTraspaso ? 'traspaso' : 'cesion',
+        interesJugador: interes
+    };
+
+    if (esTraspaso) {
+        oferta.precio = parseFloat(document.getElementById('ofertaPrecio').value);
+        oferta.futuraVenta = parseFloat(document.getElementById('futuraVenta').value) || 0;
+        oferta.precioRecompra = parseFloat(document.getElementById('precioRecompra').value) || 0;
+    } else {
+        oferta.porcentajeSueldo = parseInt(document.getElementById('porcentajeSueldo').value);
+        oferta.clausulaCompra = parseFloat(document.getElementById('valorClausula').value);
+    }
+
+    try {
+        const response = await fetch(`/fichajes/ofertaTraspaso/${jugadorId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ oferta })
+        });
+        const data = await response.json();
+        if (data.redirect) {
+            window.location.href = data.redirect;
+        } else {
+            location.reload();
+        }
+    } catch (err) {
+        console.error(err);
+    }
+}
+
 async function verOfertaRecibida(negociacionId) {
     const form = document.getElementById('formOferta');
     if (form) form.reset();
@@ -441,9 +608,9 @@ async function verOfertaRecibida(negociacionId) {
         divTraspaso.classList.remove('d-none');
         divCesion.classList.add('d-none');
 
-        document.getElementById('ofertaPrecio').value = neg.ofertaTraspaso || 0;
+        document.getElementById('ofertaPrecio').value = neg.contraofertaTraspaso || 0;
         document.getElementById('futuraVenta').value = neg.porcentajeFuturaVenta || 0;
-        document.getElementById('precioRecompra').value = neg.precioRecompra || 0;
+        document.getElementById('precioRecompra').value = neg.tuContraofertaRecompra || 0;
         
         document.querySelector('label[for="ofertaPrecio"]').innerHTML = 
             `Oferta de traspaso (€) del ${clubEmisor.nombre} <img src="/img/escudos/${clubEmisor.escudo}" alt="Escudo" 
@@ -454,8 +621,8 @@ async function verOfertaRecibida(negociacionId) {
         divCesion.classList.remove('d-none');
         divTraspaso.classList.add('d-none');
 
-        document.getElementById('porcentajeSueldo').value = neg.ofertaTraspaso || neg.porcentajeSueldo || 0;
-        document.getElementById('valorClausula').value = neg.clausulaCompra || 0;
+        document.getElementById('porcentajeSueldo').value = neg.contraofertaTraspaso || neg.porcentajeSueldo || 0;
+        document.getElementById('valorClausula').value = neg.tuContraofertaClausulaCompra || 0;
     }
 
     form.dataset.negociacionId = negociacionId;
@@ -471,168 +638,43 @@ async function verOfertaRecibida(negociacionId) {
     modalObj.show();
 }
 
-// Lógica de UI para cambiar entre Traspaso y Cesión
-document.getElementsByName('modoNegoc').forEach(radio => {
-    radio.addEventListener('change', (e) => {
-        document.getElementById('camposTraspaso').classList.toggle('d-none', e.target.id !== 'modoTraspaso');
-        document.getElementById('camposCesion').classList.toggle('d-none', e.target.id !== 'modoCesion');
-    });
-});
-
-function calcularInteres(j, clubOrigen, tuClub, fechaActualPartida) {
-    let score = 50;
-    const difClubes = tuClub - clubOrigen;
-    const nivelJugadorVsClubActual = j.valoracion - clubOrigen;
-    const esJovenPromesa = j.edad < 23 && j.potencial > 80;
-    const hoy = new Date(fechaActualPartida);
-    const fin = new Date(j.finContrato);
-    const mesesRestantes = (fin.getFullYear() - hoy.getFullYear()) * 12 + (fin.getMonth() - hoy.getMonth());
-
-    // Si tu club es mucho más prestigioso que el suyo
-    if (difClubes > 20){ score += 45; }
-    // Salto importante
-    else if (difClubes > 10){ score += 25; }
-    // Si tu club es inferior 
-    else if (difClubes < -15) {
-        if (j.rolEquipo !== 'clave' && j.rolEquipo !== 'titular') {
-            score += 5;
-        } else {
-            score -= 40; 
-        }
-    }
-    // Si son clubes de nivel similar
-    else score += (difClubes * 2.5); 
-
-    //calcular una posible afinidad a tu club de forma aleatoria con los id para que sea siempre la misma
-    const afinidad = (parseInt(j._id.toString().slice(-3), 16) % 31) - 10; 
-    score += afinidad;
-
-    // Si el jugador es demasiado bueno para su club actual
-    if (nivelJugadorVsClubActual > 5) {
-        score += 15;
-        if (tuClub > clubOrigen) score += 10;
-    }
-    //Si el jugador es demasiado bueno para tu club
-    if (j.valoracion > tuClub + 12) score -= 35;
-    // Si es "Clave" en un club
-    if (j.rolEquipo === 'clave') {
-        if (difClubes < -5) {
-            // Si tu club es peor
-            score -= 25;
-        } else {
-            // Si tu club es mejor
-            score += 15; 
-        }
-    }
-    // Si esta descontento en su club actual
-    if (j.estado.satisfaccion < 40) score += 30;
-    else if (j.estado.satisfaccion < 60) score += 15;
-    else if (j.estado.satisfaccion > 85) score -= 10;
-    
-    //factor edad
-    if (esJovenPromesa) {
-        // Si es juven promesa y tu club es importante
-        if (tuClub > 80) score += 15;
-        // O si tu club no lo es 
-        if (tuClub < 60) score -= 20;
-    }
-    if (j.edad >= 34){
-        //si esta cerca de retirarse igual quiere hacerlo en su pais
-        if (j.nacionalidad === tuClub.pais) {
-            score += 20;
-        }
-    }
-    //Le quedan 6 meses o menos
-    if (mesesRestantes <= 6) {
-        if (tuClub >= clubOrigen - 10) score += 30; 
-        else score += 15;
-    } 
-    // Le queda entre 7 y 12 meses 
-    else if (mesesRestantes <= 12) {
-        score += 10;
-    }
-    // Contrato muy largo
-    else if (mesesRestantes > 36) {
-        score -= 10;
-    }
-    return Math.min(100, Math.max(0, score));
-}
-
-function calcularInteresRenovacion(j, tuClubReputacion, fechaActualPartida) {
-    let score = 70;
-    
-    const hoy = new Date(fechaActualPartida);
-    const fin = new Date(j.finContrato);
-    const mesesRestantes = (fin.getFullYear() - hoy.getFullYear()) * 12 + (fin.getMonth() - hoy.getMonth());
-
-    // Satisfacción actual, si esta satisfecho querrá quedarse, si no se querrá ir
-    score += (j.estado.satisfaccion - 60); 
-
-    // Nivel del jugador vs Club
-    const diferenciaNivel = j.valoracion - tuClubReputacion;
-    if (diferenciaNivel > 5) score -= 20; // Se siente demasiado bueno para el club
-    if (diferenciaNivel > 10) score -= 30; // Quiere irse a un grande ya
-
-    if (j.potencial > tuClubReputacion + 15 && j.valoracion > 70) {
-        score -= 30; 
-    }
-    // Rol en el equipo
-    if (j.rolEquipo === 'clave' || j.rolEquipo === 'titular') score += 15;
-    if (j.rolEquipo === 'suplente') score -= 20;
-    if (j.rolEquipo === 'reserva') score -= 40;
-
-    // Urgencia de contrato, si le queda poco tendra mas interes en renovar y si le queda mucho no tendra tanto interes
-    if (mesesRestantes <= 6) score -= 10;
-    if (mesesRestantes > 24) score += 10;
-
-    // cuando estan mas cerca de retirarse suelen estar mas predispuestos a renovar
-    if (j.edad > 33) score += 15;
-
-    return Math.min(100, Math.max(0, score));
-}
-
-function obtenerLabelInteres(val) {
-    if (val < 20) return "No esta muy dispuesto a negociar asique será difícil ficharle";
-    if (val < 40) return "No está demasiado interesado.";
-    if (val < 60) return "Abierto a negociar.";
-    if (val < 85) return "Esta interesado en negociar.";
-    if (val <= 100) return "Muy interesado.";
-
-}
-
-async function enviarOferta() {
-    const jugadorId = document.getElementById('formOferta').dataset.jugadorId;
+async function responderOfertaCPU(negociacionId) {
     const esTraspaso = document.getElementById('modoTraspaso').checked;
-    const interes = parseFloat(document.getElementById('barraInteres').style.width) || 50;
     
     let oferta = {
         tipo: esTraspaso ? 'traspaso' : 'cesion',
-        interesJugador: interes
+        interesJugador: 50
     };
 
     if (esTraspaso) {
-        oferta.precio = parseFloat(document.getElementById('ofertaPrecio').value);
-        oferta.futuraVenta = parseFloat(document.getElementById('futuraVenta').value) || 0;
-        oferta.precioRecompra = parseFloat(document.getElementById('precioRecompra').value) || 0;
+        oferta.contraofertaTraspaso = parseFloat(document.getElementById('ofertaPrecio').value) || 0;
+        oferta.porcentajeFuturaVenta = parseFloat(document.getElementById('futuraVenta').value) || 0;
+        oferta.tuContraofertaRecompra = parseFloat(document.getElementById('precioRecompra').value) || 0;
     } else {
-        oferta.porcentajeSueldo = parseInt(document.getElementById('porcentajeSueldo').value);
-        oferta.clausulaCompra = parseFloat(document.getElementById('valorClausula').value);
+        oferta.contraofertaTraspaso = parseInt(document.getElementById('porcentajeSueldo').value) || 0;
+        oferta.tuContraofertaClausulaCompra = parseFloat(document.getElementById('valorClausula').value) || 0;
     }
 
     try {
-        const response = await fetch(`/fichajes/ofertaTraspaso/${jugadorId}`, {
+        const response = await fetch(`/fichajes/responderOfertaRecibida/${negociacionId}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ oferta })
+            body: JSON.stringify({ 
+                accion: 'contraofertar', 
+                oferta: oferta 
+            })
         });
+
         const data = await response.json();
-        if (data.redirect) {
-            window.location.href = data.redirect;
-        } else {
+        
+        if (data.success) {
             location.reload();
+        } else {
+            alert("Error al enviar la contraoferta: " + data.message);
         }
     } catch (err) {
-        console.error(err);
+        console.error("Error en responderOfertaCPU:", err);
+        alert("Error de conexión con el servidor");
     }
 }
 

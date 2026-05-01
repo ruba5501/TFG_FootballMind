@@ -50,6 +50,9 @@ const negociacionSchema = new mongoose.Schema({
     contraofertaAños: { type: Number, default: null },
     contraofertaRol: { type: String, default: '' },
     contraofertaPrima: { type: Number, default: null },
+    tuContraofertaFuturaVenta: { type: Number, default: null },
+    tuContraofertaRecompra: { type: Number, default: null },
+    tuContraofertaClausulaCompra: { type: Number, default: null },
     
 
 
