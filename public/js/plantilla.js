@@ -388,6 +388,9 @@ async function negociarTraspasoClub(jugadorId, precioOfertaI = 0, precioContraI 
     if (form) {
         form.reset();
     }
+    
+    const contenedorInteres = document.getElementById('contenedorInteres');
+    if (contenedorInteres) contenedorInteres.style.display = 'block';
 
     const modalObj = new bootstrap.Modal(document.getElementById('modalNegociacion'))
 
@@ -425,10 +428,14 @@ async function negociarTraspasoClub(jugadorId, precioOfertaI = 0, precioContraI 
                 inputPrecio.classList.add('bg-light');
                 inputPorcentajeFutVenta.readOnly = true;
                 inputPorcentajeFutVenta.classList.add('bg-light');
-            }
 
-            document.querySelector('label[for="ofertaPrecio"]').innerHTML = 
+                document.querySelector('label[for="precioRecompra"]').innerHTML = 
+                `Precio Recompra <span class="badge bg-primary">Sugerido: ${precioContra.toLocaleString()}€</span>`;
+            }
+            else{
+                document.querySelector('label[for="ofertaPrecio"]').innerHTML = 
                 `Precio Traspaso <span class="badge bg-primary">Sugerido: ${precioContra.toLocaleString()}€</span>`;
+            }
             
         } else {
             btnCesion.checked = true;
@@ -442,6 +449,14 @@ async function negociarTraspasoClub(jugadorId, precioOfertaI = 0, precioContraI 
             if (data.basicoAceptado) {
                 inputSueldo.readOnly = true;
                 inputSueldo.classList.add('bg-light');
+
+                document.querySelector('label[for="valorClausula"]').innerHTML = 
+                `Clausula Compra <span class="badge bg-primary">Sugerido: ${precioContra.toLocaleString()}€</span>`;
+                
+            }
+            else{
+                document.querySelector('label[for="porcentajeSueldo"]').innerHTML = 
+                `Porcentaje de Sueldo <span class="badge bg-primary">Sugerido: ${precioContra.toLocaleString()}%</span>`;
             }
         }
     } else {
@@ -557,23 +572,33 @@ async function verOfertaRecibida(negociacionId) {
     const jugador = data.objetivo; 
     const clubEmisor = data.clubEmisor; 
     const miClub = data.miClub;
+    const isBasicoAceptado = neg.basicoAceptado || false;
 
     const tituloModal = document.getElementById('tituloModal');
     const headerModal = document.getElementById('headerNegociacion');     
-    const contenedorInteres = document.getElementById('contenedorInteres');
     const btnTraspaso = document.getElementById('modoTraspaso');
     const btnCesion = document.getElementById('modoCesion');
     const divTraspaso = document.getElementById('camposTraspaso');
     const divCesion = document.getElementById('camposCesion');
+    const contenedorInteres = document.getElementById('contenedorInteres');
+    if (contenedorInteres) contenedorInteres.style.display = 'none';
 
-    btnTraspaso.disabled = false;
-    btnCesion.disabled = false;
+    const inputPrecio = document.getElementById('ofertaPrecio');
+    const inputFuturaVenta = document.getElementById('futuraVenta');
+    const inputRecompra = document.getElementById('precioRecompra');
+    const inputSueldo = document.getElementById('porcentajeSueldo');
+    const inputClauCompra = document.getElementById('valorClausula');
+
+    [inputPrecio, inputFuturaVenta, inputSueldo].forEach(el => {
+        el.readOnly = false;
+        el.classList.remove('bg-light');
+    });
+
 
     // Info Básica
     tituloModal.innerText = "Oferta Recibida ";
     headerModal.classList.remove('bg-dark', 'bg-primary');
     headerModal.classList.add('bg-success');
-    if (contenedorInteres) contenedorInteres.classList.add('d-none');
 
     document.getElementById('infoNombre').innerText = jugador.nombre;
     document.getElementById('infoClub').innerText = miClub.nombre;
@@ -608,21 +633,44 @@ async function verOfertaRecibida(negociacionId) {
         divTraspaso.classList.remove('d-none');
         divCesion.classList.add('d-none');
 
-        document.getElementById('ofertaPrecio').value = neg.contraofertaTraspaso || 0;
-        document.getElementById('futuraVenta').value = neg.porcentajeFuturaVenta || 0;
-        document.getElementById('precioRecompra').value = neg.tuContraofertaRecompra || 0;
+        inputPrecio.value = neg.contraofertaTraspaso || 0;
+        inputFuturaVenta.value = neg.porcentajeFuturaVenta || 0;
+        inputRecompra.value = neg.tuContraofertaRecompra || 0;
         
-        document.querySelector('label[for="ofertaPrecio"]').innerHTML = 
-            `Oferta de traspaso (€) del ${clubEmisor.nombre} <img src="/img/escudos/${clubEmisor.escudo}" alt="Escudo" 
-            style="width: 20px; height: 20px; object-fit: contain; vertical-align: middle; margin-left: 5px;">`;
+        if (isBasicoAceptado) {
+            inputPrecio.readOnly = true;
+            inputPrecio.classList.add('bg-light');
+            inputFuturaVenta.readOnly = true;
+            inputFuturaVenta.classList.add('bg-light');
+
+             document.querySelector('label[for="precioRecompra"]').innerHTML = 
+            `Precio Recompra <span class="badge bg-primary">Sugerido: ${neg.precioRecompra.toLocaleString()}€</span>`;
+        }
+        else{
+            document.querySelector('label[for="ofertaPrecio"]').innerHTML = 
+            `Precio Traspaso <span class="badge bg-primary">Sugerido: ${neg.ofertaTraspaso.toLocaleString()}€</span>`;
+        }
+        
     } else {
         btnCesion.checked = true;
         btnTraspaso.disabled = true;
         divCesion.classList.remove('d-none');
         divTraspaso.classList.add('d-none');
 
-        document.getElementById('porcentajeSueldo').value = neg.contraofertaTraspaso || neg.porcentajeSueldo || 0;
-        document.getElementById('valorClausula').value = neg.tuContraofertaClausulaCompra || 0;
+        inputSueldo.value = neg.contraofertaTraspaso || neg.porcentajeSueldo || 0;
+        inputClauCompra.value = neg.tuContraofertaClausulaCompra || 0;
+
+        if (isBasicoAceptado) {
+            inputSueldo.readOnly = true;
+            inputSueldo.classList.add('bg-light');
+            
+            document.querySelector('label[for="valorClausula"]').innerHTML = 
+            `Clausula Compra <span class="badge bg-primary">Sugerido: ${neg.clausulaCompra.toLocaleString()}€</span>`;
+        }
+        else{
+            document.querySelector('label[for="porcentajeSueldo"]').innerHTML = 
+            `Porcentaje de Sueldo <span class="badge bg-primary">Sugerido: ${neg.porcentajeSueldo.toLocaleString()}%</span>`;
+        }
     }
 
     form.dataset.negociacionId = negociacionId;
@@ -874,6 +922,23 @@ async function finalizarNegociacion(negId) {
             method: 'GET',
         });
         location.reload();
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+async function aceptarOfertaRecibida(negId) {    
+    try {
+        const response = await fetch(`/negociaciones/aceptar-recibida/${negId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await response.json();
+        if (data.success) {
+            location.reload();
+        } else {
+            alert("Error: " + data.mensaje);
+        }
     } catch (err) {
         console.error(err);
     }

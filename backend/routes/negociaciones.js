@@ -123,6 +123,47 @@ function calcularPretensiones(objetivo, esEmpleado, interesJugador, miClub, ofer
     };
 }
 
+async function ejecutarMovimientoCesion(jugador, miClubId, oferta, fechaActual) {
+    const clubAntiguoId = jugador.clubActual._id;
+
+    // Fecha fin 
+    const fechaFin = new Date(fechaActual);
+    fechaFin.setFullYear(fechaFin.getFullYear() + 1);
+    fechaFin.setMonth(5); 
+    fechaFin.setDate(30);
+
+    const finContratoAntesCesion = jugador.finContrato;
+    // Actualizar Jugador
+    await Jugador.findByIdAndUpdate(jugador._id, {
+        clubActual: miClubId,
+        estadoClub: 'cedido',
+        rolEquipo: 'suplente',
+        finContrato: fechaFin, 
+        fechaFinContratoOriginal: finContratoAntesCesion,
+        "mercado.cedible": false,
+        "mercado.transferible": false
+    });
+
+    // Quitar del club origen
+    await Club.findByIdAndUpdate(clubAntiguoId, {
+        $pull: { 
+            plantilla: jugador._id,
+            "tactica.titulares": jugador._id,
+            "tactica.suplentes": jugador._id,
+            "tactica.reservas": jugador._id
+        }
+    });
+
+    // Añadir al club destino (el del usuario)
+    await Club.findByIdAndUpdate(miClubId, {
+        $push: { 
+            plantilla: jugador._id,
+            "tactica.reservas": jugador._id 
+        },
+        $pull: { listaObjetivos: jugador._id }
+    });
+}
+
 negociacionRouter.post('/fichajes/ofertaTraspaso/:jugadorId', requireLogin, async (req, res) => {
     try {
         const oferta = {
@@ -261,12 +302,14 @@ negociacionRouter.post('/fichajes/ofertaTraspaso/:jugadorId', requireLogin, asyn
                             estado = 'aceptado';
                             isFinalizada = true;
                             mensaje = "Aceptamos la cesión y el precio fijado para la opción de compra.";
+                            await ejecutarMovimientoCesion(jugador, miClubId, oferta, partida.fechaActual);
                         } 
                         else if (rondas >= limiteNegociaciones) {
                             estado = 'aceptado';
                             oferta.clausulaCompra = 0; 
                             isFinalizada = true;
                             mensaje = "Aceptamos la cesión, pero hemos rechazado la opción de compra al no llegar a un acuerdo económico.";
+                            await ejecutarMovimientoCesion(jugador, miClubId, oferta, partida.fechaActual);
                         }
                         else {
                             estado = 'negociando';
@@ -282,7 +325,9 @@ negociacionRouter.post('/fichajes/ofertaTraspaso/:jugadorId', requireLogin, asyn
                         }
                     } else {
                         estado = 'aceptado';
+                        isFinalizada = true;
                         mensaje = "La propuesta de cesión nos parece justa para ambas partes.";
+                        await ejecutarMovimientoCesion(jugador, miClubId, oferta, partida.fechaActual);
                     }
                 }
             }
@@ -469,6 +514,7 @@ negociacionRouter.post('/objetivo/confirmarContrato/:id', requireLogin, async (r
                         $push: { 
                             [tipo === 'jugador' ? 'plantilla' : 'empleados']: id 
                         },
+                        $pull: { [tipo === 'jugador' ? 'listaObjetivos' : 'listaObjetivosEmpleados']: id },
                         $inc: { 
                             presupuestoTraspasos: -(costeTraspaso + primaFichaje),
                             presupuestoSalarios: -nuevoSueldo
@@ -560,8 +606,7 @@ negociacionRouter.post('/fichajes/responderOfertaRecibida/:negociacionId', requi
         const partida = await partidasDAO.obtenerPartidaPorId(negPrevia.partidaId);
         
         const limiteNegociaciones = 5;
-        //let rondas = negPrevia ? (negPrevia.rondas || 0) + 1 : 1;
-        let rondas = 0; //luego quitar (solo para hacer pruebas)
+        let rondas = negPrevia ? (negPrevia.rondas || 0) + 1 : 1;
         let estado = 'negociando';
         let mensaje = "";
         let contraOferta = 0;
@@ -596,7 +641,6 @@ negociacionRouter.post('/fichajes/responderOfertaRecibida/:negociacionId', requi
                     const limiteRecompraCPU = jugador.valorMercado * 1.5;
                     if (recompraUsuario >= limiteRecompraCPU) {
                         estado = 'aceptado';
-                        isFinalizada = true;
                         mensaje = "¡Acuerdo total! El club acepta el precio y la opción de recompra.";
                     } else if (rondas > limiteNegociaciones) {
                         estado = 'rechazado';
@@ -604,13 +648,14 @@ negociacionRouter.post('/fichajes/responderOfertaRecibida/:negociacionId', requi
                         mensaje = "La cláusula de recompra es inasumible para el comprador.";
                     } else {
                         estado = 'negociando';
-                        const sugerenciaCPU = Math.floor(recompraUsuario * 1.20);
-                        contraOferta = Math.min(sugerenciaCPU, limiteRecompraCPU);
+                        const margenPaciencia = Math.max(0, 0.25 - (rondas * 0.05)); 
+                        const pretensionRonda = limiteRecompraCPU * (1 + margenPaciencia);
+
+                        contraOferta = Math.floor(pretensionRonda);
                         mensaje = "Aceptamos el precio base, pero la cláusula de recompra debe ser más alta.";
                     }
                 } else {
                     estado = 'aceptado';
-                    isFinalizada = true;
                     mensaje = "El club comprador acepta las condiciones del traspaso.";
                 }
             }
@@ -639,27 +684,39 @@ negociacionRouter.post('/fichajes/responderOfertaRecibida/:negociacionId', requi
                     const precioJusto = calcularPrecioMinimo(jugador, jugador.clubActual, datosOferta, partida.fechaActual);
                     if (clausulaUsuario >= precioJusto * 1.1) {
                         estado = 'aceptado';
-                        isFinalizada = true;
                         mensaje = "Acuerdo de cesión con opción de compra alcanzado.";
                     } else if (rondas > limiteNegociaciones) {
                         estado = 'aceptado';
-                        isFinalizada = true;
                         datosOferta.clausulaCompra = 0;
                         mensaje = "Aceptamos la cesión, pero renunciamos a la opción de compra por el precio.";
                     } else {
                         estado = 'negociando';
-                        const subida = (clausulaUsuario - negPrevia.tuContraofertaClausulaCompra) * 0.35;
-                        contraOferta = Math.floor(Math.min(negPrevia.tuContraofertaClausulaCompra + subida, precioJusto * 1.1));
+                        const margenPaciencia = Math.max(0, 0.15 - (rondas * 0.03));
+                        const pretensionRonda = limiteVentaCPU * (1 + margenPaciencia);
+                        
+                        contraOferta = Math.floor(pretensionRonda);
                         mensaje = "El sueldo es correcto, pero la opción de compra debe ser más baja.";
                     }
                 } else {
                     estado = 'aceptado';
-                    isFinalizada = true;
                     mensaje = "Cesión aceptada por el club comprador.";
                 }
             }
         }
-        
+        let camposContrato = {};
+        let estadoContrato = "no_iniciado";
+        if (estado === 'aceptado') {
+            estado = 'esperando_jugador';
+            estadoContrato = "negociando";
+            
+            const fechaRespuesta = new Date(partida.fechaActual);
+            fechaRespuesta.setDate(fechaRespuesta.getDate() + Math.floor(Math.random() * 3) + 2);
+            
+            await Negociacion.findByIdAndUpdate(negociacionId, {
+                fechaDecisionJugador: fechaRespuesta
+            });
+        }
+
         await Negociacion.findByIdAndUpdate(negociacionId, {
             estadoTraspaso: estado,
             rondas: rondas,
@@ -672,6 +729,7 @@ negociacionRouter.post('/fichajes/responderOfertaRecibida/:negociacionId', requi
             porcentajeFuturaVenta: datosOferta.porcentajeFuturaVenta || negPrevia.porcentajeFuturaVenta,
             basicoAceptado: isBasicoAceptado,
             finalizada: isFinalizada,
+            estadoContrato: estadoContrato,
             ultimaModificacion: new Date(partida.fechaActual)
         });
 
@@ -737,6 +795,41 @@ negociacionRouter.get('/negociaciones/finalizar/:id', requireLogin, async (req, 
     } catch (error) {
         console.error("ERROR EN CANCELAR:", error);
         res.status(500).json({ success: false });
+    }
+});
+
+negociacionRouter.post('/negociaciones/aceptar-recibida/:id', requireLogin, async (req, res) => {
+    try {
+        const negId = req.params.id;
+        const negPrevia = await Negociacion.findById(negId);
+        const partida = await partidasDAO.obtenerPartidaPorId(negPrevia.partidaId);
+
+        const fechaRespuesta = new Date(partida.fechaActual);
+        fechaRespuesta.setDate(fechaRespuesta.getDate() + Math.floor(Math.random() * 3) + 2);
+
+        const updateData = {
+            estadoTraspaso: 'esperando_jugador',
+            estadoContrato: 'negociando',
+            basicoAceptado: true,
+            fechaDecisionJugador: fechaRespuesta,
+            ultimaModificacion: new Date(partida.fechaActual)
+        };
+
+        if (negPrevia.contraofertaTraspaso > 0) {
+            updateData.ofertaTraspaso = negPrevia.contraofertaTraspaso;
+        }
+
+        await Negociacion.findByIdAndUpdate(negId, updateData);
+
+        res.json({ 
+            success: true, 
+            mensaje: "Acuerdo con el club alcanzado. Esperando respuesta del jugador.",
+            redirect: `/negociaciones/${partida._id}` 
+        });
+
+    } catch (error) {
+        console.error("Error en aceptar-recibida:", error);
+        res.status(500).json({ success: false, mensaje: "Error al procesar la aceptación" });
     }
 });
 

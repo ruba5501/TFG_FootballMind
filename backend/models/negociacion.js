@@ -31,7 +31,7 @@ const negociacionSchema = new mongoose.Schema({
 
     estadoTraspaso: { 
         type: String, 
-        enum: ['no_iniciado', 'negociando', 'aceptado', 'rechazado'], 
+        enum: ['no_iniciado', 'negociando', 'aceptado', 'rechazado', 'esperando_jugador'], 
         default: 'negociando' 
     },
 
@@ -43,7 +43,7 @@ const negociacionSchema = new mongoose.Schema({
         type: Number, 
         default: 0 
     },
-    
+    fechaDecisionJugador: { type: Date, default: null },
     ofertaTraspaso: { type: Number, default: null },
     contraofertaTraspaso: { type: Number, default: null },
     contraofertaSueldo: { type: Number, default: null },

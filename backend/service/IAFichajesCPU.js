@@ -35,12 +35,14 @@ class IAFichajesCPU {
 
             if (ultimaCesion) {
                 const clubOrigenId = ultimaCesion.clubReceptor;
-
+                const fechaVuelta = jugador.fechaFinContratoOriginal || new Date();
                 // Devolver al jugador a su club de origen
                 await Jugador.findByIdAndUpdate(jugador._id, {
                     clubActual: clubOrigenId,
                     estadoClub: 'primerEquipo', 
-                    rolEquipo: 'suplente'       
+                    rolEquipo: 'suplente',
+                    finContrato: fechaVuelta,   
+                    fechaFinContratoOriginal: null
                 });
 
                 await Club.findByIdAndUpdate(ultimaCesion.clubEmisor, { $pull: { plantilla: jugador._id } });
@@ -72,6 +74,9 @@ class IAFichajesCPU {
 
         // Resolver negociaciones CPU-CPU
         await this.resolverNegociacionesPendientes(partidaId, clubUsuarioId, fechaActual);
+
+        // Resolver contratos CPU-usuario
+        await this.procesarDecisionesJugadores(partidaId, fechaActual);
 
         if (esMercado) {
             // Movimientos entre CPU
@@ -323,27 +328,41 @@ class IAFichajesCPU {
 
         let nuevoEstado = esTraspaso ? 'primerEquipo' : 'cedido';
         let nuevoRol = 'suplente';
+        let clausula = 0;
 
         if (esTraspaso) {
+            //rol
             const diferencia = objetivo.valoracion - mediaPlantilla;
 
             if (diferencia > 10) nuevoRol = 'clave';         
             else if (diferencia > 3) nuevoRol = 'importante'; 
             else if (diferencia > -5) nuevoRol = 'suplente'; 
             else if (objetivo.edad < 22) nuevoRol = 'promesa';
-            else nuevoRol = 'reserva';                   
+            else nuevoRol = 'reserva';        
+
+            // Cláusula de rescisión
+            if (Math.random() < 0.7) {
+                clausula = Math.floor(objetivo.valorMercado * (1.5 + Math.random() * 1.5));
+            }
         }
+        let años = 4;
+        if (objetivo.edad > 33) años = 1;
+        else if (objetivo.edad > 30) años = 2;
+        else if (objetivo.edad < 22) años = 5;
 
         const nuevaFechaFin = new Date(fechaActual);
-        nuevaFechaFin.setFullYear(nuevaFechaFin.getFullYear() + (esTraspaso ? 3 : 1));
+        nuevaFechaFin.setFullYear(nuevaFechaFin.getFullYear() + (esTraspaso ? años : 1));
+        const finContratoAntesCesion = objetivo.finContrato;
 
         await Jugador.findByIdAndUpdate(objetivo._id, {
             clubActual: neg.clubEmisor,
             finContrato: nuevaFechaFin,
+            fechaFinContratoOriginal: !esTraspaso ? finContratoAntesCesion : 0,
             estadoClub: nuevoEstado,
             rolEquipo: nuevoRol,
             dorsal: null, 
             salario: esTraspaso ? Math.floor(objetivo.salario * 1.15) : objetivo.salario,
+            "mercado.clausulaRescision": clausula,
             "mercado.transferible": false,
             "mercado.cedible": false,
             "estado.satisfaccion": 100,
@@ -390,6 +409,37 @@ class IAFichajesCPU {
             } else {
                 await Jugador.findByIdAndUpdate(jugador._id, { "mercado.transferible": true });
             }
+        }
+    }
+
+    static async procesarDecisionesJugadores(partidaId, fechaActual) {
+        const negociaciones = await Negociacion.find({
+            partidaId: partidaId,
+            estadoTraspaso: 'esperando_jugador',
+            fechaDecisionJugador: { $lte: fechaActual },
+            finalizada: false
+        }).populate('objetivoId clubEmisor clubReceptor');
+
+        for (const neg of negociaciones) {
+            const jugador = neg.objetivoId;
+            
+            let probabilidad = 0.7;
+
+            const acepta = Math.random() < probabilidad;
+
+            if (acepta) {
+                await this.ejecutarTraspasoEfectivo(neg, fechaActual);
+                
+                neg.estadoContrato = 'aceptado';
+                console.log("fichaje CPU-usuario aceptado");
+            } else {
+                neg.estadoContrato = 'rechazado';
+                console.log("fichaje CPU-usuario rechazado");
+            }
+            
+            neg.finalizada = true;
+            neg.ultimaModificacion = fechaActual;
+            await neg.save();
         }
     }
 }

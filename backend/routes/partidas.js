@@ -355,7 +355,6 @@ partidaRouter.get('/avanzar-fecha/:id', requireLogin, async (req, res) => {
 
         //fichajes y renovaciones por parte de CPU
         await IAFichajesCPU.procesarAccionesCPU(partidaId, nuevaFecha, partida.clubSeleccionado);
-
         // Recargamos el menú de inicio
         res.redirect('/inicioJuego/' + partidaId);
 

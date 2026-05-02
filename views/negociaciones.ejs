@@ -158,7 +158,7 @@
                                                 <% } else { %>
                                                     
                                                     <% if (neg.estadoTraspaso === 'negociando' && !neg.basicoAceptado) { %>
-                                                        <div class="fs-6"><%= neg.ofertaTraspaso %>% sueldo</div>
+                                                        <div class="fs-6"><%= neg.contraofertaTraspaso %>% sueldo</div>
                                                     <% } else if (neg.basicoAceptado) { %>                                                    
                                                         <% if (neg.clausulaCompra > 0) { %>
                                                             <div class="text-success small"><i class="bi bi-check-circle"></i> <%= neg.ofertaTraspaso %>%</div>
@@ -301,6 +301,7 @@
                                 <th>Tipo</th>
                                 <th>Club Interesado</th>
                                 <th>Estado Operación</th>
+                                <th>Estado Contrato</th>
                                 <th class="text-center">Oferta Recibida</th>
                                 <th class="text-center">Tu Contraoferta</th>
                                 <th class="text-center">Acciones</th>
@@ -348,6 +349,18 @@
                                         </span>
                                     </td>
 
+                                    <td>
+                                        <% 
+                                            let badgeCont = 'border text-muted';
+                                            if (neg.estadoContrato === 'aceptado') badgeCont = 'bg-success text-white';
+                                            if (neg.estadoContrato === 'rechazado') badgeCont = 'bg-danger text-white';
+                                            if (neg.estadoContrato === 'negociando') badgeCont = 'bg-warning text-dark';
+                                        %>
+                                        <span class="badge <%= badgeCont %>">
+                                            <%= neg.estadoContrato.toUpperCase().replace('_', ' ') %>
+                                        </span>
+                                    </td>
+
                                     <td class="text-center">
                                         <div class="small fw-bold text-primary">
                                             <% if (neg.tipoOferta === 'traspaso') { %>
@@ -368,9 +381,9 @@
                                                         <% if (neg.porcentajeFuturaVenta > 0) { %>
                                                             <div class="text-success small"><i class="bi bi-check-circle"></i>+ <%= neg.porcentajeFuturaVenta.toLocaleString() %> % futura venta</div>
                                                         <% } %>
-                                                        <div class="fs-6">+ <%= neg.tuContraofertaRecompra.toLocaleString() %> € recompra</div>
+                                                        <div class="fs-6">+ <%= neg.precioRecompra.toLocaleString() %> € recompra</div>
                                                     <% } else { %>
-                                                        <div class="fs-6"> <%= neg.contraofertaTraspaso.toLocaleString() %> €</div>
+                                                        <div class="fs-6"> <%= neg.ofertaTraspaso.toLocaleString() %> €</div>
                                                         <% if (neg.porcentajeFuturaVenta > 0) { %>
                                                             <div class="fs-6">+ <%= neg.porcentajeFuturaVenta.toLocaleString() %> % futura venta</div>
                                                         <% } %>
@@ -389,10 +402,10 @@
                                                 <% } else if (neg.basicoAceptado) { %>                                                    
                                                     <% if (neg.clausulaCompra > 0) { %>
                                                         <div class="text-success small"><i class="bi bi-check-circle"></i> <%= neg.ofertaTraspaso %>%</div>
-                                                        <div class="fs-6">+ <%= neg.tuContraofertaClausulaCompra.toLocaleString() %> € compra</div>
+                                                        <div class="fs-6">+ <%= neg.clausulaCompra.toLocaleString() %> € compra</div>
                                                     <% }
                                                     else { %>
-                                                        <div class="fs-6"> <%= neg.contraofertaTraspaso.toLocaleString() %> % sueldo</div>
+                                                        <div class="fs-6"> <%= neg.ofertaTraspaso.toLocaleString() %> % sueldo</div>
                                                     <% } %>
                                                 <% } %>
                                             <% } %>
@@ -428,10 +441,10 @@
                                         <div class="d-grid gap-1">
                                             <% if (neg.estadoTraspaso === 'pendiente' || neg.estadoTraspaso === 'negociando') { %>
                                                 <div class="d-flex gap-1">
-                                                    <button onclick="responderOferta('<%= neg._id %>', 'aceptar')" class="btn btn-sm btn-success w-100">
+                                                    <button onclick="aceptarOfertaRecibida('<%= neg._id %>')" class="btn btn-sm btn-success w-100">
                                                         Aceptar
                                                     </button>
-                                                    <button onclick="responderOferta('<%= neg._id %>', 'rechazar')" class="btn btn-sm btn-danger">
+                                                    <button onclick="finalizarNegociacion('<%= neg._id %>')" class="btn btn-sm btn-danger">
                                                         <i class="bi bi-x-lg"></i>
                                                     </button>
                                                 </div>
