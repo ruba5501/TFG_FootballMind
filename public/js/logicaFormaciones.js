@@ -152,22 +152,20 @@ const GestorTactico = {
         const nuevaPlantilla = Array.from(document.querySelectorAll('.jugador-item'))
                                     .map(li => li.getAttribute('data-id'));
         const formacion = document.getElementById('selector-formacion').value;
-
+        
         try {
-            const resAlineacion = await fetch(`/club/guardarAlineacion/${clubId}`, {
+            // Hacemos una única petición a la ruta correcta (sin el /club/ delante)
+            const response = await fetch(`/guardarAlineacion/${clubId}`, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ nuevaPlantilla })
+                body: JSON.stringify({ 
+                    nuevaPlantilla: nuevaPlantilla, 
+                    formacion: formacion 
+                })
             });
 
-            const resRoles = await fetch(`/club/actualizarRoles/${clubId}`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ tactica: { formacion: formacion } })
-            });
-
-            if (resAlineacion.ok && resRoles.ok) {
-                alert("Estrategia guardada correctamente");
+            if (response.ok) {
+                alert("Alineación y táctica guardadas correctamente");
                 location.reload();
             } else {
                 throw new Error("Error en la respuesta del servidor");

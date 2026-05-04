@@ -17,8 +17,12 @@ const partidoSchema = new mongoose.Schema({
     equipoLocal: { type: mongoose.Schema.Types.ObjectId, ref: 'Club', required: true },
     equipoVisitante: { type: mongoose.Schema.Types.ObjectId, ref: 'Club', required: true },
   
+    formacionLocal: { type: String, default: '4-3-3' },      
+    formacionVisitante: { type: String, default: '4-3-3' },
+    
     golesLocal: { type: Number, default: 0 },
     golesVisitante: { type: Number, default: 0 },
+    
   
     jugado: { type: Boolean, default: false },
     fecha: { type: Date, required: true } 

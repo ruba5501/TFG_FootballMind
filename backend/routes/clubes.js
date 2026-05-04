@@ -79,12 +79,24 @@ clubRouter.get('/formacion/:partidaId', requireLogin, async (req, res) => {
 
 clubRouter.post('/guardarAlineacion/:clubId', requireLogin, async (req, res) => {
     try {
-        const { nuevaPlantilla } = req.body; // Es el array de IDs
-        await clubesDAO.actualizarAlineacion(req.params.clubId, nuevaPlantilla);
+        const { nuevaPlantilla, formacion } = req.body;
+        
+        // Actualizamos la plantilla, la formación y repartimos a los jugadores 
+        // en titulares, suplentes y reservas automáticamente
+        await Club.findByIdAndUpdate(req.params.clubId, {
+            $set: {
+                plantilla: nuevaPlantilla,
+                "tactica.formacion": formacion,
+                "tactica.titulares": nuevaPlantilla.slice(0, 11),
+                "tactica.suplentes": nuevaPlantilla.slice(11, 24),
+                "tactica.reservas": nuevaPlantilla.slice(24)
+            }
+        });
+
         res.json({ success: true });
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: "No se pudo guardar la alineación" });
+        console.error("Error al guardar alineación y formación:", err);
+        res.status(500).json({ error: "No se pudo guardar la estrategia" });
     }
 });
 

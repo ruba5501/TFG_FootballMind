@@ -73,6 +73,10 @@ router.get('/jugar-partido/:idPartido', requireLogin, async (req, res) => {
             const resultado = simularPartido(equipoLocal, equipoVisitante);
 
             // Guardamos el resultado en la base de datos
+
+            partido.formacionLocal = partido.equipoLocal.tactica ? partido.equipoLocal.tactica.formacion : '4-3-3';
+            partido.formacionVisitante = partido.equipoVisitante.tactica ? partido.equipoVisitante.tactica.formacion : '4-3-3';
+
             partido.golesLocal = resultado.marcador.local;
             partido.golesVisitante = resultado.marcador.visitante;
             partido.jugado = true;
@@ -165,7 +169,103 @@ router.get('/competicion/:idCompeticion/clasificacion', requireLogin, async (req
         res.status(500).send("Error al cargar la clasificación");
     }
 });
+// Ruta para ver las Estadísticas del Club
+router.get('/estadisticas/:partidaId', requireLogin, async (req, res) => {
+    try {
+        const partidaId = req.params.partidaId;
+        // Hacemos populate anidado para traernos a los jugadores de la plantilla
+        const partida = await Partida.findById(partidaId).populate({
+            path: 'clubSeleccionado',
+            populate: { path: 'plantilla' }
+        });
+        const clubUsuario = partida.clubSeleccionado;
 
+        // --- 1. ESTADÍSTICAS DE FORMACIONES ---
+        const partidosJugados = await Partido.find({
+            partidaId: partidaId,
+            jugado: true,
+            $or: [{ equipoLocal: clubUsuario._id }, { equipoVisitante: clubUsuario._id }]
+        });
+
+        const statsFormaciones = {};
+
+        partidosJugados.forEach(p => {
+            let esLocal = p.equipoLocal.toString() === clubUsuario._id.toString();
+            let formacion = esLocal ? p.formacionLocal : p.formacionVisitante;
+            if (!formacion) formacion = 'Desconocida (Antigua)';
+
+            if (!statsFormaciones[formacion]) {
+                statsFormaciones[formacion] = { pj: 0, pg: 0, pe: 0, pp: 0, gf: 0, gc: 0, pts: 0 };
+            }
+
+            let stats = statsFormaciones[formacion];
+            stats.pj++;
+
+            let misGoles = esLocal ? p.golesLocal : p.golesVisitante;
+            let susGoles = esLocal ? p.golesVisitante : p.golesLocal;
+
+            stats.gf += misGoles;
+            stats.gc += susGoles;
+
+            if (misGoles > susGoles) {
+                stats.pg++;
+                stats.pts += 3;
+            } else if (misGoles === susGoles) {
+                stats.pe++;
+                stats.pts += 1;
+            } else {
+                stats.pp++;
+            }
+        });
+
+        // --- 2. RENDIMIENTO INDIVIDUAL (TOP 5) ---
+        // Sumamos los stats de todas las competiciones para cada jugador
+        const statsJugadores = clubUsuario.plantilla.map(jugador => {
+            let tGoles = 0, tAsistencias = 0, tMinutos = 0, tPj = 0, sumaNotas = 0;
+            
+            jugador.statsTemporada.forEach(s => {
+                tGoles += s.goles;
+                tAsistencias += s.asistencias;
+                tMinutos += s.minutos;
+                tPj += s.pj;
+                sumaNotas += (s.notaMedia * s.pj); // Ponderamos la nota por los partidos jugados
+            });
+
+            let notaMediaGlobal = tPj > 0 ? (sumaNotas / tPj).toFixed(2) : 0;
+
+            return {
+                nombre: jugador.nombre,
+                posicion: jugador.posicionPrincipal,
+                goles: tGoles,
+                asistencias: tAsistencias,
+                minutos: tMinutos,
+                notaMedia: parseFloat(notaMediaGlobal),
+                pj: tPj
+            };
+        });
+
+        // Ordenamos y sacamos los Top 5 de cada categoría
+        const topGoleadores = [...statsJugadores].filter(j => j.goles > 0).sort((a, b) => b.goles - a.goles).slice(0, 5);
+        const topAsistentes = [...statsJugadores].filter(j => j.asistencias > 0).sort((a, b) => b.asistencias - a.asistencias).slice(0, 5);
+        const topMinutos = [...statsJugadores].filter(j => j.minutos > 0).sort((a, b) => b.minutos - a.minutos).slice(0, 5);
+        const topNotas = [...statsJugadores].filter(j => j.pj > 0).sort((a, b) => b.notaMedia - a.notaMedia).slice(0, 5);
+
+        res.render('estadisticas', {
+            title: 'Estadísticas del Club',
+            partida,
+            user: req.session.user,
+            clubUsuario,
+            statsFormaciones,
+            topGoleadores,
+            topAsistentes,
+            topMinutos,
+            topNotas
+        });
+    } catch (error) {
+        console.error("Error al cargar estadísticas:", error);
+        res.status(500).send("Error al cargar la página de estadísticas");
+    }
+});
 router.get('/clasificacion/:partidaId/:competicionId', requireLogin, async (req, res) => {
     try {
         const { partidaId, competicionId } = req.params;
@@ -192,6 +292,8 @@ router.get('/clasificacion/:partidaId/:competicionId', requireLogin, async (req,
                 grupos: null
             });
         }
+
+        
 
         const tabla = {};
         const mapaEquiposGrupos = {};
