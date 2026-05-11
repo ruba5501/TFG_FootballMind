@@ -13,6 +13,40 @@ const Competicion = require('../models/competicion')
 const { simularPartido } = require('../engine/motorJuego');
 const { requireLogin } = require('../middleware/autenticacion');
 
+async function simularPartidosPendientes(partidaId, fecha, clubUsuarioId) {
+    const inicioDia = new Date(fecha);
+    inicioDia.setHours(0, 0, 0, 0);
+    const finDia = new Date(fecha);
+    finDia.setHours(23, 59, 59, 999);
+
+    const partidos = await Partido.find({
+        partidaId: partidaId,
+        jugado: false,
+        fecha: { $gte: inicioDia, $lte: finDia }
+    }).populate('equipoLocal equipoVisitante');
+
+    for (let partido of partidos) {
+        // SI ES EL PARTIDO DEL USUARIO, LO SALTAMOS
+        const esPartidoUsuario = partido.equipoLocal._id.toString() === clubUsuarioId.toString() || 
+                                 partido.equipoVisitante._id.toString() === clubUsuarioId.toString();
+        
+        if (esPartidoUsuario) continue; 
+
+        const jugadoresLocal = await seleccionarMejorOnce(partido.equipoLocal._id);
+        const jugadoresVisitante = await seleccionarMejorOnce(partido.equipoVisitante._id);
+
+        const resultado = simularPartido(
+            { nombre: partido.equipoLocal.nombre, jugadores: jugadoresLocal },
+            { nombre: partido.equipoVisitante.nombre, jugadores: jugadoresVisitante }
+        );
+
+        partido.golesLocal = resultado.marcador.local;
+        partido.golesVisitante = resultado.marcador.visitante;
+        partido.jugado = true;
+        await partido.save();
+    }
+}
+
 // Helper: Seleccionar los mejores 11 jugadores (para simular alineación)
 async function seleccionarMejorOnce(clubId) {
     // Buscamos todos los jugadores del club
@@ -40,63 +74,59 @@ async function seleccionarMejorOnce(clubId) {
 router.get('/jugar-partido/:idPartido', requireLogin, async (req, res) => {
     try {
         const partidoId = req.params.idPartido;
-
-        // 1. Buscar el partido del usuario para saber la jornada, el tipo y la partida
         const partidoUsuario = await Partido.findById(partidoId).populate('equipoLocal equipoVisitante');
-        if (!partidoUsuario) return res.redirect('/listarPartidas');
-
         const partidaJuego = await Partida.findById(partidoUsuario.partidaId).populate('clubSeleccionado');
 
-        // 2. Buscar TODOS los partidos de esa misma jornada a nivel global (misma partida y tipo)
-        const partidosJornada = await Partido.find({
+        // 1. Simular TODOS los partidos de este día (incluyendo el del usuario ahora sí)
+        // Usamos la misma lógica de rango de fecha
+        const inicioDia = new Date(partidaJuego.fechaActual);
+        inicioDia.setHours(0, 0, 0, 0);
+        const finDia = new Date(partidaJuego.fechaActual);
+        finDia.setHours(23, 59, 59, 999);
+
+        const partidosDeHoy = await Partido.find({
             partidaId: partidoUsuario.partidaId, 
-            jornada: partidoUsuario.jornada,
-            tipo: partidoUsuario.tipo, // Evita mezclar jornadas de liga con rondas de copa
-            jugado: false // Solo los que no se han jugado aún
+            jugado: false,
+            fecha: { $gte: inicioDia, $lte: finDia }
         }).populate('equipoLocal equipoVisitante');
 
         let resultadoUsuario = null;
         let equipoLocalUsuario = null;
         let equipoVisitanteUsuario = null;
 
-        // 3. Bucle para simular TODOS los partidos del mundo en esta jornada
-        for (let partido of partidosJornada) {
-            
-            // Seleccionamos los 11 jugadores para los equipos de este partido
+        for (let partido of partidosDeHoy) {
             const jugadoresLocal = await seleccionarMejorOnce(partido.equipoLocal._id);
             const jugadoresVisitante = await seleccionarMejorOnce(partido.equipoVisitante._id);
-
-            const equipoLocal = { nombre: partido.equipoLocal.nombre, jugadores: jugadoresLocal };
-            const equipoVisitante = { nombre: partido.equipoVisitante.nombre, jugadores: jugadoresVisitante };
-
-            // Ejecutamos el motor del juego
-            const resultado = simularPartido(equipoLocal, equipoVisitante);
-
-            // Guardamos el resultado en la base de datos
-
-            partido.formacionLocal = partido.equipoLocal.tactica ? partido.equipoLocal.tactica.formacion : '4-3-3';
-            partido.formacionVisitante = partido.equipoVisitante.tactica ? partido.equipoVisitante.tactica.formacion : '4-3-3';
+            const resultado = simularPartido(
+                { nombre: partido.equipoLocal.nombre, jugadores: jugadoresLocal },
+                { nombre: partido.equipoVisitante.nombre, jugadores: jugadoresVisitante }
+            );
 
             partido.golesLocal = resultado.marcador.local;
             partido.golesVisitante = resultado.marcador.visitante;
             partido.jugado = true;
             await partido.save();
 
-            // Si este partido es el del usuario, guardamos los datos para mandarlos a la vista
-            if (partido._id.toString() === partidoUsuario._id.toString()) {
+            if (partido._id.toString() === partidoId) {
                 resultadoUsuario = resultado;
-                equipoLocalUsuario = equipoLocal;
-                equipoVisitanteUsuario = equipoVisitante;
+                equipoLocalUsuario = { nombre: partido.equipoLocal.nombre, jugadores: jugadoresLocal };
+                equipoVisitanteUsuario = { nombre: partido.equipoVisitante.nombre, jugadores: jugadoresVisitante };
             }
         }
 
-        // 4. Filtramos para que la vista solo renderice los resultados de la competición del usuario
-        // (así evitamos enviar cientos de partidos a la interfaz)
-        const resultadosMiLiga = partidosJornada.filter(p => 
-            p.competicionId.toString() === partidoUsuario.competicionId.toString()
-        );
+        // Si por alguna razón el partido ya estaba jugado (re-carga de página), 
+        // buscamos los datos para no romper la vista
+        if (!resultadoUsuario) {
+             // Lógica opcional para recuperar resultado ya guardado
+        }
 
-        // Renderizamos la vista con el resultado de tu partido
+        const resultadosMiCompeticion = await Partido.find({
+            partidaId: partidoUsuario.partidaId,
+            competicionId: partidoUsuario.competicionId,
+            fecha: { $gte: inicioDia, $lte: finDia },
+            jugado: true
+        }).populate('equipoLocal equipoVisitante');
+
         res.render('resultadoPartido', {
             title: 'Resultado del Partido',  
             partida: partidaJuego,
@@ -104,12 +134,12 @@ router.get('/jugar-partido/:idPartido', requireLogin, async (req, res) => {
             visitante: equipoVisitanteUsuario,
             resultado: resultadoUsuario,
             partidoBBDD: partidoUsuario,
-            restoJornada: resultadosMiLiga // Pasamos solo los de nuestra liga
+            restoJornada: resultadosMiCompeticion 
         });
 
     } catch (error) {
-        console.error("Error al simular la jornada global:", error);
-        res.status(500).send("Error al simular la jornada entera");
+        console.error("Error en la simulación diaria:", error);
+        res.status(500).send("Error al procesar la jornada");
     }
 });
 
@@ -540,4 +570,7 @@ router.get('/ver-competiciones/:idPartida', requireLogin, async (req, res) => {
         res.status(500).send("Error al abrir el explorador");
     }
 });
-module.exports = router;
+module.exports = {
+    router: router,
+    simularPartidosPendientes: simularPartidosPendientes
+};

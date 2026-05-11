@@ -22,6 +22,7 @@ const { generarEmpleadosNuevaPartida, calcularSalarioEmpleado } = require('../se
 const generarCalendario = require('../service/generarCalendario');
 const { requireLogin } = require('../middleware/autenticacion');
 
+const juegoRouter = require('./juego');
 
 const atributosDefault = {
   nivelFisico: 0,
@@ -345,6 +346,9 @@ partidaRouter.get('/avanzar-fecha/:id', requireLogin, async (req, res) => {
         
         if (!partida) return res.redirect('/listarPartidas');
 
+        // Simular los partidos que haya antes de ese dia si los hay
+        await juegoRouter.simularPartidosPendientes(partidaId, partida.fechaActual, partida.clubSeleccionado._id);
+
         // Sumar 1 día a la fecha actual de la partida
         const nuevaFecha = new Date(partida.fechaActual);
         nuevaFecha.setDate(nuevaFecha.getDate() + 1);
@@ -375,34 +379,37 @@ partidaRouter.get('/avanzar-hasta-partido/:id', requireLogin, async (req, res) =
         const partida = await partidaDAO.obtenerPartidaPorId(partidaId);
         if (!partida) return res.redirect('/listarPartidas');
 
-        // Buscamos el próximo partido del usuario
-        const fechaAntigua = new Date(partida.fechaActual);
         const clubUsuarioId = partida.clubSeleccionado._id;
+        
+        // Buscamos el próximo partido (sea cual sea la competición)
         const proximoPartido = await Partido.findOne({
             partidaId: partidaId,
             $or: [{ equipoLocal: clubUsuarioId }, { equipoVisitante: clubUsuarioId }],
             jugado: false
         }).sort({ fecha: 1 });
 
-        // Si hay un partido futuro, actualizamos la fecha del juego a la fecha de ese partido
         if (proximoPartido) {
-          const fechaNueva = new Date(proximoPartido.fecha);
-          const diasSaltados = calcularDiferenciaDias(fechaAntigua, fechaNueva);
-          //fichajes y renovaciones por parte de CPU
-          for (let i = 0; i < diasSaltados; i++) {
-              // Creamos una fecha temporal para cada día del bucle
-              let fechaSimulada = new Date(fechaAntigua);
-              fechaSimulada.setDate(fechaSimulada.getDate() + i);
+            const fechaInicio = new Date(partida.fechaActual);
+            const fechaFin = new Date(proximoPartido.fecha);
+            
+            // Calculamos la diferencia real
+            const diasSaltados = calcularDiferenciaDias(fechaInicio, fechaFin);
 
-              await IAFichajesCPU.procesarAccionesCPU(partidaId, fechaSimulada, partida.clubSeleccionado);
-          }
-          partida.fechaActual = fechaNueva;
-          await Partida.findByIdAndUpdate(partidaId, { fechaActual: fechaNueva });
+            // IMPORTANTE: El bucle debe simular desde HOY hasta el día ANTERIOR al partido
+            for (let i = 0; i < diasSaltados; i++) {
+                let fechaSimulada = new Date(fechaInicio);
+                fechaSimulada.setDate(fechaSimulada.getDate() + i);
+
+                // Esto simulará todos los partidos de CPU de esos días intermedios
+                await juegoRouter.simularPartidosPendientes(partidaId, fechaSimulada, clubUsuarioId);
+                await IAFichajesCPU.procesarAccionesCPU(partidaId, fechaSimulada, partida.clubSeleccionado);
+            }
+
+            // Actualizamos la fecha de la partida al día del partido del usuario
+            await Partida.findByIdAndUpdate(partidaId, { fechaActual: fechaFin });
         }
 
-        // Recargamos la página
         res.redirect('/inicioJuego/' + partidaId);
-
     } catch (error) {
         console.error("Error al avanzar hasta el partido:", error);
         res.status(500).send("Error interno al intentar avanzar el tiempo.");

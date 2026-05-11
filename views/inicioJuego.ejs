@@ -32,25 +32,31 @@
                     <p class="small text-muted mb-3">
                         Fecha actual: <span class="fw-bold text-dark fs-6"><%= new Date(partida.fechaActual).toLocaleDateString('es-ES', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }) %></span>
                     </p>
-                    
-                    <% if (proximoPartido && new Date(proximoPartido.fecha).toDateString() !== new Date(partida.fechaActual).toDateString()) { %>
+
+                    <% 
+                        // Comprobamos si el partido más próximo es HOY
+                        const esDiaDePartido = proximoPartido && new Date(proximoPartido.fecha).toDateString() === new Date(partida.fechaActual).toDateString();
+                    %>
+
+                    <% if (esDiaDePartido) { %>
+                        <div class="alert alert-success py-2 mb-3">
+                            <p class="fw-bold mb-0 small"><i class="bi bi-exclamation-circle-fill me-1"></i> ¡Día de partido!</p>
+                            <small class="text-dark"><%= proximoPartido.competicionId?.nombre || 'Competición' %></small>
+                        </div>
+                        <% } else if (proximoPartido) { %>
                         <a href="/avanzar-fecha/<%= partida._id %>" class="btn btn-dark w-100 fw-bold shadow-sm mb-2" 
-                        onclick="mostrarCarga('Avanzando un día...', 'La IA está negociando y actualizando las plantillas.')">
+                        onclick="mostrarCarga('Avanzando un día...', 'Simulando resultados y mercado...')">
                             <i class="bi bi-step-forward-fill me-1"></i> AVANZAR DÍA
                         </a>
                         
                         <a href="/avanzar-hasta-partido/<%= partida._id %>" class="btn btn-outline-dark w-100 fw-bold shadow-sm" 
-                        onclick="mostrarCarga('Avanzando hasta el partido...', 'Simulando los días y movimientos del mercado restantes.')">
-                            <i class="bi bi-fast-forward-fill me-1"></i> IR AL PARTIDO
+                        onclick="mostrarCarga('Saltando días...', 'Simulando competiciones intermedias...')">
+                            <i class="bi bi-fast-forward-fill me-1"></i> IR AL PRÓXIMO PARTIDO
                         </a>
-                    <% } else if (proximoPartido) { %>
-                        <div class="alert alert-success py-2 mb-0">
-                            <p class="fw-bold mb-0 small"><i class="bi bi-exclamation-circle-fill me-1"></i> ¡Es día de partido!</p>
-                        </div>
+
                     <% } else { %>
-                        <a href="/avanzar-fecha/<%= partida._id %>" class="btn btn-secondary w-100 fw-bold shadow-sm" 
-                        onclick="mostrarCarga('Procesando fin de temporada...', 'Generando nuevas competiciones y balances.')">
-                            <i class="bi bi-forward-fill me-1"></i> AVANZAR TEMPORADA
+                        <a href="/avanzar-fecha/<%= partida._id %>" class="btn btn-secondary w-100 fw-bold shadow-sm">
+                            <i class="bi bi-forward-fill me-1"></i> FINALIZAR TEMPORADA
                         </a>
                     <% } %>
                 </div>

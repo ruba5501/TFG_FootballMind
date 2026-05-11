@@ -51,7 +51,7 @@ app.use('/', estadiosRouter);
 app.use('/', empleadosRouter);
 app.use('/', partidasRouter);
 app.use('/', partidosRouter);
-app.use('/', juegoRouter);
+app.use('/', juegoRouter.router);
 app.use('/', negociacionesRouter);
 
 // Middleware Error 404
