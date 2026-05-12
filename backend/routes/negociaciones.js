@@ -682,7 +682,7 @@ negociacionRouter.post('/fichajes/responderOfertaRecibida/:negociacionId', requi
                 const clausulaUsuario = Number(datosOferta.tuContraofertaClausulaCompra) || 0;
                 if (clausulaUsuario > 0) {
                     const precioJusto = calcularPrecioMinimo(jugador, jugador.clubActual, datosOferta, partida.fechaActual);
-                    if (clausulaUsuario >= precioJusto * 1.1) {
+                    if (clausulaUsuario <= precioJusto * 1.1) {
                         estado = 'aceptado';
                         mensaje = "Acuerdo de cesión con opción de compra alcanzado.";
                     } else if (rondas > limiteNegociaciones) {
@@ -692,7 +692,7 @@ negociacionRouter.post('/fichajes/responderOfertaRecibida/:negociacionId', requi
                     } else {
                         estado = 'negociando';
                         const margenPaciencia = Math.max(0, 0.15 - (rondas * 0.03));
-                        const pretensionRonda = limiteVentaCPU * (1 + margenPaciencia);
+                        const pretensionRonda = precioJusto * (1 + margenPaciencia);
                         
                         contraOferta = Math.floor(pretensionRonda);
                         mensaje = "El sueldo es correcto, pero la opción de compra debe ser más baja.";

@@ -563,10 +563,20 @@ async function enviarOferta() {
 
 async function verOfertaRecibida(negociacionId) {
     const form = document.getElementById('formOferta');
-    if (form) form.reset();
+    if (form) {
+        form.reset();
+        delete form.dataset.negociacionId;
+    }
+
+    document.querySelector('label[for="ofertaPrecio"]').innerHTML = "Precio del Traspaso (€)";
+    document.querySelector('label[for="precioRecompra"]').innerHTML = "Precio Recompra (€)";
+    document.querySelector('label[for="porcentajeSueldo"]').innerHTML = "Porcentaje de Sueldo que pagarás";
+    document.querySelector('label[for="valorClausula"]').innerHTML = "Cláusula de Compra (€)";
 
     const response = await fetch(`/objetivo/detalleOfertaRecibida/${negociacionId}`);
     const data = await response.json();
+
+    console.log("DATOS RECIBIDOS:", data.negociacion);
     
     const neg = data.negociacion;
     const jugador = data.objetivo; 
@@ -657,36 +667,48 @@ async function verOfertaRecibida(negociacionId) {
         divCesion.classList.remove('d-none');
         divTraspaso.classList.add('d-none');
 
-        inputSueldo.value = neg.contraofertaTraspaso || neg.porcentajeSueldo || 0;
+        const valorSueldoCPU = neg.ofertaTraspaso || 0;
+        const valorActual = neg.contraofertaTraspaso || valorSueldoCPU;
+
+        inputSueldo.value = valorActual;
         inputClauCompra.value = neg.tuContraofertaClausulaCompra || 0;
 
         if (isBasicoAceptado) {
             inputSueldo.readOnly = true;
             inputSueldo.classList.add('bg-light');
             
+            const sugeridoClausula = neg.clausulaCompra !== null ? neg.clausulaCompra : 0;
+            
             document.querySelector('label[for="valorClausula"]').innerHTML = 
-            `Clausula Compra <span class="badge bg-primary">Sugerido: ${neg.clausulaCompra.toLocaleString()}€</span>`;
+            `Cláusula Compra <span class="badge bg-primary">Sugerido: ${sugeridoClausula.toLocaleString()}€</span>`;
         }
         else{
             document.querySelector('label[for="porcentajeSueldo"]').innerHTML = 
-            `Porcentaje de Sueldo <span class="badge bg-primary">Sugerido: ${neg.porcentajeSueldo.toLocaleString()}%</span>`;
+            `Porcentaje de Sueldo <span class="badge bg-primary">Sugerido: ${valorSueldoCPU}%</span>`;
         }
     }
 
     form.dataset.negociacionId = negociacionId;
     form.dataset.modoEnvio = 'respuestaVenta';
 
-    const btnAccion = document.querySelector('#formOferta button[onclick*="enviar"]');
+    const btnAccion = document.querySelector('#formOferta button[onclick*="enviar"], #formOferta button[onclick*="responder"]');
     if (btnAccion) {
         btnAccion.innerText = "Enviar Contraoferta";
-        btnAccion.setAttribute('onclick', `responderOfertaCPU('${negociacionId}')`);
+        btnAccion.onclick = () => responderOfertaCPU();
     }
 
     const modalObj = new bootstrap.Modal(document.getElementById('modalNegociacion'));
     modalObj.show();
 }
 
-async function responderOfertaCPU(negociacionId) {
+async function responderOfertaCPU() {
+    const form = document.getElementById('formOferta');
+    const negociacionId = form.dataset.negociacionId; 
+
+    if (!negociacionId) {
+        console.error("No hay ID de negociación");
+        return;
+    }
     const esTraspaso = document.getElementById('modoTraspaso').checked;
     
     let oferta = {

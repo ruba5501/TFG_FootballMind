@@ -194,27 +194,36 @@ function obtenerFechaRealista(fechaBase, tipoCompeticion, nombreCompeticion = ''
             nuevaFecha.setHours(18, 0, 0, 0);
         } 
         else {
-            const pct = indicePartido / (totalPartidos - 1);
-
-            // VIERNES (Primer partido de la lista)
-            if (pct === 0) {
+            // 1. VIERNES: Primer partido del array (índice 0)
+            if (indicePartido === 0) {
                 nuevaFecha.setHours(21, 0, 0); 
             } 
-            // LUNES (Último partido de la lista)
-            else if (pct === 1 && !bloquearLunes) {
+            
+            // 2. LUNES: Último partido del array (si hay flexibilidad)
+            else if (indicePartido === totalPartidos - 1 && !bloquearLunes) {
                 nuevaFecha.setDate(nuevaFecha.getDate() + 3);
                 nuevaFecha.setHours(21, 0, 0);
             } 
-            // SABADO (Partidos en la primera mitad del resto)
-            else if (pct > 0 && pct < 0.5) {
+            
+            // 3. SÁBADO: La primera mitad de los partidos restantes
+            // Si hay 10 partidos, del 1 al 4. Si hay 9, del 1 al 4.
+            else if (indicePartido < totalPartidos / 2) {
                 nuevaFecha.setDate(nuevaFecha.getDate() + 1); 
-                const hora = 14 + Math.floor((indicePartido - 1) * (8 / (totalPartidos / 2)));
+                
+                // Reparto de horas dinámico entre 14h y 21h
+                const slotsSabado = [14, 16, 18, 21];
+                const hora = slotsSabado[(indicePartido - 1) % slotsSabado.length];
                 nuevaFecha.setHours(hora, 0, 0);
             } 
-            // DOMINGO (Partidos en la segunda mitad del resto)
+            
+            // 4. DOMINGO: La segunda mitad de los partidos restantes
             else {
                 nuevaFecha.setDate(nuevaFecha.getDate() + 2);
-                const hora = 12 + Math.floor((indicePartido - (totalPartidos / 2)) * (9 / (totalPartidos / 2)));
+                
+                // Reparto de horas dinámico entre 14h y 21h
+                const slotsDomingo = [14, 16, 18, 21];
+                const baseIndex = Math.floor(totalPartidos / 2);
+                const hora = slotsDomingo[(indicePartido - baseIndex) % slotsDomingo.length];
                 nuevaFecha.setHours(hora, 0, 0);
             }
         }
@@ -461,9 +470,10 @@ async function generarLiga(partidaId, competicion, anioInicio) {
         if (flexibles.length >= 2 && !esIntersemanal) {
             const partidoViernes = flexibles.pop();
             const partidoLunes = flexibles.pop();
-            jornadaOrdenada = [partidoViernes, ...restringidos, ...flexibles, partidoLunes];
+            const bloqueCentral = [...restringidos, ...flexibles].sort(() => Math.random() - 0.5);
+            jornadaOrdenada = [partidoViernes, ...bloqueCentral, partidoLunes];
         } else {
-            jornadaOrdenada = [...restringidos, ...flexibles];
+            jornadaOrdenada = [...restringidos, ...flexibles].sort(() => Math.random() - 0.5);
         }
 
         if (!esIntersemanal) semanaActual++;
@@ -486,7 +496,7 @@ async function generarLiga(partidaId, competicion, anioInicio) {
                     fechaJornadaBase, 
                     'liga', 
                     competicion.nombre, 
-                    esEquipoCansado ? Math.max(i, 5) : i,
+                    i,
                     (j === numJornadasTotal), 
                     j, 
                     jornadaOrdenada.length,
