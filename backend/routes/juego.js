@@ -300,7 +300,6 @@ router.get('/clasificacion/:partidaId/:competicionId', requireLogin, async (req,
     try {
         const { partidaId, competicionId } = req.params;
         
-        // 1. Obtener la partida y tu club
         const partida = await Partida.findById(partidaId).populate('clubSeleccionado');
         const competicion = await Competicion.findById(competicionId);
         if (!partida || !competicion) return res.redirect('/inicioJuego/' + partidaId);
@@ -309,22 +308,22 @@ router.get('/clasificacion/:partidaId/:competicionId', requireLogin, async (req,
         const todosLosPartidos = await Partido.find({
             partidaId: partidaId,
             competicionId: competicionId
-        }).populate('equipoLocal equipoVisitante');
+        }).populate('equipoLocal equipoVisitante').sort({ jornada: 1 });
 
         if (todosLosPartidos.length === 0) {
-            // Si no hay partidos, enviamos una clasificación vacía o error
             return res.render('clasificacion', {
                 user: req.session.user,
-                partida,
-                clubUsuario,
-                competicion,
-                clasificacion: [],
-                grupos: null
+                partida, clubUsuario, competicion,
+                clasificacion: [], grupos: null, rondas: {}, tieneEliminatorias: false
             });
         }
 
-        
+        // 🛑 NUEVO: Detectar si ya empezó la fase eliminatoria
+        const tieneEliminatorias = todosLosPartidos.some(p => p.tipo === 'ELIMINATORIA' || p.tipo === 'FINAL');
 
+        // ==========================================
+        // BLOQUE 1: PROCESAR TABLA DE CLASIFICACIÓN
+        // ==========================================
         const tabla = {};
         const mapaEquiposGrupos = {};
 
@@ -347,36 +346,27 @@ router.get('/clasificacion/:partidaId/:competicionId', requireLogin, async (req,
                 }
             });
 
-            if (p.jugado) {
+            // OJO: Solo sumamos a la tabla los partidos que fueron de tipo 'LIGA'
+            if (p.jugado && p.tipo === 'LIGA') {
                 const idLocal = p.equipoLocal._id.toString();
                 const idVisit = p.equipoVisitante._id.toString();
 
-                tabla[idLocal].pj += 1;
-                tabla[idVisit].pj += 1;
-                tabla[idLocal].gf += p.golesLocal;
-                tabla[idLocal].gc += p.golesVisitante;
-                tabla[idVisit].gf += p.golesVisitante;
-                tabla[idVisit].gc += p.golesLocal;
+                tabla[idLocal].pj += 1; tabla[idVisit].pj += 1;
+                tabla[idLocal].gf += p.golesLocal; tabla[idLocal].gc += p.golesVisitante;
+                tabla[idVisit].gf += p.golesVisitante; tabla[idVisit].gc += p.golesLocal;
 
                 if (p.golesLocal > p.golesVisitante) {
-                    tabla[idLocal].pts += 3;
-                    tabla[idLocal].pg += 1;
-                    tabla[idVisit].pp += 1;
+                    tabla[idLocal].pts += 3; tabla[idLocal].pg += 1; tabla[idVisit].pp += 1;
                 } else if (p.golesLocal < p.golesVisitante) {
-                    tabla[idVisit].pts += 3;
-                    tabla[idVisit].pg += 1;
-                    tabla[idLocal].pp += 1;
+                    tabla[idVisit].pts += 3; tabla[idVisit].pg += 1; tabla[idLocal].pp += 1;
                 } else {
-                    tabla[idLocal].pts += 1;
-                    tabla[idVisit].pts += 1;
-                    tabla[idLocal].pe += 1;
-                    tabla[idVisit].pe += 1;
+                    tabla[idLocal].pts += 1; tabla[idVisit].pts += 1;
+                    tabla[idLocal].pe += 1; tabla[idVisit].pe += 1;
                 }
             }
         });
 
         let clasificacion = Object.values(tabla).sort((a, b) => b.pts - a.pts || (b.gf - b.gc) - (a.gf - a.gc));
-
         let grupos = null;
 
         if (competicion.tipo === 'internacional_america') {
@@ -386,41 +376,49 @@ router.get('/clasificacion/:partidaId/:competicionId', requireLogin, async (req,
                 if (!grupos[nombreG]) grupos[nombreG] = [];
                 grupos[nombreG].push(fila);
             });
-
             Object.keys(grupos).forEach(nombreG => {
                 grupos[nombreG].sort((a, b) => b.pts - a.pts || (b.gf - b.gc) - (a.gf - a.gc));
             });
         }
 
+        // ==========================================
+        // BLOQUE 2: PROCESAR CUADRO DE ELIMINATORIAS (SI TIENE)
+        // ==========================================
+        const rondas = {};
+        if (tieneEliminatorias) {
+            const getNombreRonda = (jornada, tipo) => {
+                if (tipo === 'FINAL' || jornada === 17) return 'Gran Final';
+                if (jornada === 9 || jornada === 10) return 'Ronda de Play-offs (1/16)';
+                if (jornada === 11 || jornada === 12) return 'Octavos de Final';
+                if (jornada === 13 || jornada === 14) return 'Cuartos de Final';
+                if (jornada === 15 || jornada === 16) return 'Semifinales';
+                return `Ronda ${jornada}`; 
+            };
+
+            todosLosPartidos.forEach(p => {
+                if (p.tipo === 'ELIMINATORIA' || p.tipo === 'FINAL') {
+                    const nombre = getNombreRonda(p.jornada, p.tipo);
+                    if (!rondas[nombre]) rondas[nombre] = [];
+                    rondas[nombre].push(p);
+                }
+            });
+        }
+
+        // ==========================================
+        // BLOQUE 3: CONTROL DE JORNADAS DE LIGA
+        // ==========================================
         const partidosPorJornada = {};
         todosLosPartidos.forEach(p => {
-            if (!partidosPorJornada[p.jornada]) {
-                partidosPorJornada[p.jornada] = [];
+            if (p.tipo === 'LIGA') { // Solo agrupamos jornadas de liga regular
+                if (!partidosPorJornada[p.jornada]) partidosPorJornada[p.jornada] = [];
+                partidosPorJornada[p.jornada].push(p);
             }
-            partidosPorJornada[p.jornada].push(p);
         });
 
         const jornadas = Object.keys(partidosPorJornada).sort((a, b) => a - b);
         const jornadaActual = jornadas.find(j => partidosPorJornada[j].some(p => !p.jugado)) || jornadas[jornadas.length - 1];
 
-        let viewToRender = grupos ? 'partials/tablaGrupos' : 'partials/tablaLiga';
-        
-        //para usar AJAX y no recargar la pagina todo el rato
-        if (req.query.ajax) {
-            return res.render(viewToRender, { 
-                partida,
-                clasificacion, 
-                competicion, 
-                clubUsuario, 
-                grupos,
-                partidosPorJornada,
-                jornadas,
-                jornadaActual,
-                layout: false 
-            });
-        }
-
-        // Renderizamos la vista
+        // Renderizamos la vista unificada pasándole todo
         res.render('clasificacion', {
             user: req.session.user,
             partida,
@@ -430,7 +428,9 @@ router.get('/clasificacion/:partidaId/:competicionId', requireLogin, async (req,
             grupos,
             partidosPorJornada,
             jornadas,
-            jornadaActual
+            jornadaActual,
+            rondas,               // Enviamos las rondas eliminatorias
+            tieneEliminatorias    // Flag para saber si mostramos el Navbar de pestañas
         });
 
     } catch (error) {

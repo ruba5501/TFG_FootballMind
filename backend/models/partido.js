@@ -25,7 +25,10 @@ const partidoSchema = new mongoose.Schema({
     
   
     jugado: { type: Boolean, default: false },
-    fecha: { type: Date, required: true } 
+    fecha: { type: Date, required: true },
+
+    llave: { type: String, default: null }, 
+    ganadorPenaltis: { type: mongoose.Schema.Types.ObjectId, ref: 'Club', default: null }
 });
 
 module.exports = mongoose.model('Partido', partidoSchema);

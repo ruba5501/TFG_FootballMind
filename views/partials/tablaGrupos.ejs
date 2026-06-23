@@ -1,3 +1,45 @@
+<% 
+// 🎨 CONFIGURACIÓN DINÁMICA DE COLORES PARA FASE DE GRUPOS (SUDAMÉRICA)
+let obtenerEstiloGrupo = (comp, pos) => {
+    const nombre = (comp.nombre || "").toLowerCase();
+    let config = { bg: 'bg-light', text: 'text-secondary', nota: '' };
+
+    // --- REGLAS COPA LIBERTADORES ---
+    if (nombre.includes('libertadores')) {
+        // 1º y 2º clasifican directo a Octavos de Final (Verde sutil)
+        if (pos <= 2) {
+            return { bg: 'bg-success-subtle text-success-emphasis fw-bold', nota: 'Octavos de Final' };
+        }
+        // 3º cae al Play-off de la Copa Sudamericana (Naranja/Amarillo sutil)
+        if (pos === 3) {
+            return { bg: 'bg-orange-subtle text-orange-emphasis fw-bold', nota: 'Play-off de Sudamericana' };
+        }
+        // 4º eliminado completamente (Rojo sutil)
+        if (pos === 4) {
+            return { bg: 'bg-danger-subtle text-danger-emphasis', nota: 'Eliminado' };
+        }
+    } 
+    
+    // --- REGLAS COPA SUDAMERICANA ---
+    else if (nombre.includes('sudamericana')) {
+        // 1º clasifica directo a Octavos de Final (Verde sutil)
+        if (pos === 1) {
+            return { bg: 'bg-success-subtle text-success-emphasis fw-bold', nota: 'Octavos de Final' };
+        }
+        // 2º va al Play-off contra los terceros de Libertadores (Azul sutil)
+        if (pos === 2) {
+            return { bg: 'bg-primary-subtle text-primary-emphasis fw-bold', nota: 'Play-off (vs 3º UCL/Lib)' };
+        }
+        // 3º y 4º eliminados (Rojo sutil)
+        if (pos >= 3) {
+            return { bg: 'bg-danger-subtle text-danger-emphasis', nota: 'Eliminado' };
+        }
+    }
+
+    return config;
+};
+%>
+
 <% if (competicion.faseActual === 'eliminatorias') { %>
     <div class="alert alert-info d-flex justify-content-between align-items-center shadow-sm border-0 mb-4">
         <div>
@@ -13,18 +55,32 @@
 
 <%- include('jornadas') %>
 
+<style>
+    .bg-orange-subtle { background-color: rgba(253, 126, 20, 0.15) !important; }
+    .text-orange-emphasis { color: #b05300 !important; }
+    .badge-posicion-grupo {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 24px;
+        border-radius: 5px;
+        font-size: 0.8rem;
+    }
+</style>
+
 <div class="row g-4">
     <% Object.keys(grupos).sort().forEach(nombreGrupo => { %>
         <div class="col-xl-6">
             <div class="card shadow-sm border-0">
-                <div class="card-header bg-dark text-white fw-bold">
+                <div class="card-header bg-dark text-white fw-bold py-2">
                     <%= nombreGrupo %>
                 </div>
                 <div class="table-responsive">
                     <table class="table table-sm align-middle mb-0">
-                        <thead class="bg-light">
+                        <thead class="table-light">
                             <tr class="text-center" style="font-size: 0.85rem;">
-                                <th>Pos</th>
+                                <th style="width: 45px;">Pos</th>
                                 <th class="text-start">Club</th>
                                 <th>PTS</th>
                                 <th>PJ</th>
@@ -33,20 +89,29 @@
                         </thead>
                         <tbody>
                             <% grupos[nombreGrupo].forEach((fila, index) => { 
+                                let pos = index + 1;
                                 let esUsuario = clubUsuario && fila.club._id.toString() === clubUsuario._id.toString();
+                                
+                                // Ejecutar la función de estilos sutiles
+                                let estiloPos = obtenerEstiloGrupo(competicion, pos);
                             %>
                                 <tr class="text-center <%= esUsuario ? 'table-primary' : '' %>" style="font-size: 0.9rem;">
-                                    <td class="fw-bold"><%= index + 1 %></td>
+                                    <td class="py-1">
+                                        <span class="badge-posicion-grupo <%= estiloPos.bg %>" title="<%= estiloPos.nota %>">
+                                            <%= pos %>
+                                        </span>
+                                    </td>
                                     <td class="text-start">
-                                        <img src="/img/escudos/<%= fila.club.escudo %>" width="20" class="me-1">
-                                        <span class="text-truncate" style="max-width: 120px; display: inline-block; vertical-align: bottom;">
+                                        <img src="/img/escudos/<%= fila.club.escudo %>" width="20" class="me-1 drop-shadow-sm">
+                                        <span class="text-truncate fw-semibold" style="max-width: 140px; display: inline-block; vertical-align: bottom;">
                                             <%= fila.club.nombre %>
                                         </span>
                                     </td>
                                     <td class="fw-bold"><%= fila.pts %></td>
                                     <td><%= fila.pj %></td>
-                                    <td class="<%= (fila.gf - fila.gc) > 0 ? 'text-success' : 'text-danger' %>">
-                                        <%= (fila.gf - fila.gc) > 0 ? '+' + (fila.gf - fila.gc) : (fila.gf - fila.gc) %>
+                                    <td class="<%= (fila.gf - fila.gc) > 0 ? 'text-success' : ((fila.gf - fila.gc) < 0 ? 'text-danger' : 'text-muted') %> fw-bold">
+                                        <% let dif = fila.gf - fila.gc; %>
+                                        <%= dif > 0 ? '+' + dif : dif %>
                                     </td>
                                 </tr>
                             <% }) %>

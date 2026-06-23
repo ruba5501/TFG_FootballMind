@@ -23,9 +23,23 @@
     onclick="GestorTactico.seleccionarJugador(this)">
     
     <div class="flex-grow-1">
-        <div class="d-flex justify-content-between">
-            <strong class="nombre-txt"><%= j.nombre %></strong>
-            <span class="badge bg-light text-dark small"><%= j.posicionPrincipal %></span>
+        <div class="d-flex justify-content-between align-items-center p-2 rounded hover-shadow">
+            <strong class="nombre-txt text-truncate" style="max-width: 50%;"><%= j.nombre %></strong>
+            
+            <div class="d-flex gap-3 text-center">
+                <div>
+                    <span class="badge bg-primary text-white d-block fw-bold fs-6"><%= j.valoracion %></span>
+                    <small class="text-muted" style="font-size: 0.7rem; text-transform: uppercase;">Val</small>
+                </div>
+                <div>
+                    <span class="badge bg-info text-dark d-block fw-bold fs-6"><%= j.potencial %></span>
+                    <small class="text-muted" style="font-size: 0.7rem; text-transform: uppercase;">Pot</small>
+                </div>
+                <div>
+                    <span class="badge bg-secondary text-white d-block fw-bold fs-6"><%= j.posicionPrincipal %></span>
+                    <small class="text-muted" style="font-size: 0.7rem; text-transform: uppercase;">Pos</small>
+                </div>
+            </div>
         </div>
         
         <div class="d-flex align-items-center gap-2">

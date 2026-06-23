@@ -1,3 +1,104 @@
+<% 
+// CONFIGURACIÓN DINÁMICA DE COLORES DE CLASIFICACIÓN (SUTILEZA TOTAL CORREGIDA)
+let obtenerEstiloPosicion = (comp, pos, totalFilas) => {
+    const tipo = comp.tipo;
+    const nombre = (comp.nombre || "").toLowerCase();
+    const pais = (comp.pais || "").toLowerCase();
+    
+    // Detectamos si es segunda división según tu array exacto
+    const esSegundaDivision = nombre.includes('hypermotion') || 
+                             nombre.includes('championship') || 
+                             nombre.includes('serie b') || 
+                             nombre.includes('2. bundesliga') || 
+                             nombre.includes('ligue 2') || 
+                             nombre.includes('erste divisie') || 
+                             nombre.includes('liga portugal 2');
+
+    let config = { bg: 'bg-light', text: 'text-secondary', nota: '' };
+
+    // 1. COMPETICIONES EUROPEAS INTERNACIONALES (Nuevo Formato UEFA de 36 equipos)
+    if (tipo === 'internacional_europa') {
+        if (pos <= 8) return { bg: 'bg-success-subtle text-success-emphasis fw-bold', nota: 'Octavos de Final' };
+        if (pos <= 24) return { bg: 'bg-warning-subtle text-warning-emphasis fw-bold', nota: 'Play-offs (1/16)' };
+        return { bg: 'bg-danger-subtle text-danger-emphasis', nota: 'Eliminado' };
+    }
+
+    // 2. COMPETICIONES SUDAMERICANAS INTERNACIONALES (Fase de Grupos)
+    if (tipo === 'internacional_america') {
+        if (nombre.includes('libertadores')) {
+            if (pos <= 2) return { bg: 'bg-success-subtle text-success-emphasis fw-bold', nota: 'Octavos Libertadores' };
+            if (pos === 3) return { bg: 'bg-warning-subtle text-warning-emphasis fw-bold', nota: 'Play-offs Sudamericana' };
+        } else if (nombre.includes('sudamericana')) {
+            if (pos === 1) return { bg: 'bg-success-subtle text-success-emphasis fw-bold', nota: 'Octavos Sudamericana' };
+            if (pos === 2) return { bg: 'bg-warning-subtle text-warning-emphasis fw-bold', nota: 'Play-offs Sudamericana' };
+        }
+        return { bg: 'bg-danger-subtle text-danger-emphasis', nota: 'Eliminado' };
+    }
+
+    // 3. LIGAS NACIONALES (Aislamos Primera de Segunda de forma estricta)
+    if (tipo === 'liga') {
+
+        // ========================================================
+        // 🛡️ CASO A: SEGUNDA DIVISIÓN (Ascensos, Play-offs y Campeón)
+        // ========================================================
+        if (esSegundaDivision) {
+            // Si es el Líder, le damos un estilo dorado único, pero aclarando que asciende
+            if (pos === 1) {
+                return { bg: 'bg-warning-subtle text-warning-emphasis fw-bold border border-warning-subtle', nota: 'Campeón y Ascenso Directo' };
+            }
+            // El segundo clasificado también asciende directo (Verde)
+            if (pos === 2) {
+                return { bg: 'bg-success-subtle text-success-emphasis fw-bold', nota: 'Ascenso Directo' };
+            }
+            // Del 3º al 6º juegan el Play-off de Ascenso (Azul)
+            if (pos <= 6) {
+                return { bg: 'bg-primary-subtle text-primary-emphasis fw-bold', nota: 'Play-off de Ascenso' };
+            }
+            // Zona de descenso de segunda división (Últimos 4 clasificados)
+            if (pos > totalFilas - 4) {
+                return { bg: 'bg-danger-subtle text-danger-emphasis fw-bold', nota: 'Descenso' };
+            }
+            
+            return config; // Resto de posiciones intermedias de segunda división
+        }
+
+        // ========================================================
+        // ⚽ CASO B: PRIMERA DIVISIÓN (Cupos Internacionales y Campeón)
+        // ========================================================
+        else {
+            // El líder de Primera es el Campeón de Liga
+            if (pos === 1) {
+                return { bg: 'bg-warning-subtle text-warning-emphasis fw-bold border border-warning-subtle', nota: 'Líder / Campeón de Liga' };
+            }
+
+            // Configuración de límites por país
+            let limites = { ucl: 0, uel: 0, uec: 0 };
+            if (pais === 'inglaterra' || pais === 'españa') { limites = { ucl: 5, uel: 7, uec: 8 }; }
+            else if (pais === 'francia' || pais === 'italia' || pais === 'alemania') { limites = { ucl: 4, uel: 6, uec: 7 }; }
+            else if (pais === 'países bajos' || pais === 'holanda') { limites = { ucl: 3, uel: 5, uec: 6 }; }
+            else if (pais === 'portugal') { limites = { ucl: 2, uel: 4, uec: 5 }; }
+            else if (pais === 'brasil') { limites = { ucl: 7, uel: 14, uec: 0 }; }
+            else if (pais === 'argentina') { limites = { ucl: 6, uel: 12, uec: 0 }; }
+
+            if (pos <= limites.ucl) {
+                return { bg: 'bg-primary-subtle text-primary-emphasis fw-bold', nota: pais === 'brasil' || pais === 'argentina' ? 'Copa Libertadores' : 'UEFA Champions League' };
+            } else if (pos <= limites.uel) {
+                return { bg: 'bg-orange-subtle text-orange-emphasis fw-bold', nota: pais === 'brasil' || pais === 'argentina' ? 'Copa Sudamericana' : 'UEFA Europa League' };
+            } else if (pos <= limites.uec) {
+                return { bg: 'bg-info-subtle text-info-emphasis fw-bold', nota: 'UEFA Conference League' };
+            }
+
+            // Zona de descenso de Primera División (Últimos 3)
+            if (pos > totalFilas - 3 && pais !== 'argentina' && pais !== 'brasil') {
+                return { bg: 'bg-danger-subtle text-danger-emphasis fw-bold', nota: 'Descenso' };
+            }
+        }
+    }
+
+    return config;
+};
+%>
+
 <% if (competicion.tipo === 'internacional_europa' && competicion.faseActual === 'eliminatorias') { %>
     <div class="alert alert-info d-flex justify-content-between align-items-center shadow-sm border-0 mb-4">
         <div>
@@ -20,13 +121,27 @@
 
 <%- include('jornadas') %>
 
+<style>
+    .bg-orange-subtle { background-color: rgba(253, 126, 20, 0.15) !important; }
+    .text-orange-emphasis { color: #b05300 !important; }
+    .badge-posicion {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        border-radius: 6px;
+        font-size: 0.9rem;
+    }
+</style>
+
 <div class="card shadow border-0">
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-dark">
                     <tr class="text-center">
-                        <th scope="col" class="py-3" style="width: 50px;">Pos</th>
+                        <th scope="col" class="py-3" style="width: 65px;">Pos</th>
                         <th scope="col" class="py-3 text-start">Club</th>
                         <th scope="col" class="py-3 px-3 fs-6" title="Puntos">PTS</th>
                         <th scope="col" class="py-3">PJ</th>
@@ -40,12 +155,17 @@
                 </thead>
                 <tbody>
                     <% clasificacion.forEach((fila, index) => { 
+                        let pos = index + 1;
                         let esUsuario = clubUsuario && fila.club._id.toString() === clubUsuario._id.toString();
                         let bgClass = esUsuario ? 'table-primary border-primary' : '';
+                        
+                        let estiloPos = obtenerEstiloPosicion(competicion, pos, clasificacion.length);
                     %>
                         <tr class="text-center <%= bgClass %>">
-                            <td class="fw-bold <%= index < 4 ? 'text-success' : (index > clasificacion.length - 4 ? 'text-danger' : '') %>">
-                                <%= index + 1 %>
+                            <td class="py-2">
+                                <span class="badge-posicion <%= estiloPos.bg %>" title="<%= estiloPos.nota %>">
+                                    <%= pos %>
+                                </span>
                             </td>
                             <td class="text-start fw-semibold">
                                 <img src="/img/escudos/<%= fila.club.escudo %>" alt="<%= fila.club.nombre %>" width="30" class="me-2 drop-shadow-sm">

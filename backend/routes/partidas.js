@@ -20,6 +20,7 @@ const cargarClubes = require('../service/cargarClubes');
 const generarJugadores = require('../service/cargarJugadores');
 const { generarEmpleadosNuevaPartida, calcularSalarioEmpleado } = require('../service/cargarEmpleados');
 const generarCalendario = require('../service/generarCalendario');
+const motorCompeticiones = require('../service/motorCompeticiones');
 const { requireLogin } = require('../middleware/autenticacion');
 
 const juegoRouter = require('./juego');
@@ -349,6 +350,9 @@ partidaRouter.get('/avanzar-fecha/:id', requireLogin, async (req, res) => {
         // Simular los partidos que haya antes de ese dia si los hay
         await juegoRouter.simularPartidosPendientes(partidaId, partida.fechaActual, partida.clubSeleccionado._id);
 
+        // Comprobar si los partidos de HOY cerraron alguna ronda
+        await motorCompeticiones.verificarYGenerarSiguienteRonda(partidaId, partida.fechaActual);
+
         // Sumar 1 día a la fecha actual de la partida
         const nuevaFecha = new Date(partida.fechaActual);
         nuevaFecha.setDate(nuevaFecha.getDate() + 1);
@@ -402,6 +406,8 @@ partidaRouter.get('/avanzar-hasta-partido/:id', requireLogin, async (req, res) =
 
                 // Esto simulará todos los partidos de CPU de esos días intermedios
                 await juegoRouter.simularPartidosPendientes(partidaId, fechaSimulada, clubUsuarioId);
+                // Comprobar si en este día intermedio se cerró alguna ronda
+                await motorCompeticiones.verificarYGenerarSiguienteRonda(partidaId, fechaSimulada);
                 await IAFichajesCPU.procesarAccionesCPU(partidaId, fechaSimulada, partida.clubSeleccionado);
             }
 

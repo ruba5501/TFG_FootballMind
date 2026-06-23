@@ -1,4 +1,4 @@
-<%- include('partials/head', {title: 'Clasificación - FootballMind'}) %>
+<%- include('partials/head', {title: 'Competición - FootballMind'}) %>
 <header>
   <%- include('partials/navbar') %>
 </header>
@@ -6,19 +6,79 @@
 <div class="container mt-4 mb-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h2 class="fw-bold mb-0"><i class="bi bi-trophy text-warning me-2"></i>Clasificación</h2>
-            <p class="text-muted"><%= competicion.nombre %></p>
+            <h2 class="fw-bold mb-0"><i class="bi bi-trophy text-warning me-2"></i><%= competicion.nombre %></h2>
+            <p class="text-muted text-uppercase small mb-0"><%= competicion.tipo.replace('_', ' ') %></p>
         </div>
         <a href="/inicioJuego/<%= partida._id %>" class="btn btn-outline-dark">
             <i class="bi bi-arrow-left me-1"></i> Volver al Centro de Mando
         </a>
     </div>
 
-    <div id="contenedorResultados">
-        <% if (competicion.tipo === 'internacional_america') { %>
-            <%- include('partials/tablaGrupos') %>
-        <% } else { %>
-            <%- include('partials/tablaLiga') %>
+    <% if (tieneEliminatorias) { %>
+        <div class="d-flex gap-2 mb-4 p-1 bg-dark rounded border border-secondary align-self-start" id="tabsCompeticion" role="tablist">
+            <button class="btn btn-info fw-bold text-dark px-4 py-2" 
+                    id="fase-liga-tab" 
+                    data-bs-target="#tab-fase-liga" 
+                    type="button" 
+                    role="tab">
+                <i class="bi bi-list-ol me-2"></i>Fase de Liga / Grupos
+            </button>
+            <button class="btn btn-outline-secondary border-0 text-white px-4 py-2" 
+                    id="eliminatorias-tab" 
+                    data-bs-target="#tab-eliminatorias" 
+                    type="button" 
+                    role="tab">
+                <i class="bi bi-diagram-3 me-2 text-danger"></i>Cuadro Eliminatorio
+            </button>
+        </div>
+    <% } %>
+
+    <div class="tab-content" id="contenidoTabsCompeticion">
+        
+        <div class="tab-pane fade show active" id="tab-fase-liga" role="tabpanel">
+            <div id="contenedorResultados">
+                <% if (competicion.tipo === 'internacional_america') { %>
+                    <%- include('partials/tablaGrupos') %>
+                <% } else { %>
+                    <%- include('partials/tablaLiga') %>
+                <% } %>
+            </div>
+        </div>
+
+        <% if (tieneEliminatorias) { %>
+            <div class="tab-pane fade" id="tab-eliminatorias" role="tabpanel">
+                <%- include('partials/cuadroCopa', { rondas: rondas }) %>
+            </div>
         <% } %>
+
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const triggerTabList = [].slice.call(document.querySelectorAll('#tabsCompeticion button'));
+        
+        triggerTabList.forEach(function (triggerEl) {
+            triggerEl.addEventListener('click', function (event) {
+                event.preventDefault();
+                
+                const targetId = this.getAttribute('data-bs-target');
+                const targetPane = document.querySelector(targetId);
+                
+                if (targetPane) {
+                    const activePane = document.querySelector('.tab-content .tab-pane.show.active');
+                    if (activePane) activePane.classList.remove('show', 'active');
+                    targetPane.classList.add('show', 'active');
+                }
+                
+                triggerTabList.forEach(btn => {
+                    btn.classList.remove('btn-info', 'text-dark');
+                    btn.classList.add('btn-outline-secondary', 'border-0', 'text-white');
+                });
+                
+                this.classList.remove('btn-outline-secondary', 'border-0', 'text-white');
+                this.classList.add('btn-info', 'text-dark');
+            });
+        });
+    });
+</script>
