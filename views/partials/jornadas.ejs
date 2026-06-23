@@ -17,23 +17,43 @@
             <% jornadas.forEach(j => { %>
                 <div class="jornada-index <%= j == jornadaActual ? '' : 'd-none' %>" data-jornada="<%= j %>">
                     <div class="row g-2">
-                        <% partidosPorJornada[j].forEach(p => { %>
-                            <% 
+                        <% 
+                            // 1. ORDENAR CRONOLÓGICAMENTE: Ordenamos los partidos de esta jornada por su fecha de menor a mayor
+                            let partidosOrdenados = [...partidosPorJornada[j]].sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
+                            
+                            partidosOrdenados.forEach(p => { 
                                 let esTuPartido = clubUsuario && (p.equipoLocal._id.toString() === clubUsuario._id.toString() || p.equipoVisitante._id.toString() === clubUsuario._id.toString()); 
-                            %>
+                                
+                                // 2. FORMATEO DE FECHA: Creamos variables legibles para el diseño (Ej: "Sáb, 14 Nov" y "18:00")
+                                let fechaObj = new Date(p.fecha);
+                                let diaMesStr = fechaObj.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short' });
+                                // Capitalizar la primera letra (p.ej. "sáb, 14 nov" -> "Sáb, 14 nov")
+                                diaMesStr = diaMesStr.charAt(0).toUpperCase() + diaMesStr.slice(1);
+                                
+                                let horaStr = fechaObj.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+                        %>
                             <div class="col-md-6 col-lg-4">
-                                <div class="p-2 bg-white rounded match-card d-flex align-items-center <%= esTuPartido ? 'user-match shadow-sm' : '' %>">
-                                    <div class="text-truncate flex-grow-1 text-end pe-2 <%= esTuPartido && p.equipoLocal._id.toString() === clubUsuario._id.toString() ? 'fw-bold text-primary' : '' %>" style="font-size: 0.85rem;">
-                                        <%= p.equipoLocal.nombre %>
-                                    </div>
+                                <div class="p-2 bg-white rounded match-card d-flex flex-column <%= esTuPartido ? 'user-match shadow-sm border-start border-primary border-3' : '' %>">
                                     
-                                    <div class="badge <%= p.jugado ? 'bg-dark' : 'bg-secondary' %> match-badge px-2 py-1 mx-1">
-                                        <%= p.jugado ? `${p.golesLocal} - ${p.golesVisitante}` : 'vs' %>
+                                    <div class="d-flex justify-content-between text-muted mb-1 px-1" style="font-size: 0.7rem; font-weight: 500;">
+                                        <span><i class="bi bi-calendar3 me-1"></i><%= diaMesStr %></span>
+                                        <span><i class="bi bi-clock me-1"></i><%= horaStr %></span>
                                     </div>
-                                    
-                                    <div class="text-truncate flex-grow-1 text-start ps-2 <%= esTuPartido && p.equipoVisitante._id.toString() === clubUsuario._id.toString() ? 'fw-bold text-primary' : '' %>" style="font-size: 0.85rem;">
-                                        <%= p.equipoVisitante.nombre %>
+
+                                    <div class="d-flex align-items-center w-100">
+                                        <div class="text-truncate flex-grow-1 text-end pe-2 <%= esTuPartido && p.equipoLocal._id.toString() === clubUsuario._id.toString() ? 'fw-bold text-primary' : '' %>" style="font-size: 0.85rem;">
+                                            <%= p.equipoLocal.nombre %>
+                                        </div>
+                                        
+                                        <div class="badge <%= p.jugado ? 'bg-dark' : 'bg-secondary' %> match-badge px-2 py-1 mx-1" style="min-width: 45px; text-center: center;">
+                                            <%= p.jugado ? `${p.golesLocal} - ${p.golesVisitante}` : 'vs' %>
+                                        </div>
+                                        
+                                        <div class="text-truncate flex-grow-1 text-start ps-2 <%= esTuPartido && p.equipoVisitante._id.toString() === clubUsuario._id.toString() ? 'fw-bold text-primary' : '' %>" style="font-size: 0.85rem;">
+                                            <%= p.equipoVisitante.nombre %>
+                                        </div>
                                     </div>
+
                                 </div>
                             </div>
                         <% }) %>

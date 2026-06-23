@@ -38,9 +38,7 @@ let obtenerEstiloPosicion = (comp, pos, totalFilas) => {
     // 3. LIGAS NACIONALES (Aislamos Primera de Segunda de forma estricta)
     if (tipo === 'liga') {
 
-        // ========================================================
-        // 🛡️ CASO A: SEGUNDA DIVISIÓN (Ascensos, Play-offs y Campeón)
-        // ========================================================
+        // SEGUNDA DIVISIÓN (Ascensos, Play-offs y Campeón)
         if (esSegundaDivision) {
             // Si es el Líder, le damos un estilo dorado único, pero aclarando que asciende
             if (pos === 1) {
@@ -62,9 +60,7 @@ let obtenerEstiloPosicion = (comp, pos, totalFilas) => {
             return config; // Resto de posiciones intermedias de segunda división
         }
 
-        // ========================================================
-        // ⚽ CASO B: PRIMERA DIVISIÓN (Cupos Internacionales y Campeón)
-        // ========================================================
+        // PRIMERA DIVISIÓN (Cupos Internacionales y Campeón)
         else {
             // El líder de Primera es el Campeón de Liga
             if (pos === 1) {
