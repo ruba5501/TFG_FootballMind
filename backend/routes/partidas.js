@@ -19,7 +19,7 @@ const cargarCompeticiones = require('../service/cargarCompeticiones');
 const cargarClubes = require('../service/cargarClubes');
 const generarJugadores = require('../service/cargarJugadores');
 const { generarEmpleadosNuevaPartida, calcularSalarioEmpleado } = require('../service/cargarEmpleados');
-const generarCalendario = require('../service/generarCalendario');
+const { generarCalendario } = require('../service/generarCalendario');
 const motorCompeticiones = require('../service/motorCompeticiones');
 const { requireLogin } = require('../middleware/autenticacion');
 
