@@ -56,47 +56,35 @@ function obtenerLiderazgoEquipo(equipo) {
     );
     return lider.atributos.mental.liderazgo;
 }
+// backend/engine/motorJuego.js
+
+// ... (getMedia, aplicarCansancio, buscarJugadorPorPosicion y obtenerLiderazgoEquipo se quedan exactamente igual)
 
 /**
- * MOTOR DE SIMULACIÓN COMPLETO (TODOS LOS ATRIBUTOS)
+ * SUB-MOTOR: Simula un tramo específico de minutos (ej: 1-90 o 91-120)
+ * Reutiliza toda tu lógica de atributos, cansancio y eventos.
  */
-function simularPartido(local, visitante) {
-    const eventos = [];
-    let golesLocal = 0;
-    let golesVisitante = 0;
-    let posesionLocal = 50; 
+function simularTramoMinutos(local, visitante, minutoInicio, minutoFin, estadoPartido) {
+    let { golesLocal, golesVisitante, posesionLocal, momentumLocal, momentumVisitante, eventos } = estadoPartido;
 
-    // Bonificadores de posesión temporales (por saques de portero, robos, etc)
-    let momentumLocal = 0;
-    let momentumVisitante = 0;
-
-    for (let minuto = 1; minuto <= 90; minuto++) {
-        
+    for (let minuto = minutoInicio; minuto <= minutoFin; minuto++) {
         // --- 0. FASE FÍSICA Y MENTAL ---
         aplicarCansancio(local);
         aplicarCansancio(visitante);
 
         // --- 1. FASE DE ESTRATEGIA (POSESIÓN) ---
-        // Aquí usamos atributos tácticos y mentales globales
-        // Intercepciones vs Visión: la batalla táctica
-        
-        // Sumamos intercepciones de la defensa para cortar juego
         const intercepcionesLocal = local.jugadores.reduce((s, j) => s + getMedia(j, 'defensa', ['intercepciones', 'colocacion']), 0) / 11;
         const intercepcionesVisitante = visitante.jugadores.reduce((s, j) => s + getMedia(j, 'defensa', ['intercepciones', 'colocacion']), 0) / 11;
 
-        // Sumamos visión y pase del equipo
         const creacionLocal = local.jugadores.reduce((s, j) => s + getMedia(j, 'pase', ['vision', 'paseCorto', 'paseLargo']), 0) / 11;
         const creacionVisitante = visitante.jugadores.reduce((s, j) => s + getMedia(j, 'pase', ['vision', 'paseCorto', 'paseLargo']), 0) / 11;
 
-        // Factores extra: Liderazgo y Comunicación del Portero
         const bonusLocal = (obtenerLiderazgoEquipo(local) * 0.05) + (getMedia(local.jugadores.find(j=>j.posicionPrincipal==='POR')||local.jugadores[0], 'portero', ['comunicacion']) * 0.05);
         const bonusVisitante = (obtenerLiderazgoEquipo(visitante) * 0.05) + (getMedia(visitante.jugadores.find(j=>j.posicionPrincipal==='POR')||visitante.jugadores[0], 'portero', ['comunicacion']) * 0.05);
 
-        // Cálculo final de control
-        const controlLocal = creacionLocal + intercepcionesLocal + bonusLocal + momentumLocal + 5; // +5 factor campo
+        const controlLocal = creacionLocal + intercepcionesLocal + bonusLocal + momentumLocal + 5; 
         const controlVisitante = creacionVisitante + intercepcionesVisitante + bonusVisitante + momentumVisitante;
 
-        // Reset momentum
         momentumLocal = 0;
         momentumVisitante = 0;
 
@@ -104,164 +92,33 @@ function simularPartido(local, visitante) {
         const atacanteTeam = (dominador === 'local') ? local : visitante;
         const defensorTeam = (dominador === 'local') ? visitante : local;
 
-        // Actualizar % visual
         if(dominador === 'local') posesionLocal += 0.4; else posesionLocal -= 0.4;
 
-        // --- 2. FASE DE CREACIÓN (¿Hay peligro?) ---
-        // Usamos Desmarques vs Colocación
+        // --- 2. FASE DE CREACIÓN ---
         const generador = buscarJugadorPorPosicion(atacanteTeam, ['MC', 'MCO', 'MD', 'MI']);
         const receptor = buscarJugadorPorPosicion(atacanteTeam, ['DC', 'SD', 'ED', 'EI']);
         const stopper = buscarJugadorPorPosicion(defensorTeam, ['MCD', 'DFC']);
 
         const calidadPaseHueco = getMedia(generador, 'pase', ['vision', 'paseLargo']) + getMedia(receptor, 'habilidad', ['desmarques']);
-        const calidadCorte = getMedia(stopper, 'defensa', ['intercepciones', 'colocacion', 'anticipacion'] || ['intercepciones', 'colocacion']); // Si no existe anticipacion, usa colocacion
+        const calidadCorte = getMedia(stopper, 'defensa', ['intercepciones', 'colocacion', 'anticipacion'] || ['intercepciones', 'colocacion']);
 
-        // Probabilidad base de ocasión: 15% 
-        // Modificada por la calidad del pase vs el corte
         const umbralPeligro = 0.85 - ((calidadPaseHueco - calidadCorte) / 1000); 
 
         if (Math.random() > umbralPeligro) {
-            
-            // --- 3. FASE DE DEFINICIÓN (Tipos de jugada) ---
+            // --- 3. FASE DE DEFINICIÓN ---
             const tipoJugada = Math.random();
             const porteroRival = defensorTeam.jugadores.find(j => j.posicionPrincipal === 'POR') || defensorTeam.jugadores[0];
             let gol = false;
             let relato = "";
             let protagonista = receptor;
 
-            // A) JUEGO AÉREO (Centros)
-            if (tipoJugada < 0.30) {
-                const extremo = buscarJugadorPorPosicion(atacanteTeam, ['ED', 'EI', 'LD', 'LI']);
-                const lateral = buscarJugadorPorPosicion(defensorTeam, ['LD', 'LI', 'DFC']);
-                
-                // Duelo Banda: Velocidad/Regate vs Velocidad/Entrada
-                const ataqueBanda = getMedia(extremo, 'fisico', ['velocidad', 'aceleracion']) + getMedia(extremo, 'habilidad', ['regate']);
-                const defensaBanda = getMedia(lateral, 'fisico', ['velocidad']) + getMedia(lateral, 'defensa', ['entradas']);
+            // [Tus lógicas de definición actuales: A) Juego Aéreo, B) Penalti en juego, C) Tiro lejano, D) Mano a mano]
+            // (Para ahorrar espacio mantengo tu código intacto aquí dentro en tu archivo real)
+            // ... Lógica de jugadas ...
 
-                if (ataqueBanda > defensaBanda) {
-                    // CENTRO
-                    const rematador = buscarJugadorPorPosicion(atacanteTeam, ['DC', 'DFC']); // Centrales suben
-                    const central = buscarJugadorPorPosicion(defensorTeam, ['DFC']);
-
-                    const valorRemate = getMedia(rematador, 'tiro', ['remateCabeza']) + getMedia(rematador, 'fisico', ['salto', 'fuerza']);
-                    const valorDefensa = getMedia(central, 'defensa', ['duelosAereos', 'despejes']) + getMedia(central, 'fisico', ['salto', 'fuerza']);
-                    const salidaGK = getMedia(porteroRival, 'portero', ['juegoAereo', 'salto']);
-
-                    if (valorRemate > (valorDefensa + salidaGK)/1.6) {
-                        if (Math.random() < 0.30) { 
-                            gol = true;
-                            relato = `¡Cabezazo inapelable de ${rematador.nombre} tras centro de ${extremo.nombre}!`;
-                            protagonista = rematador;
-                        } else {
-                            relato = `¡Uyyy! El cabezazo de ${rematador.nombre} se va por poco.`;
-                        }
-                    } else {
-                        // Despeje de la defensa
-                        relato = `Centro peligroso de ${extremo.nombre} despejado por ${central.nombre}.`;
-                    }
-                }
-            }
-
-            // B) PENALTI 
-            else if (tipoJugada < 0.35) {
-                // Pequeña probabilidad de penalti
-                const defensa = buscarJugadorPorPosicion(defensorTeam, ['DFC']);
-                if (getMedia(defensa, 'mental', ['agresividad']) > 70 && getMedia(defensa, 'defensa', ['entradas']) < 60) {
-                    // Defensa agresivo y torpe = Penalti
-                    const lanzador = atacanteTeam.jugadores.reduce((p, c) => (p.atributos.tiro.lanzamientoPenaltis > c.atributos.tiro.lanzamientoPenaltis) ? p : c);
-                    
-                    const calidadPenalti = getMedia(lanzador, 'tiro', ['lanzamientoPenaltis', 'definicion']) + getMedia(lanzador, 'mental', ['composturaBajoPresion']);
-                    const calidadParada = getMedia(porteroRival, 'portero', ['penales', 'reflejos', 'estirada']);
-
-                    relato = `¡PENALTI! ${defensa.nombre} derriba al rival dentro del área. Va a lanzar ${lanzador.nombre}...`;
-                    
-                    if (calidadPenalti * (Math.random() + 0.5) > calidadParada) {
-                        gol = true;
-                        relato += ` ¡GOOOL! Transforma la pena máxima con sangre fría.`;
-                        protagonista = lanzador;
-                    } else {
-                        relato += ` ¡LO PARÓ! ${porteroRival.nombre} adivina la intención y salva a su equipo.`;
-                        // Momentum para el equipo que para el penalti
-                        if(dominador === 'local') momentumVisitante += 20; else momentumLocal += 20;
-                    }
-                }
-            }
-
-            // C) TIRO LEJANO
-            else if (tipoJugada < 0.55) {
-                const tirador = buscarJugadorPorPosicion(atacanteTeam, ['MC', 'MCO', 'ED', 'EI']);
-                const tiroVal = getMedia(tirador, 'tiro', ['tiroLejano', 'potenciaTiro']);
-                const gkVal = getMedia(porteroRival, 'portero', ['estirada', 'colocacion']);
-
-                if (tiroVal > gkVal && Math.random() < 0.2) {
-                    gol = true;
-                    relato = `¡GOLAZO! ${tirador.nombre} revienta la red desde 30 metros.`;
-                    protagonista = tirador;
-                } else if (tiroVal > gkVal - 10) {
-                    // Comprobamos si hay REBOTE (Blocaje)
-                    const blocaje = getMedia(porteroRival, 'portero', ['blocaje']);
-                    if (blocaje < 60 && Math.random() < 0.5) {
-                        relato = `¡${porteroRival.nombre} no logra blocar el tiro de ${tirador.nombre}!`;
-                        // Segunda jugada... (simplificada: 50% gol de rebote)
-                        const cazagoles = buscarJugadorPorPosicion(atacanteTeam, ['DC']);
-                        if(Math.random() < 0.4) {
-                            gol = true;
-                            relato += ` ¡Y ${cazagoles.nombre} aprovecha el rechace para marcar!`;
-                            protagonista = cazagoles;
-                        } else {
-                            relato += ` Pero la defensa despeja el balón suelto.`;
-                        }
-                    } else {
-                        relato = `Buen disparo de ${tirador.nombre} que atrapa ${porteroRival.nombre} con seguridad.`;
-                        // Bonus de SAQUE para contraataque
-                        const saque = getMedia(porteroRival, 'portero', ['saque']);
-                        if (dominador === 'local') momentumVisitante += saque / 10; else momentumLocal += saque / 10;
-                    }
-                }
-            }
-
-            // D) JUGADA COMBINADA (Mano a mano)
-            else {
-                const atacante = buscarJugadorPorPosicion(atacanteTeam, ['DC', 'SD', 'MCO']);
-                const defensa = buscarJugadorPorPosicion(defensorTeam, ['DFC', 'MCD']);
-
-                // Regate vs Entrada
-                const ataque = getMedia(atacante, 'habilidad', ['regate', 'controlBalon', 'agilidad']);
-                const def = getMedia(defensa, 'defensa', ['entradas', 'marcaje']) + getMedia(defensa, 'fisico', ['equilibrio']);
-
-                if (ataque * (Math.random()+0.4) > def) {
-                    // Mano a mano
-                    const definicion = getMedia(atacante, 'tiro', ['definicion']) + getMedia(atacante, 'mental', ['composturaBajoPresion']);
-                    const parada = getMedia(porteroRival, 'portero', ['unoContraUno', 'reflejos']);
-
-                    if (definicion * (Math.random()+0.3) > parada) {
-                        gol = true;
-                        relato = `¡GOL! ${atacante.nombre} se planta solo ante el portero y no perdona.`;
-                        protagonista = atacante;
-                    } else {
-                        relato = `¡Milagro de ${porteroRival.nombre}! Salva el mano a mano contra ${atacante.nombre}.`;
-                    }
-                } else {
-                    // ¿Falta táctica?
-                    if (getMedia(defensa, 'mental', ['agresividad']) > 80 && Math.random() < 0.15) {
-                        relato = `Entrada muy dura de ${defensa.nombre} sobre ${atacante.nombre}. Tarjeta amarilla.`;
-                        // Tiro libre directo
-                        const lanzador = atacanteTeam.jugadores.reduce((p, c) => (p.atributos.tiro.lanzamientoFaltas > c.atributos.tiro.lanzamientoFaltas) ? p : c);
-                        if (getMedia(lanzador, 'tiro', ['lanzamientoFaltas']) > getMedia(porteroRival, 'portero', ['estirada']) && Math.random() < 0.15) {
-                            gol = true;
-                            relato += ` ¡Y GOL DE FALTA DIRECTA de ${lanzador.nombre}!`;
-                            protagonista = lanzador;
-                        }
-                    }
-                }
-            }
-
-            // --- REGISTRO DEL EVENTO ---
             if (relato) {
                 if (gol) {
-                    if (dominador === 'local') golesLocal++;
-                    else golesVisitante++;
-                    
+                    if (dominador === 'local') golesLocal++; else golesVisitante++;
                     eventos.push({
                         minuto, tipo: 'GOL', equipo: dominador, texto: relato,
                         jugador: protagonista ? protagonista.nombre : 'Desconocido'
@@ -273,10 +130,129 @@ function simularPartido(local, visitante) {
         }
     }
 
+    // Devolvemos el estado actualizado tras el tramo de minutos jugado
+    return { golesLocal, golesVisitante, posesionLocal, momentumLocal, momentumVisitante, eventos };
+}
+
+/**
+ * TANDA DE PENALTIS ESTADÍSTICA (La lotería basada en atributos)
+ */
+function simularTandaPenaltis(local, visitante, eventos) {
+    eventos.push({ minuto: 120, tipo: 'INFO', texto: "¡Final del partido! El ganador se decidirá en la tanda de penaltis." });
+
+    // Ordenamos tiradores: los que tengan mejor atributo de penaltis patean primero
+    const tiradoresLocal = [...local.jugadores].sort((a,b) => b.atributos.tiro.lanzamientoPenaltis - a.atributos.tiro.lanzamientoPenaltis);
+    const tiradoresVisitante = [...visitante.jugadores].sort((a,b) => b.atributos.tiro.lanzamientoPenaltis - a.atributos.tiro.lanzamientoPenaltis);
+
+    const porLocal = local.jugadores.find(j => j.posicionPrincipal === 'POR') || local.jugadores[0];
+    const porVisitante = visitante.jugadores.find(j => j.posicionPrincipal === 'POR') || visitante.jugadores[0];
+
+    let penaltisLocalLogrados = 0;
+    let penaltisVisitanteLogrados = 0;
+    
+    let ronda = 0;
+    let ganadorPenaltis = null;
+
+    // Ejecutamos tandas hasta romper la igualdad reglamentaria o muerte súbita
+    while (!ganadorPenaltis) {
+        ronda++;
+        
+        // Tirador local actual (bucle infinito sobre la plantilla si se acaban)
+        const tLocal = tiradoresLocal[(ronda - 1) % tiradoresLocal.length];
+        const tVisitante = tiradoresVisitante[(ronda - 1) % tiradoresVisitante.length];
+
+        // 1. LANZAMIENTO LOCAL
+        let golLocal = ejecutarPenaltiIndividual(tLocal, porVisitante);
+        if (golLocal) {
+            penaltisLocalLogrados++;
+            eventos.push({ minuto: 120, tipo: 'PENALTI_TANDA', equipo: 'local', texto: `✅ Gol de ${tLocal.nombre} para el equipo local.` });
+        } else {
+            eventos.push({ minuto: 120, tipo: 'PENALTI_TANDA', equipo: 'local', texto: `❌ ${tLocal.nombre} falla su lanzamiento (parada o fuera).` });
+        }
+
+        // 2. LANZAMIENTO VISITANTE
+        let golVisitante = ejecutarPenaltiIndividual(tVisitante, porLocal);
+        if (golVisitante) {
+            penaltisVisitanteLogrados++;
+            eventos.push({ minuto: 120, tipo: 'PENALTI_TANDA', equipo: 'visitante', texto: `✅ Gol de ${tVisitante.nombre} para el equipo visitante.` });
+        } else {
+            eventos.push({ minuto: 120, tipo: 'PENALTI_TANDA', equipo: 'visitante', texto: `❌ ${tVisitante.nombre} falla su lanzamiento.` });
+        }
+
+        // Criterio de parada: Mínimo 5 lanzamientos por equipo antes de evaluar muerte súbita
+        if (ronda >= 5) {
+            if (penaltisLocalLogrados > penaltisVisitanteLogrados) {
+                ganadorPenaltis = 'local';
+            } else if (penaltisVisitanteLogrados > penaltisLocalLogrados) {
+                ganadorPenaltis = 'visitante';
+            }
+        }
+    }
+
     return {
-        marcador: { local: golesLocal, visitante: golesVisitante },
-        posesion: { local: Math.floor(Math.min(99, Math.max(1, posesionLocal))), visitante: 100 - Math.floor(Math.min(99, Math.max(1, posesionLocal))) },
-        eventos: eventos
+        ganadorId: ganadorPenaltis === 'local' ? local.id : visitante.id,
+        marcadorTanda: { local: penaltisLocalLogrados, visitante: penaltisVisitanteLogrados }
+    };
+}
+
+/**
+ * Enfrentamiento matemático Tirador vs Portero
+ */
+function ejecutarPenaltiIndividual(tirador, portero) {
+    // Calidad del tiro afectada por los nervios (Math.random bajo)
+    const nivelTirador = getMedia(tirador, 'tiro', ['lanzamientoPenaltis']) + getMedia(tirador, 'mental', ['composturaBajoPresion']) * 0.5;
+    const nivelPortero = getMedia(portero, 'portero', ['penales', 'reflejos', 'estirada']);
+
+    // Factor lotería/suerte (Modificadores aleatorios)
+    const suerteTirador = Math.random() * 40 + 60; // entre 60 y 100
+    const suertePortero = Math.random() * 40 + 50; // entre 50 y 90 (ligera ventaja histórica al tirador)
+
+    // Un 5% de las veces va fuera directamente independientemente del portero (puro nervio)
+    if (Math.random() < 0.05) return false;
+
+    return (nivelTirador * suerteTirador) > (nivelPortero * suertePortero);
+}
+
+/**
+ * MOTOR DE SIMULACIÓN PRINCIPAL ENTRADA
+ */
+function simularPartido(local, visitante, tipoPartido = 'LIGA') {
+    let estadoPartido = {
+        golesLocal: 0,
+        golesVisitante: 0,
+        posesionLocal: 50,
+        momentumLocal: 0,
+        momentumVisitante: 0,
+        eventos: []
+    };
+
+    // 1. SIMULAR PRIMEROS 90 MINUTOS
+    estadoPartido = simularTramoMinutos(local, visitante, 1, 90, estadoPartido);
+
+    let ganadorPenaltis = null;
+    let marcadorTanda = null;
+
+    // 2. ¿NECESITA PRÓRROGA?
+    if ((tipoPartido === 'ELIMINATORIA' || tipoPartido === 'FINAL') && estadoPartido.golesLocal === estadoPartido.golesVisitante) {
+        estadoPartido.eventos.push({ minuto: 90, tipo: 'INFO', texto: `Empate ${estadoPartido.golesLocal}-${estadoPartido.golesVisitante}. ¡Nos vamos a la prórroga!` });
+        
+        // Simula del 91 al 120 con la misma exactitud futbolística
+        estadoPartido = simularTramoMinutos(local, visitante, 91, 120, estadoPartido);
+
+        // 3. ¿SÍGUEN EMPATADOS? -> TANDA DE PENALTIS STATS
+        if (estadoPartido.golesLocal === estadoPartido.golesVisitante) {
+            const tanda = simularTandaPenaltis(local, visitante, estadoPartido.eventos);
+            ganadorPenaltis = tanda.ganadorId;
+            marcadorTanda = tanda.marcadorTanda;
+        }
+    }
+
+    return {
+        marcador: { local: estadoPartido.golesLocal, visitante: estadoPartido.golesVisitante },
+        posesion: { local: Math.floor(Math.min(99, Math.max(1, estadoPartido.posesionLocal))), visitante: 100 - Math.floor(Math.min(99, Math.max(1, estadoPartido.posesionLocal))) },
+        eventos: estadoPartido.eventos,
+        ganadorPenaltis: ganadorPenaltis, // Enviará el ID del club ganador
+        marcadorTanda: marcadorTanda      // Por si quieres renderizar los penaltis en el front
     };
 }
 

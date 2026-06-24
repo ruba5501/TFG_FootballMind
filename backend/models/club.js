@@ -59,6 +59,16 @@ const clubSchema = new mongoose.Schema({
   ],
   tactica: {
     formacion: { type: String, default: '4-3-3' },
+    estiloJuego: { 
+      type: String, 
+      enum: ['TIKI-TAKA', 'CONTRAATAQUE', 'AUTOBÚS', 'BALÓN LARGO', 'PRESIÓN ALTA', 'JUEGO POR BANDAS', 'PONER CENTROS', 'ESTÁNDAR'], 
+      default: 'ESTÁNDAR' 
+    },
+    mentalidad: {
+      type: String,
+      enum: ['MUY_DEFENSIVA', 'DEFENSIVA', 'EQUILIBRADA', 'OFENSIVA', 'ULTRA_OFENSIVA'],
+      default: 'EQUILIBRADA'
+    },
     titulares: {
       type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Jugador' }],
       validate: [v => v.length <= 11, 'No pueden haber más de 11 titulares']

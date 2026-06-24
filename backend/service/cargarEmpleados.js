@@ -19,17 +19,17 @@ const CONFIG_ROLES = [
     { rol: 'entrenadorCantera',   cantidadBase: 1, extraPorReputacion: false }
 ];
 
-async function generarEmpleadosNuevaPartida(partidaId, listaClubes, nombrePartida) {
+async function generarEmpleadosNuevaPartida(partidaId, listaClubes, nombrePartida, clubUsuarioId) {
     try {
-        const partida = await Partida.findById(partidaId);
-        const clubUsuarioId = partida.clubSeleccionado.toString();
+        // Al recibir clubUsuarioId como parámetro, eliminamos el "await Partida.findById"
         const clubes = listaClubes;
 
         let todosLosEmpleados = [];
         let operacionesClubes = [];
 
         for (const club of clubes) {
-            const esClubUsuario = club._id.toString() === clubUsuarioId;
+            // Aseguramos la comparación de string limpia
+            const esClubUsuario = clubUsuarioId && club._id.toString() === clubUsuarioId.toString();
             let idsEmpleadosDelClub = [];
 
             for (const conf of CONFIG_ROLES) {
@@ -50,9 +50,17 @@ async function generarEmpleadosNuevaPartida(partidaId, listaClubes, nombrePartid
                     const nacionalidad = resultado.nacionalidad;
                     const nivelBase = calcularNivelBase(club.reputacion);
                     const atributosGenerados = generarAtributosPorRol(conf.rol, nivelBase);
+        
+                    if (conf.rol === 'entrenadorPrincipal') {
+                        // El entrenador adopta la filosofía ideal que ya se calculó para el club y su plantilla
+                        atributosGenerados.estiloJuego = club.tactica?.estiloJuego || 'ESTÁNDAR';
+                        atributosGenerados.mentalidad = club.tactica?.mentalidad || 'EQUILIBRADA';
+                    }
+
                     const empleadoTemporal = { tipo: conf.rol, atributos: atributosGenerados };
                     const salario = calcularSalarioEmpleado(empleadoTemporal, club.reputacion);
                     const finContrato = resultado.finContrato;
+                    
                     todosLosEmpleados.push({
                         _id: idEmpleado,
                         partidaId: partidaId,
@@ -74,6 +82,8 @@ async function generarEmpleadosNuevaPartida(partidaId, listaClubes, nombrePartid
                 }
             }
 
+            // Simplificamos el update. La táctica ya se actualizó en generarJugadoresNuevaPartida.
+            // Aquí solo inyectamos los empleados generados.
             operacionesClubes.push({
                 updateOne: {
                     filter: { _id: club._id },
@@ -106,14 +116,27 @@ function generarAtributosPorRol(rol, nivelBase) {
     const variacion = () => Math.floor(Math.random() * 30) - 15;
     const aplicarNivel = (base) => Math.min(100, Math.max(1, base + variacion()));
 
+    // Arrays de opciones para roles tácticos
+    const estilosDisponibles = ['TIKI-TAKA', 'CONTRAATAQUE', 'AUTOBÚS', 'BALÓN LARGO', 'PRESIÓN ALTA', 'JUEGO POR BANDAS', 'PONER CENTROS', 'ESTÁNDAR'];
+    const mentalidadesDisponibles = ['MUY_DEFENSIVA', 'DEFENSIVA', 'EQUILIBRADA', 'OFENSIVA', 'ULTRA_OFENSIVA'];
+
     let atr = {
         nivelFisico: 50, nivelTecnico: 50, nivelTactico: 50,
         nivelPortero: 50, nivelPsicologico: 50, nivelMedico: 50,
         nivelRecuperacion: 50, nivelPrevencionLesiones: 50,
         nivelDeteccion: 50, nivelCantera: 50,
         motivacion: nivelBase, desarrolloJovenes: nivelBase, 
-        reputacion: nivelBase, experiencia: Math.floor(nivelBase * 0.8)
+        reputacion: nivelBase, experiencia: Math.floor(nivelBase * 0.8),
+        // Valores por defecto no perjudiciales para roles no tácticos
+        estiloJuego: 'ESTÁNDAR',
+        mentalidad: 'EQUILIBRADA'
     };
+
+    // Asignación de Estilo y Mentalidad aleatoria para entrenadores y segundos entrenadores
+    if (rol === 'entrenadorPrincipal' || rol === 'segundoEntrenador' || rol === 'entrenadorCantera') {
+        atr.estiloJuego = estilosDisponibles[Math.floor(Math.random() * estilosDisponibles.length)];
+        atr.mentalidad = mentalidadesDisponibles[Math.floor(Math.random() * mentalidadesDisponibles.length)];
+    }
 
     if (rol.includes('Fisico')) atr.nivelFisico = nivelBase;
     if (rol.includes('Tecnico')) atr.nivelTecnico = nivelBase;
@@ -202,6 +225,7 @@ function calcularSalarioEmpleado(empleado, reputacionClub) {
 
     return Math.max(18000, Math.floor(sueldoAnual / 1000) * 1000);
 }
+
 module.exports = {
     generarEmpleadosNuevaPartida,
     calcularSalarioEmpleado

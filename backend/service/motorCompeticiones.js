@@ -22,8 +22,8 @@ async function verificarYGenerarSiguienteRonda(partidaId, fechaSimulada) {
 
             if (!partidoMuestra) continue;
             
-            const jornadaActual = partidoMuestra.jornada; // Número (ej: 8, 10, 12)
-            const tipoActual = partidoMuestra.tipo;       // String (ej: 'LIGA', 'ELIMINATORIA')
+            const jornadaActual = partidoMuestra.jornada; 
+            const tipoActual = partidoMuestra.tipo;       
 
             // Verificamos si queda algo pendiente de esta jornada exacta en esta competición
             const pendientes = await Partido.countDocuments({
@@ -33,56 +33,48 @@ async function verificarYGenerarSiguienteRonda(partidaId, fechaSimulada) {
                 jugado: false
             });
 
-            if (pendientes > 0) continue; // Faltan partidos por jugar
+            if (pendientes > 0) continue; // Faltan partidos por jugar en el día/jornada actual
 
             const competicion = await Competicion.findById(compId);
             const nombreComp = competicion.nombre.toLowerCase();
             const partidosDeLaFase = await Partido.find({ partidaId, competicionId: compId, jornada: jornadaActual });
 
-            // =================================================================
             // DETECTOR DE FORMATO: EUROPA vs COPA vs SUDAMÉRICA
-            // =================================================================
             
             // --- 1. BLOQUE INTERNACIONAL EUROPA ---
             if (nombreComp.includes('europa') || nombreComp.includes('champions') || nombreComp.includes('conference')) {
                 
                 if (tipoActual === 'LIGA' && jornadaActual === 8) {
-                    // Terminó la fase de liga (Jornada 8). Toca generar Dieciseisavos (Jornadas 9 y 10)
                     const tablaPosiciones = await obtenerTablaPosicionesFormatoLiga(partidaId, compId);
                     await calendarioService.generarDieciseisavosEuropa(partidaId, competicion, tablaPosiciones, fechaSimulada);
                 } 
                 else if (tipoActual === 'ELIMINATORIA' && jornadaActual === 10) {
-                    // Terminó la vuelta de Dieciseisavos (Jornada 10). Toca generar Octavos (11 y 12)
                     const ganadoresPlayoff = await calcularGanadoresDoblePartido(partidaId, partidosDeLaFase, 9);
                     const tablaPosiciones = await obtenerTablaPosicionesFormatoLiga(partidaId, compId);
                     await calendarioService.generarOctavosEuropa(partidaId, competicion, tablaPosiciones, ganadoresPlayoff, fechaSimulada);
                 } 
                 else if (tipoActual === 'ELIMINATORIA' && jornadaActual === 12) {
-                    // Vuelta de Octavos. Generar Cuartos (13 y 14)
                     const ganadoresOctavos = await calcularGanadoresDoblePartido(partidaId, partidosDeLaFase, 11);
                     await calendarioService.generarCuadroFinalEuropa(partidaId, competicion, ganadoresOctavos, 'CUARTOS', fechaSimulada);
                 } 
                 else if (tipoActual === 'ELIMINATORIA' && jornadaActual === 14) {
-                    // Vuelta de Cuartos. Generar Semifinales (15 y 16)
                     const ganadoresCuartos = await calcularGanadoresAgrupadosPorRuta(partidaId, partidosDeLaFase, 13);
                     await calendarioService.generarCuadroFinalEuropa(partidaId, competicion, ganadoresCuartos, 'SEMIFINAL', fechaSimulada);
                 } 
                 else if (tipoActual === 'ELIMINATORIA' && jornadaActual === 16) {
-                    // Vuelta de Semis. Generar la Final Única (Jornada 17)
                     const finalistas = await obtenerGanadoresGlobales(partidaId, partidosDeLaFase, true, 15);
                     await calendarioService.generarCuadroFinalEuropa(partidaId, competicion, finalistas, 'FINAL', fechaSimulada);
                 }
             }
             
-            // BLOQUE COPAS NACIONALES (Sincronizado con SEMANAS_COPA) 
+            // --- 2. BLOQUE COPAS NACIONALES ---
             else if (tipoActual === 'ELIMINATORIA' && !nombreComp.includes('libertadores') && !nombreComp.includes('sudamericana')) {
                 
-                // 🏆 JORNADA 0: Terminó la Ronda Previa -> Generar 1/32 (Jornada 1)
+                // JORNADA 0: Terminó la Ronda Previa -> Generar 1/32 (Jornada 1)
                 if (jornadaActual === 0) {
                     console.log(`[MOTOR - ${competicion.nombre}] Fin de Ronda Previa. Pasando a 1/32...`);
                     const ganadoresPrevios = await obtenerGanadoresGlobales(partidaId, partidosDeLaFase, false);
                     
-                    // Buscamos los clubes exentos (los que no jugaron la jornada 0)
                     const equiposQueYaJugaron = new Set(partidosDeLaFase.flatMap(p => [p.equipoLocal.toString(), p.equipoVisitante.toString()]));
                     const todosLosClubes = await Club.find({ partidaId, competiciones: compId, esFilial: false });
                     const equiposExentos = todosLosClubes
@@ -93,51 +85,48 @@ async function verificarYGenerarSiguienteRonda(partidaId, fechaSimulada) {
                     await calendarioService.generarSiguienteRondaCopa(partidaId, competicion, bolsaCompleta, '1/32 de Final', fechaSimulada, 1);
                 }
                 
-                // 🏆 JORNADA 1: Terminó 1/32 -> Generar 1/16 (Jornada 2)
+                // JORNADA 1: Terminó 1/32 -> Generar 1/16 (Jornada 2)
                 else if (jornadaActual === 1) {
                     console.log(`[MOTOR - ${competicion.nombre}] Fin de 1/32. Generando 1/16 de Final...`);
                     const clasificados = await obtenerGanadoresGlobales(partidaId, partidosDeLaFase, false);
                     await calendarioService.generarSiguienteRondaCopa(partidaId, competicion, clasificados, '1/16 de Final', fechaSimulada, 2);
                 } 
                 
-                // 🏆 JORNADA 2: Terminó 1/16 -> Generar 1/8 (Jornada 3)
+                // JORNADA 2: Terminó 1/16 -> Generar 1/8 (Jornada 3)
                 else if (jornadaActual === 2) {
                     console.log(`[MOTOR - ${competicion.nombre}] Fin de 1/16. Generando Octavos de Final...`);
                     const clasificados = await obtenerGanadoresGlobales(partidaId, partidosDeLaFase, false);
                     await calendarioService.generarSiguienteRondaCopa(partidaId, competicion, clasificados, 'Octavos de Final', fechaSimulada, 3);
                 } 
                 
-                // 🏆 JORNADA 3: Terminó 1/8 -> Generar 1/4 (Jornada 4)
+                // JORNADA 3: Terminó 1/8 -> Generar 1/4 (Jornada 4)
                 else if (jornadaActual === 3) {
                     console.log(`[MOTOR - ${competicion.nombre}] Fin de Octavos. Generando Cuartos de Final...`);
                     const clasificados = await obtenerGanadoresGlobales(partidaId, partidosDeLaFase, false);
                     await calendarioService.generarSiguienteRondaCopa(partidaId, competicion, clasificados, 'Cuartos de Final', fechaSimulada, 4);
                 } 
                 
-                // 🏆 JORNADA 4: Terminó 1/4 -> Generar Semifinales (Jornada 5)
+                // JORNADA 4: Terminó 1/4 -> Generar Semifinales (Jornada 5 de Ida)
                 else if (jornadaActual === 4) {
                     console.log(`[MOTOR - ${competicion.nombre}] Fin de Cuartos. Generando Semifinales...`);
                     const clasificados = await obtenerGanadoresGlobales(partidaId, partidosDeLaFase, false);
                     await calendarioService.generarSiguienteRondaCopa(partidaId, competicion, clasificados, 'Semifinal', fechaSimulada, 5);
                 } 
                 
-                // 🏆 JORNADA 5 o 6: Gestión de Semifinales (Doble partido / Partido único)
+                // JORNADA 5 o 6: Gestión de Semifinales
                 else if (jornadaActual === 5 || jornadaActual === 6) {
                     const paisesDobleSemi = ['españa', 'italia', 'portugal', 'paises bajos', 'brasil'];
                     const tieneVuelta = paisesDobleSemi.some(p => nombreComp.includes(p));
 
                     if (tieneVuelta) {
-                        // Si tiene ida y vuelta y estamos en la jornada 5, significa que se guardaron ambas con el mismo numJornada
-                        // Pero el motor se ejecuta CADA DÍA. Solo avanzamos si se han jugado TODOS los partidos (Idas y Vueltas).
-                        // Como tu filtro inicial arriba ya hace: if (pendientes > 0) continue; 
-                        // Cuando 'pendientes === 0' en la jornada 5, significa que la vuelta (que comparte jornada 5) YA se jugó.
-                        
-                        console.log(`[MOTOR - ${competicion.nombre}] Fin de Semifinales (Vuelta). Generando Gran Final...`);
-                        const finalistas = await obtenerGanadoresGlobales(partidaId, partidosDeLaFase, true, 5); 
-                        // Nota: Pasamos 'true' porque es doble partido, y ambos comparten la jornada 5 en base a la llave.
-                        await calendarioService.generarSiguienteRondaCopa(partidaId, competicion, finalistas, 'Gran Final', fechaSimulada, 7);
+                        // Con el calendario limpio, la vuelta se procesa única y estrictamente en la jornada 6
+                        if (jornadaActual === 6) {
+                            console.log(`[MOTOR - ${competicion.nombre}] Fin de Semifinales (Vuelta). Generando Gran Final...`);
+                            const finalistas = await obtenerGanadoresGlobales(partidaId, partidosDeLaFase, true, 5); 
+                            await calendarioService.generarSiguienteRondaCopa(partidaId, competicion, finalistas, 'Gran Final', fechaSimulada, 7);
+                        }
                     } else {
-                        // Copa a partido único en semis (ej: Inglaterra)
+                        // Formato a partido único (Inglaterra). Se resuelve directamente en la jornada 5
                         if (jornadaActual === 5) {
                             console.log(`[MOTOR - ${competicion.nombre}] Fin de Semifinales (Única). Generando Gran Final...`);
                             const finalistas = await obtenerGanadoresGlobales(partidaId, partidosDeLaFase, false);
@@ -146,16 +135,45 @@ async function verificarYGenerarSiguienteRonda(partidaId, fechaSimulada) {
                     }
                 }
                 
-                // 🏆 JORNADA 7: ¡Final de la Copa!
+                // JORNADA 7: Final de la Copa
                 else if (jornadaActual === 7) {
                     console.log(`[MOTOR - ${competicion.nombre}] ¡La gran final ha concluido! Copa finalizada.`);
-                    // Aquí puedes disparar lógica de trofeos, estadísticas históricas, etc.
                 }
             }
 
             // --- 3. BLOQUE SUDAMÉRICA ---
             else if (nombreComp.includes('libertadores') || nombreComp.includes('sudamericana')) {
-                // Aquí enganchas tu lógica numérica para los grupos y el PO_VUELTA de Sudamérica cuando definas sus números de jornada
+                if (tipoActual === 'LIGA' && jornadaActual === 6) {
+                    console.log(`[MOTOR - ${competicion.nombre}] Fin de Fase de Grupos. Generando Rondas Eliminatorias Sudamericanas...`);
+                    const tablasGrupos = await obtenerTablasPosicionesGruposSudamerica(partidaId, compId);
+                    
+                    if (nombreComp.includes('sudamericana')) {
+                        await calendarioService.generarPlayoffsSudamericana(partidaId, competicion, tablasGrupos, fechaSimulada);
+                    } else {
+                        await calendarioService.generarOctavosLibertadores(partidaId, competicion, tablasGrupos, fechaSimulada);
+                    }
+                }
+                else if (tipoActual === 'ELIMINATORIA') {
+                    if (jornadaActual === 8 && nombreComp.includes('sudamericana')) {
+                        const ganadoresPlayoff = await calcularGanadoresDoblePartido(partidaId, partidosDeLaFase, 7);
+                        await calendarioService.generarOctavosSudamericana(partidaId, competicion, ganadoresPlayoff, fechaSimulada);
+                    }
+                    else if (jornadaActual === 10) {
+                        const ganadoresOctavos = await calcularGanadoresDoblePartido(partidaId, partidosDeLaFase, 9);
+                        await calendarioService.generarCuadroFinalSudamerica(partidaId, competicion, ganadoresOctavos, 'CUARTOS', fechaSimulada, 11);
+                    }
+                    else if (jornadaActual === 12) {
+                        const ganadoresCuartos = await calcularGanadoresAgrupadosPorRuta(partidaId, partidosDeLaFase, 11);
+                        await calendarioService.generarCuadroFinalSudamerica(partidaId, competicion, ganadoresCuartos, 'SEMIFINAL', fechaSimulada, 13);
+                    }
+                    else if (jornadaActual === 14) {
+                        const finalistas = await obtenerGanadoresGlobales(partidaId, partidosDeLaFase, true, 13);
+                        await calendarioService.generarCuadroFinalSudamerica(partidaId, competicion, finalistas, 'FINAL', fechaSimulada, 15);
+                    }
+                    else if (jornadaActual === 15) {
+                        console.log(`[MOTOR - ${competicion.nombre}] ¡Final Conmebol finalizada!`);
+                    }
+                }
             }
         }
     } catch (error) {
@@ -163,21 +181,24 @@ async function verificarYGenerarSiguienteRonda(partidaId, fechaSimulada) {
     }
 }
 
-// ====================================================================
-// AUXILIARES REESCRITAS CON EL MODELO REAL DE BASE DE DATOS
-// ====================================================================
+// AUXILIARES 
 
 async function obtenerGanadoresGlobales(partidaId, partidosVuelta, esDoblePartido, jornadaIda = null) {
     let ganadores = [];
 
     for (const p of partidosVuelta) {
         if (!esDoblePartido) {
-            if (p.golesLocal > p.golesVisitante) ganadores.push(p.equipoLocal.toString());
-            else if (p.golesVisitante > p.golesLocal) ganadores.push(p.equipoVisitante.toString());
-            else if (p.ganadorPenaltis) ganadores.push(p.ganadorPenaltis.toString());
+            // PARTIDO ÚNICO: El simulador ya resolvió la prórroga/penaltis en DB si fue necesario.
+            if (p.golesLocal > p.golesVisitante) {
+                ganadores.push(p.equipoLocal.toString());
+            } else if (p.golesVisitante > p.golesLocal) {
+                ganadores.push(p.equipoVisitante.toString());
+            } else {
+                // Si el marcador del simulador terminó en empate, leemos obligatoriamente quién ganó en los penaltis.
+                ganadores.push(p.ganadorPenaltis.toString());
+            }
         } else {
-            // Buscamos el partido de ida usando exclusivamente la propiedad 'llave'
-            // Evitamos cruzar estrictamente equipoLocal/Visitante porque el orden puede variar según la localía de la vuelta
+            // DOBLE PARTIDO (IDA Y VUELTA)
             const pIda = await Partido.findOne({
                 partidaId,
                 competicionId: p.competicionId,
@@ -186,18 +207,20 @@ async function obtenerGanadoresGlobales(partidaId, partidosVuelta, esDoblePartid
                 _id: { $ne: p._id }
             });
 
-            if (!pIda) continue;
+            if (!pIda) {
+                console.error(`[CRÍTICO] Falta partido de ida para llave ${p.llave}. No se puede computar global.`);
+                continue;
+            }
 
-            // Identificamos los goles del equipo que actúa como LOCAL en la VUELTA
             const globalEquipoVueltaLocal = p.golesLocal + pIda.golesVisitante;
-            // Identificamos los goles del equipo que actúa como VISITANTE en la VUELTA
             const globalEquipoVueltaVisitante = p.golesVisitante + pIda.golesLocal;
 
             if (globalEquipoVueltaLocal > globalEquipoVueltaVisitante) {
                 ganadores.push(p.equipoLocal.toString());
             } else if (globalEquipoVueltaVisitante > globalEquipoVueltaLocal) {
                 ganadores.push(p.equipoVisitante.toString());
-            } else if (p.ganadorPenaltis) {
+            } else {
+                // Empate en goles globales absolutos. Extraemos el ganador de la tanda jugada en la vuelta.
                 ganadores.push(p.ganadorPenaltis.toString());
             }
         }
@@ -222,11 +245,13 @@ async function calcularGanadoresDoblePartido(partidaId, partidosVuelta, jornadaI
         const totalEquipoVueltaLocal = pVuelta.golesLocal + pIda.golesVisitante;
         const totalEquipoVueltaVisitante = pVuelta.golesVisitante + pIda.golesLocal;
 
-        let ganador = totalEquipoVueltaLocal > totalEquipoVueltaVisitante 
-            ? pVuelta.equipoLocal.toString() 
-            : (totalEquipoVueltaVisitante > totalEquipoVueltaLocal ? pVuelta.equipoVisitante.toString() : pVuelta.ganadorPenaltis.toString());
-        
-        ganadoresLlaves[pVuelta.llave] = ganador;
+        if (totalEquipoVueltaLocal > totalEquipoVueltaVisitante) {
+            ganadoresLlaves[pVuelta.llave] = pVuelta.equipoLocal.toString();
+        } else if (totalEquipoVueltaVisitante > totalEquipoVueltaLocal) {
+            ganadoresLlaves[pVuelta.llave] = pVuelta.equipoVisitante.toString();
+        } else {
+            ganadoresLlaves[pVuelta.llave] = pVuelta.ganadorPenaltis.toString();
+        }
     }
     return ganadoresLlaves;
 }
@@ -248,20 +273,23 @@ async function calcularGanadoresAgrupadosPorRuta(partidaId, partidosVuelta, jorn
         const totalEquipoVueltaLocal = pVuelta.golesLocal + pIda.golesVisitante;
         const totalEquipoVueltaVisitante = pVuelta.golesVisitante + pIda.golesLocal;
         
-        let ganador = totalEquipoVueltaLocal > totalEquipoVueltaVisitante 
-            ? pVuelta.equipoLocal.toString() 
-            : (totalEquipoVueltaVisitante > totalEquipoVueltaLocal ? pVuelta.equipoVisitante.toString() : pVuelta.ganadorPenaltis.toString());
+        let ganador;
+        if (totalEquipoVueltaLocal > totalEquipoVueltaVisitante) {
+            ganador = pVuelta.equipoLocal.toString();
+        } else if (totalEquipoVueltaVisitante > totalEquipoVueltaLocal) {
+            ganador = pVuelta.equipoVisitante.toString();
+        } else {
+            ganador = pVuelta.ganadorPenaltis.toString();
+        }
 
         if (!rutas[pVuelta.llave]) {
             rutas[pVuelta.llave] = [];
         }
-        // Guardamos el ID del club directamente en el array plano
         rutas[pVuelta.llave].push(ganador);
     }
     return rutas;
 }
 
-// Cómputo de tablas de posiciones usando el tipo "LIGA" y sumando estadísticas
 async function obtenerTablaPosicionesFormatoLiga(partidaId, competicionId) {
     const partidos = await Partido.find({ partidaId, competicionId, tipo: "LIGA", jugado: true });
     let tabla = {};
@@ -287,6 +315,39 @@ async function obtenerTablaPosicionesFormatoLiga(partidaId, competicionId) {
 
     resultadoArray.sort((a, b) => (b.puntos !== a.puntos) ? (b.puntos - a.puntos) : (b.diff !== a.diff ? b.diff - a.diff : b.gf - a.gf));
     return resultadoArray;
+}
+
+async function obtenerTablasPosicionesGruposSudamerica(partidaId, competicionId) {
+    const partidos = await Partido.find({ partidaId, competicionId, tipo: "LIGA", jugado: true });
+    let grupos = {};
+
+    partidos.forEach(p => {
+        if (!p.grupo) return;
+        if (!grupos[p.grupo]) grupos[p.grupo] = {};
+
+        const loc = p.equipoLocal.toString();
+        const vis = p.equipoVisitante.toString();
+
+        if (!grupos[p.grupo][loc]) grupos[p.grupo][loc] = { clubId: p.equipoLocal, puntos: 0, gf: 0, gc: 0 };
+        if (!grupos[p.grupo][vis]) grupos[p.grupo][vis] = { clubId: p.equipoVisitante, puntos: 0, gf: 0, gc: 0 };
+
+        grupos[p.grupo][loc].gf += p.golesLocal; grupos[p.grupo][loc].gc += p.golesVisitante;
+        grupos[p.grupo][vis].gf += p.golesVisitante; grupos[p.grupo][vis].gc += p.golesLocal;
+
+        if (p.golesLocal > p.golesVisitante) grupos[p.grupo][loc].puntos += 3;
+        else if (p.golesVisitante > p.golesLocal) grupos[p.grupo][vis].puntos += 3;
+        else { grupos[p.grupo][loc].puntos += 1; grupos[p.grupo][vis].puntos += 1; }
+    });
+
+    let estructurado = {};
+    for (const [letraGrupo, tablaEquipos] of Object.entries(grupos)) {
+        let arr = Object.values(tablaEquipos).map(e => ({
+            clubId: e.clubId, puntos: e.puntos, gf: e.gf, gc: e.gc, diff: e.gf - e.gc
+        }));
+        arr.sort((a, b) => (b.puntos !== a.puntos) ? (b.puntos - a.puntos) : (b.diff !== a.diff ? b.diff - a.diff : b.gf - a.gf));
+        estructurado[letraGrupo] = arr;
+    }
+    return estructurado;
 }
 
 module.exports = { verificarYGenerarSiguienteRonda };

@@ -20,7 +20,6 @@
             let showClass = index === 0 ? "show" : "";
 
             // LÓGICA DE EMPAREJAMIENTO ALINEADO
-            // Agruparemos los partidos en "cruces" según qué equipos jueguen entre sí
             let cruces = [];
             let mapaCruces = {}; // clave: idMenor_idMayor -> índice en el array 'cruces'
             let hayPartidosVuelta = false;
@@ -29,21 +28,17 @@
                 const idLocal = p.equipoLocal._id.toString();
                 const idVisitante = p.equipoVisitante._id.toString();
                 
-                // Generamos una clave única sin importar quién es local o visitante en este partido concreto
                 const claveUnica = [idLocal, idVisitante].sort().join('_');
 
                 if (typeof mapaCruces[claveUnica] === 'undefined') {
-                    // Es el primer partido que registramos de este cruce (Asumimos que es la IDA)
                     cruces.push({ ida: p, vuelta: null });
                     mapaCruces[claveUnica] = cruces.length - 1;
                 } else {
-                    // Ya existía el cruce, por lo tanto este partido es la VUELTA
                     cruces[mapaCruces[claveUnica]].vuelta = p;
                     hayPartidosVuelta = true;
                 }
             });
 
-            // Helper para transformar la fecha cruda en texto brillante y legible
             const formatearFechaPartido = (fechaRaw) => {
                 if(!fechaRaw) return "Por definir";
                 const diasSemana = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
@@ -95,7 +90,7 @@
                         <% cruces.forEach(cruce => { %>
                             <div class="row align-items-center g-3 border-bottom border-secondary border-opacity-10 pb-3 pb-md-0 border-0">
                                 
-                                <div class="col-md-<%= cric = cruce.vuelta ? '6' : '12' %>">
+                                <div class="col-md-<%= cruce.vuelta ? '6' : '12' %>">
                                     <% let p = cruce.ida; %>
                                     <% let esUsuario = clubUsuario && (p.equipoLocal._id.toString() === clubUsuario._id.toString() || p.equipoVisitante._id.toString() === clubUsuario._id.toString()); %>
                                     <% let bgClass = esUsuario ? 'border-primary border-2 shadow' : 'border-secondary border-opacity-50 bg-dark bg-opacity-70'; %>
@@ -110,24 +105,34 @@
                                             <div class="d-flex justify-content-between align-items-center mb-2">
                                                 <div class="d-flex align-items-center overflow-hidden">
                                                     <img src="/img/escudos/<%= p.equipoLocal.escudo %>" width="22" height="22" class="me-2 flex-shrink-0">
-                                                    <span class="text-truncate fw-semibold <%= p.jugado && p.golesLocal > p.golesVisitante ? 'text-white fw-bold' : 'text-white-50' %>">
+                                                    <span class="text-truncate fw-semibold <%= p.jugado && (p.golesLocal > p.golesVisitante || p.ganadorPenaltis?.toString() === p.equipoLocal._id.toString()) ? 'text-white fw-bold' : 'text-white-50' %>">
                                                         <%= p.equipoLocal.nombre %>
                                                     </span>
                                                 </div>
-                                                <span class="badge <%= p.jugado ? 'bg-info text-dark fw-bold' : 'bg-secondary bg-opacity-25 text-muted' %> fs-6 px-2.5">
-                                                    <%= p.jugado ? p.golesLocal : '-' %>
-                                                </span>
+                                                <div class="d-flex align-items-center gap-1">
+                                                    <% if (p.jugado && p.ganadorPenaltis) { %>
+                                                        <span class="text-warning small me-1 font-monospace">(p. <%= p.marcadorTanda.golesLocal %>)</span>
+                                                    <% } %>
+                                                    <span class="badge <%= p.jugado ? 'bg-info text-dark fw-bold' : 'bg-secondary bg-opacity-25 text-muted' %> fs-6 px-2.5">
+                                                        <%= p.jugado ? p.golesLocal : '-' %>
+                                                    </span>
+                                                </div>
                                             </div>
                                             <div class="d-flex justify-content-between align-items-center">
                                                 <div class="d-flex align-items-center overflow-hidden">
                                                     <img src="/img/escudos/<%= p.equipoVisitante.escudo %>" width="22" height="22" class="me-2 flex-shrink-0">
-                                                    <span class="text-truncate fw-semibold <%= p.jugado && p.golesVisitante > p.golesLocal ? 'text-white fw-bold' : 'text-white-50' %>">
+                                                    <span class="text-truncate fw-semibold <%= p.jugado && (p.golesVisitante > p.golesLocal || p.ganadorPenaltis?.toString() === p.equipoVisitante._id.toString()) ? 'text-white fw-bold' : 'text-white-50' %>">
                                                         <%= p.equipoVisitante.nombre %>
                                                     </span>
                                                 </div>
-                                                <span class="badge <%= p.jugado ? 'bg-info text-dark fw-bold' : 'bg-secondary bg-opacity-25 text-muted' %> fs-6 px-2.5">
-                                                    <%= p.jugado ? p.golesVisitante : '-' %>
-                                                </span>
+                                                <div class="d-flex align-items-center gap-1">
+                                                    <% if (p.jugado && p.ganadorPenaltis) { %>
+                                                        <span class="text-warning small me-1 font-monospace">(p. <%= p.marcadorTanda.golesVisitante %>)</span>
+                                                    <% } %>
+                                                    <span class="badge <%= p.jugado ? 'bg-info text-dark fw-bold' : 'bg-secondary bg-opacity-25 text-muted' %> fs-6 px-2.5">
+                                                        <%= p.jugado ? p.golesVisitante : '-' %>
+                                                    </span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -149,24 +154,34 @@
                                                 <div class="d-flex justify-content-between align-items-center mb-2">
                                                     <div class="d-flex align-items-center overflow-hidden">
                                                         <img src="/img/escudos/<%= pv.equipoLocal.escudo %>" width="22" height="22" class="me-2 flex-shrink-0">
-                                                        <span class="text-truncate fw-semibold <%= pv.jugado && pv.golesLocal > pv.golesVisitante ? 'text-white fw-bold' : 'text-white-50' %>">
+                                                        <span class="text-truncate fw-semibold <%= pv.jugado && (pv.golesLocal > pv.golesVisitante || pv.ganadorPenaltis?.toString() === pv.equipoLocal._id.toString()) ? 'text-white fw-bold' : 'text-white-50' %>">
                                                             <%= pv.equipoLocal.nombre %>
                                                         </span>
                                                     </div>
-                                                    <span class="badge <%= pv.jugado ? 'bg-info text-dark fw-bold' : 'bg-secondary bg-opacity-25 text-muted' %> fs-6 px-2.5">
-                                                        <%= pv.jugado ? pv.golesLocal : '-' %>
-                                                    </span>
+                                                    <div class="d-flex align-items-center gap-1">
+                                                        <% if (pv.jugado && pv.ganadorPenaltis) { %>
+                                                            <span class="text-warning small me-1 font-monospace">(p. <%= pv.marcadorTanda.golesLocal %>)</span>
+                                                        <% } %>
+                                                        <span class="badge <%= pv.jugado ? 'bg-info text-dark fw-bold' : 'bg-secondary bg-opacity-25 text-muted' %> fs-6 px-2.5">
+                                                            <%= pv.jugado ? pv.golesLocal : '-' %>
+                                                        </span>
+                                                    </div>
                                                 </div>
                                                 <div class="d-flex justify-content-between align-items-center">
                                                     <div class="d-flex align-items-center overflow-hidden">
                                                         <img src="/img/escudos/<%= pv.equipoVisitante.escudo %>" width="22" height="22" class="me-2 flex-shrink-0">
-                                                        <span class="text-truncate fw-semibold <%= pv.jugado && pv.golesVisitante > pv.golesLocal ? 'text-white fw-bold' : 'text-white-50' %>">
+                                                        <span class="text-truncate fw-semibold <%= pv.jugado && (pv.golesVisitante > pv.golesLocal || pv.ganadorPenaltis?.toString() === pv.equipoVisitante._id.toString()) ? 'text-white fw-bold' : 'text-white-50' %>">
                                                             <%= pv.equipoVisitante.nombre %>
                                                         </span>
                                                     </div>
-                                                    <span class="badge <%= pv.jugado ? 'bg-info text-dark fw-bold' : 'bg-secondary bg-opacity-25 text-muted' %> fs-6 px-2.5">
-                                                        <%= pv.jugado ? pv.golesVisitante : '-' %>
-                                                    </span>
+                                                    <div class="d-flex align-items-center gap-1">
+                                                        <% if (pv.jugado && pv.ganadorPenaltis) { %>
+                                                            <span class="text-warning small me-1 font-monospace">(p. <%= pv.marcadorTanda.golesVisitante %>)</span>
+                                                        <% } %>
+                                                        <span class="badge <%= pv.jugado ? 'bg-info text-dark fw-bold' : 'bg-secondary bg-opacity-25 text-muted' %> fs-6 px-2.5">
+                                                            <%= pv.jugado ? pv.golesVisitante : '-' %>
+                                                        </span>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>

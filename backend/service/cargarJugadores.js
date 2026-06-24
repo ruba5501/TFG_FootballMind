@@ -39,7 +39,7 @@ const RANKING_PAISES = {
     RESTO: 'otro'
 };
 
-async function generarJugadoresNuevaPartida(partidaId, listaClubes, nombrePartida) {
+async function generarJugadoresNuevaPartida(partidaId, listaClubes, nombrePartida, clubUsuarioId) {
     try {
         const { FORMACIONES } = require('./cargarFormaciones');
         const clubes = listaClubes;
@@ -52,6 +52,17 @@ async function generarJugadoresNuevaPartida(partidaId, listaClubes, nombrePartid
             '4-4-2': 13, '4-3-3': 13, '4-3-3 (defensivo)': 10, '4-3-3 (falso 9)': 10,
             '4-2-3-1': 13, '4-2-3-1 (defensivo)': 10, '4-1-2-1-2': 7,
             '5-3-2': 7, '5-2-1-2': 7, '3-5-2': 5, '3-2-2-3': 5
+        };
+        
+        const FILTROS_ESTILOS = {
+            'TIKI-TAKA': ['4-3-3', '4-3-3 (falso 9)', '4-2-3-1', '3-2-2-3'],
+            'CONTRAATAQUE': ['4-4-2', '4-2-3-1 (defensivo)', '5-3-2', '5-2-1-2'],
+            'AUTOBÚS': ['5-3-2', '5-2-1-2', '4-3-3 (defensivo)', '4-4-2'],
+            'BALÓN LARGO': ['4-4-2', '5-3-2', '3-5-2'],
+            'PRESIÓN ALTA': ['4-3-3', '4-2-3-1', '3-5-2'],
+            'JUEGO POR BANDAS': ['4-3-3', '4-4-2', '4-2-3-1', '3-2-2-3'],
+            'PONER CENTROS': ['4-4-2', '4-3-3', '3-5-2'],
+            'ESTÁNDAR': ['4-4-2', '4-3-3', '4-2-3-1', '4-3-3 (defensivo)', '4-3-3 (falso 9)', '4-2-3-1 (defensivo)', '4-1-2-1-2', '5-3-2', '5-2-1-2', '3-5-2', '3-2-2-3']
         };
 
         const MAPA_FLEXIBLE = {
@@ -68,8 +79,27 @@ async function generarJugadoresNuevaPartida(partidaId, listaClubes, nombrePartid
         for (const club of clubes) {
             const rep = club.reputacion;
             const repMatriz = (club.esFilial && club.clubMatriz) ? club.clubMatriz.reputacion : rep;
-            
-            const nombreTactica = obtenerFormacionAleatoria(PESOS_FORMACIONES);
+            const esClubUsuario = clubUsuarioId && club._id.toString() === clubUsuarioId.toString();
+            let estiloJuego = 'ESTÁNDAR';
+            let mentalidad = 'EQUILIBRADA';
+
+            if (!esClubUsuario) {
+                const estilosDisponibles = ['TIKI-TAKA', 'CONTRAATAQUE', 'AUTOBÚS', 'BALÓN LARGO', 'PRESIÓN ALTA', 'JUEGO POR BANDAS', 'PONER CENTROS', 'ESTÁNDAR'];
+                const mentalidadesDisponibles = ['MUY_DEFENSIVA', 'DEFENSIVA', 'EQUILIBRADA', 'OFENSIVA', 'ULTRA_OFENSIVA'];
+                
+                estiloJuego = estilosDisponibles[Math.floor(Math.random() * estilosDisponibles.length)];
+                mentalidad = mentalidadesDisponibles[Math.floor(Math.random() * mentalidadesDisponibles.length)];
+            }
+
+            // Filtrar los pesos de las formaciones basándonos en el estilo elegido
+            const formacionesPermitidas = FILTROS_ESTILOS[estiloJuego];
+            let pesosFiltrados = {};
+            formacionesPermitidas.forEach(f => {
+                if (PESOS_FORMACIONES[f]) pesosFiltrados[f] = PESOS_FORMACIONES[f];
+            });
+
+            // Obtener formación coherente con el estilo de juego
+            const nombreTactica = obtenerFormacionAleatoria(pesosFiltrados);
             const tacticaInfo = FORMACIONES[nombreTactica];
 
             let titulares = tacticaInfo.posiciones.map(pos => {
@@ -253,10 +283,10 @@ async function generarJugadoresNuevaPartida(partidaId, listaClubes, nombrePartid
             const lanzadorFaltasLejanas = titularesFinal.sort((a, b) => b.atributos.tiro.tiroLejano - a.atributos.tiro.tiroLejano)[0]?._id;
             const lanzadorCorners = titularesFinal.sort((a, b) => b.atributos.pase.centros - a.atributos.pase.centros)[0]?._id;
 
-            //const formacion = seleccionarFormacion(titulares);
-
             const tacticaActualizada = {
                 formacion: nombreTactica,
+                estiloJuego: estiloJuego, 
+                mentalidad: mentalidad,   
                 titulares: idsTitulares,
                 suplentes: idsSuplentes,
                 reservas: idsReservas,
@@ -268,6 +298,7 @@ async function generarJugadoresNuevaPartida(partidaId, listaClubes, nombrePartid
                 cornersIzquierda: titularesFinal.sort((a, b) => b.atributos.pase.centros - a.atributos.pase.centros)[0]?._id || idsTitulares[7],
                 cornersDerecha: titularesFinal.sort((a, b) => b.atributos.pase.centros - a.atributos.pase.centros)[0]?._id || idsTitulares[7]
             };
+
             operacionesClubes.push({
                 updateOne: {
                     filter: { _id: club._id },
@@ -289,16 +320,16 @@ async function generarJugadoresNuevaPartida(partidaId, listaClubes, nombrePartid
         return true;
     } catch (err) { console.error(err); throw err; }
 }
-        
-function obtenerFormacionAleatoria(PESOS_FORMACIONES){
-    const opciones = Object.keys(PESOS_FORMACIONES);
-    const totalPeso = Object.values(PESOS_FORMACIONES).reduce((a, b) => a + b, 0);
+
+function obtenerFormacionAleatoria(pesosFiltrados){
+    const opciones = Object.keys(pesosFiltrados);
+    const totalPeso = Object.values(pesosFiltrados).reduce((a, b) => a + b, 0);
     let random = Math.random() * totalPeso;
     for (const nombre of opciones) {
-        if (random < PESOS_FORMACIONES[nombre]) return nombre;
-        random -= PESOS_FORMACIONES[nombre];
+        if (random < pesosFiltrados[nombre]) return nombre;
+        random -= pesosFiltrados[nombre];
     }
-    return '4-4-2';
+    return opciones[0] || '4-4-2'; // Fallback por si acaso
 }
 
 function generarFisico(pos, arquetipo) {

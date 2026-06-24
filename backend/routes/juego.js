@@ -35,13 +35,30 @@ async function simularPartidosPendientes(partidaId, fecha, clubUsuarioId) {
         const jugadoresLocal = await seleccionarMejorOnce(partido.equipoLocal._id);
         const jugadoresVisitante = await seleccionarMejorOnce(partido.equipoVisitante._id);
 
-        const resultado = simularPartido(
-            { nombre: partido.equipoLocal.nombre, jugadores: jugadoresLocal },
-            { nombre: partido.equipoVisitante.nombre, jugadores: jugadoresVisitante }
+        // 1. Simulación total delegada al motor inteligente (pasa el tipo de partido)
+        let resultado = simularPartido(
+            { id: partido.equipoLocal._id, nombre: partido.equipoLocal.nombre, jugadores: jugadoresLocal },
+            { id: partido.equipoVisitante._id, nombre: partido.equipoVisitante.nombre, jugadores: jugadoresVisitante },
+            partido.tipo // <--- CRÍTICO: Avisa si es LIGA, ELIMINATORIA o FINAL
         );
 
         partido.golesLocal = resultado.marcador.local;
         partido.golesVisitante = resultado.marcador.visitante;
+
+        if (resultado.ganadorPenaltis) {
+            partido.ganadorPenaltis = resultado.ganadorPenaltis;
+            
+            // Guardamos los goles de la tanda usando la nueva estructura
+            partido.marcadorTanda = {
+                golesLocal: resultado.marcadorTanda.local,
+                golesVisitante: resultado.marcadorTanda.visitante
+            };
+        } else {
+            // Si no hubo penaltis, nos aseguramos de que esté limpio
+            partido.ganadorPenaltis = null;
+            partido.marcadorTanda = { golesLocal: null, golesVisitante: null };
+        }
+
         partido.jugado = true;
         await partido.save();
     }
@@ -404,9 +421,6 @@ router.get('/clasificacion/:partidaId/:competicionId', requireLogin, async (req,
             });
         }
 
-        // ==========================================
-        // BLOQUE 3: CONTROL DE JORNADAS DE LIGA
-        // ==========================================
         const partidosPorJornada = {};
         todosLosPartidos.forEach(p => {
             if (p.tipo === 'LIGA') { // Solo agrupamos jornadas de liga regular

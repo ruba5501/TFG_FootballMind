@@ -159,7 +159,7 @@ partidaRouter.get('/crearPartida/final', requireLogin, async (req, res) => {
       nivelTecnico: Number(datos.atributos.nivelTecnico),
       nivelTactico: Number(datos.atributos.nivelTactico),
       nivelPortero: Number(datos.atributos.nivelPortero),
-      nivelPsicologico: 30,
+      nivelPsicologico: 40,
       nivelMedico: 10,
       nivelRecuperacion: 10,
       nivelPrevencionLesiones: 10,
@@ -169,7 +169,8 @@ partidaRouter.get('/crearPartida/final', requireLogin, async (req, res) => {
       desarrolloJovenes: Number(datos.atributos.desarrolloJovenes),
       reputacion: Number(datos.atributos.reputacion),
       experiencia: Number(datos.atributos.experiencia),
-      estiloJuego: 'Equilibrado'
+      estiloJuego: 'ESTÁNDAR',
+      mentalidad: 'EQUILIBRADA'
     };
     const partidaId = new mongoose.Types.ObjectId();
     const entrenadorId = new mongoose.Types.ObjectId();
@@ -209,8 +210,8 @@ partidaRouter.get('/crearPartida/final', requireLogin, async (req, res) => {
       finContrato: fechaFinContrato,
     });
 
-    await generarJugadores(partidaId, clubes, datos.nombrePartida);
-    await generarEmpleadosNuevaPartida(partidaId, clubes, datos.nombrePartida);
+    await generarJugadores(partidaId, clubes, datos.nombrePartida, clubJugador._id);
+    await generarEmpleadosNuevaPartida(partidaId, clubes, datos.nombrePartida, clubJugador._id);
     await generarCalendario(partidaId);
     req.setTimeout(0);
 

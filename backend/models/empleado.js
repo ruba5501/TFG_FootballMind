@@ -55,7 +55,17 @@ const empleadoSchema = new mongoose.Schema({
     desarrolloJovenes: { type: Number, min: 0, max: 100, default: 0 },
     reputacion: { type: Number, min: 0, max: 100, default: 0 },
     estiloJuego: { type: String, trim: true },
-    experiencia: { type: Number, min: 0, max: 100, default: 0 }
+    experiencia: { type: Number, min: 0, max: 100, default: 0 },
+    estiloJuego: { 
+      type: String, 
+      enum: ['TIKI-TAKA', 'CONTRAATAQUE', 'AUTOBÚS', 'BALÓN LARGO', 'PRESIÓN ALTA', 'JUEGO POR BANDAS', 'PONER CENTROS', 'ESTÁNDAR'], 
+      default: 'ESTÁNDAR' 
+    },
+    mentalidad: {
+      type: String,
+      enum: ['MUY_DEFENSIVA', 'DEFENSIVA', 'EQUILIBRADA', 'OFENSIVA', 'ULTRA_OFENSIVA'],
+      default: 'EQUILIBRADA'
+    }
   }
 });
 
