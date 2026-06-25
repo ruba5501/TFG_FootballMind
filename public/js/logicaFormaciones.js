@@ -41,11 +41,20 @@ const GestorTactico = {
     },
 
     intercambiarDOM: function(node1, node2) {
-        const parent1 = node1.parentNode;
-        const parent2 = node2.parentNode;
+        // 1. Creamos un elemento invisible temporal para guardar la posición exacta del jugador 1
+        const placeholder = document.createElement('div');
         
-        parent1.appendChild(node2);
-        parent2.appendChild(node1);
+        // 2. Insertamos el placeholder justo antes del jugador 1
+        node1.parentNode.insertBefore(placeholder, node1);
+        
+        // 3. Movemos el jugador 1 a la posición exacta del jugador 2
+        node2.parentNode.insertBefore(node1, node2);
+        
+        // 4. Movemos el jugador 2 a la posición que guardaba el placeholder (donde estaba el jugador 1)
+        placeholder.parentNode.insertBefore(node2, placeholder);
+        
+        // 5. Borramos el elemento temporal del mapa
+        placeholder.remove();
     },
 
     actualizarNumeracion: function() {
