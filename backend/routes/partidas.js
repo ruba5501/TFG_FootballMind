@@ -296,7 +296,6 @@ partidaRouter.get('/inicioJuego/:id', requireLogin, async (req, res) => {
             rivalId = esLocal ? proximoPartido.equipoVisitante._id : proximoPartido.equipoLocal._id;
         }
 
-        // Ahora sí pasamos TODAS las variables necesarias a la vista
         res.render('inicioJuego', { 
             user: req.session.user, 
             partida,

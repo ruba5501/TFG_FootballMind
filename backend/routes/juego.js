@@ -94,8 +94,6 @@ router.get('/jugar-partido/:idPartido', requireLogin, async (req, res) => {
         const partidoUsuario = await Partido.findById(partidoId).populate('equipoLocal equipoVisitante');
         const partidaJuego = await Partida.findById(partidoUsuario.partidaId).populate('clubSeleccionado');
 
-        // 1. Simular TODOS los partidos de este día (incluyendo el del usuario ahora sí)
-        // Usamos la misma lógica de rango de fecha
         const inicioDia = new Date(partidaJuego.fechaActual);
         inicioDia.setHours(0, 0, 0, 0);
         const finDia = new Date(partidaJuego.fechaActual);
@@ -114,15 +112,20 @@ router.get('/jugar-partido/:idPartido', requireLogin, async (req, res) => {
         for (let partido of partidosDeHoy) {
             const jugadoresLocal = await seleccionarMejorOnce(partido.equipoLocal._id);
             const jugadoresVisitante = await seleccionarMejorOnce(partido.equipoVisitante._id);
+            
             const resultado = simularPartido(
                 { nombre: partido.equipoLocal.nombre, jugadores: jugadoresLocal },
                 { nombre: partido.equipoVisitante.nombre, jugadores: jugadoresVisitante }
             );
 
             partido.golesLocal = resultado.marcador.local;
-            partido.golesVisitante = resultado.marcador.visitante;
+            partido.golesVisitante = resultado.marcador.visible; 
             partido.jugado = true;
             await partido.save();
+
+            // Limpiamos los convocados del equipo local y del visitante tras jugar
+            await clubesDAO.limpiarConvocados(partido.equipoLocal._id);
+            await clubesDAO.limpiarConvocados(partido.equipoVisitante._id);
 
             if (partido._id.toString() === partidoId) {
                 resultadoUsuario = resultado;
@@ -131,10 +134,38 @@ router.get('/jugar-partido/:idPartido', requireLogin, async (req, res) => {
             }
         }
 
-        // Si por alguna razón el partido ya estaba jugado (re-carga de página), 
-        // buscamos los datos para no romper la vista
+        //por si hay una recarga de pagina o un fallo durante la simulacion
         if (!resultadoUsuario) {
-             // Lógica opcional para recuperar resultado ya guardado
+            const partidoYaJugado = await Partido.findById(partidoId).populate('equipoLocal equipoVisitante');
+            
+            if (partidoYaJugado && partidoYaJugado.jugado) {
+                // Reconstruimos el objeto resultado básico que espera la vista
+                resultadoUsuario = {
+                    marcador: {
+                        local: partidoYaJugado.golesLocal,
+                        visitante: partidoYaJugado.golesVisitante
+                    },
+                    // Añadimos arrays vacíos o simulados para las crónicas si tu plantilla los exige
+                    goleadores: [], 
+                    incidencias: []
+                };
+
+                // Recuperamos las plantillas con su orden actual para pintar los nombres en la vista
+                const clubLocal = await Club.findById(partidoYaJugado.equipoLocal._id).populate('plantilla');
+                const clubVisitante = await Club.findById(partidoYaJugado.equipoVisitante._id).populate('plantilla');
+
+                // Pasamos los primeros 11 como los jugadores que disputaron el partido
+                equipoLocalUsuario = { 
+                    nombre: partidoYaJugado.equipoLocal.nombre, 
+                    jugadores: clubLocal.plantilla.slice(0, 11) 
+                };
+                equipoVisitanteUsuario = { 
+                    nombre: partidoYaJugado.equipoVisitante.nombre, 
+                    jugadores: clubVisitante.plantilla.slice(0, 11) 
+                };
+            } else {
+                return res.status(404).send("Partido no encontrado o no disponible.");
+            }
         }
 
         const resultadosMiCompeticion = await Partido.find({

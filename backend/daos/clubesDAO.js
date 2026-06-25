@@ -94,12 +94,14 @@ class ClubsDAO {
 
   //funcion para borrar canteranos que se han subido para un partido
   async limpiarConvocados(clubId) {
+    // Buscamos si este club tiene un filial asignado
     const filial = await Club.findOne({ clubMatriz: clubId });
     
-    if (!filial) return null;
+    if (!filial || !filial.plantilla || filial.plantilla.length === 0) return null;
 
     const idsCanteranos = filial.plantilla;
 
+    // Saca de la plantilla del primer equipo a todos los IDs que pertenecen originalmente al filial
     return await Club.findByIdAndUpdate(
         clubId, 
         { $pull: { plantilla: { $in: idsCanteranos } } },

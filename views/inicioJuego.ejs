@@ -43,7 +43,7 @@
                             <p class="fw-bold mb-0 small"><i class="bi bi-exclamation-circle-fill me-1"></i> ¡Día de partido!</p>
                             <small class="text-dark"><%= proximoPartido.competicionId?.nombre || 'Competición' %></small>
                         </div>
-                        <% } else if (proximoPartido) { %>
+                    <% } else if (proximoPartido) { %>
                         <a href="/avanzar-fecha/<%= partida._id %>" class="btn btn-dark w-100 fw-bold shadow-sm mb-2" 
                         onclick="mostrarCarga('Avanzando un día...', 'Simulando resultados y mercado...')">
                             <i class="bi bi-step-forward-fill me-1"></i> AVANZAR DÍA
