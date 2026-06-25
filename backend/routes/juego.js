@@ -8,7 +8,9 @@ const Partida = require('../models/partida');
 const Club = require('../models/club');
 const Jugador = require('../models/jugador');
 const Partido = require('../models/partido');
-const Competicion = require('../models/competicion')
+const Competicion = require('../models/competicion');
+//Rutas
+const { FORMACIONES } = require('./ruta/a/tu/archivo/de/formaciones');
 // Motor
 const { simularPartido } = require('../engine/motorJuego');
 const { requireLogin } = require('../middleware/autenticacion');
@@ -64,27 +66,111 @@ async function simularPartidosPendientes(partidaId, fecha, clubUsuarioId) {
     }
 }
 
-// Helper: Seleccionar los mejores 11 jugadores (para simular alineación)
-async function seleccionarMejorOnce(clubId) {
-    // Buscamos todos los jugadores del club
-    const plantilla = await Jugador.find({ clubActual: clubId });
-    
-    // Separar porteros y jugadores de campo
-    const porteros = plantilla.filter(j => j.posicionPrincipal === 'POR').sort((a,b) => b.valoracion - a.valoracion);
-    const campo = plantilla.filter(j => j.posicionPrincipal !== 'POR').sort((a,b) => b.valoracion - a.valoracion);
+// Rendimiento base según la calidad física/técnica actual + potencial
+function calcularRendimiento(jugador, posicionAValorar) {
+    const forma = jugador.estado?.forma ?? 100;
+    const moral = jugador.estado?.moral ?? 100;
 
-    // Necesitamos 1 portero y 10 jugadores de campo
-    const once = [];
-    
-    if (porteros.length > 0) once.push(porteros[0]); // Mejor portero
-    else once.push(campo[0]); // Si no hay portero (raro), ponemos al mejor jugador de portero
+    // Mezcla de calidad presente (80%) y destellos de futuro (20%)
+    const capacidadActual = (jugador.valoracion * 0.8) + (jugador.potencial * 0.2);
+    let rendimientoBase = (capacidadActual * 0.7) + (forma * 0.2) + (moral * 0.1);
 
-    // Rellenar hasta 11 con los mejores de campo
-    for(let i=0; i < 10 && i < campo.length; i++) {
-        once.push(campo[i]);
+    // Penalización por jugar fuera de su rol natural
+    if (jugador.posicionPrincipal !== posicionAValorar) {
+        const secundarias = jugador.posicionesSecundarias || [];
+        const adaptacion = secundarias.includes(posicionAValorar) ? 0.90 : 0.60;
+        rendimientoBase *= adaptacion;
     }
 
-    return once;
+    return rendimientoBase;
+}
+
+// CONVOCATORIA INTELIGENTE DE LA IA
+async function seleccionarConvocatoriaIA(clubId, rivalReputacion, formacionPredefinida = '4-3-3') {
+    const plantillaTotal = await Jugador.find({ clubActual: clubId });
+    const club = await Club.findById(clubId);
+    if (!club || plantillaTotal.length === 0) return { titulares: [], suplentes: [] };
+
+    // 1. Filtrar disponibles sanos
+    const disponibles = plantillaTotal.filter(j => {
+        if (j.estado?.lesion !== null) return false;
+        if (j.estado?.sancionado === true) return false;
+        if ((j.estado?.forma ?? 100) < 40) return false; 
+        return true;
+    });
+
+    // 2. Determinar política de rotación
+    const diferenciaReputacion = club.reputacion - rivalReputacion;
+    let nivelRotacion = 'NINGUNA';
+
+    if (diferenciaReputacion > 15 && diferenciaReputacion <= 30) {
+        nivelRotacion = 'MODERADA';
+    } else if (diferenciaReputacion > 30) {
+        nivelRotacion = 'INTENSA'; 
+    }
+
+    // Integración de tu objeto global FORMACIONES
+    const configuracionFormacion = FORMACIONES[club.formacion] || FORMACIONES[formacionPredefined] || FORMACIONES['4-3-3'];
+    const posicionesRequeridas = configuracionFormacion.posiciones;
+
+    const titulares = [];
+    const elegidosIds = new Set();
+
+    // 3. Selección de Titulares puesto por puesto
+    for (const posicion of posicionesRequeridas) {
+        
+        let candidatos = disponibles
+            .filter(j => j.posicionPrincipal === posicion && !elegidosIds.has(j._id.toString()))
+            .map(j => {
+                let pesoAlineacion = calcularRendimiento(j, posicion);
+                const formaJugador = j.estado?.forma ?? 100;
+
+                // Modificadores de peso según estrategia de partido
+                if (nivelRotacion === 'MODERADA' && formaJugador < 85) {
+                    pesoAlineacion -= 10; 
+                } 
+                else if (nivelRotacion === 'INTENSA') {
+                    if (formaJugador < 93) pesoAlineacion -= 20; 
+                    if (j.edad <= 22 && j.potencial > j.valoracion) pesoAlineacion += 8; 
+                }
+
+                return { jugador: j, peso: pesoAlineacion };
+            })
+            .sort((a, b) => b.weight - a.weight);
+
+        // Si por culpa de los castigos de rotación la casilla se queda vacía, buscamos parches limpios
+        if (candidatos.length === 0 || candidatos[0].peso < 30) {
+            const parches = disponibles
+                .filter(j => !elegidosIds.has(j._id.toString()) && 
+                            (j.posicionPrincipal === posicion || (j.posicionesSecundarias || []).includes(posicion)))
+                .sort((a, b) => calcularRendimiento(b, posicion) - calcularRendimiento(a, posicion)); // Corregido el mapeo limpio
+            
+            if (parches.length > 0) {
+                const elegido = parches[0];
+                titulares.push(elegido);
+                elegidosIds.add(elegido._id.toString());
+                continue; 
+            }
+        }
+
+        if (candidatos.length > 0) {
+            const elegido = candidatos[0].jugador;
+            titulares.push(elegido);
+            elegidosIds.add(elegido._id.toString());
+        }
+    }
+
+    // 4. Confección del banquillo reglamentario (13 suplentes)
+    let suplentes = disponibles
+        .filter(j => !elegidosIds.has(j._id.toString()))
+        .sort((a, b) => calcularRendimiento(b, b.posicionPrincipal) - calcularRendimiento(a, a.posicionPrincipal))
+        .slice(0, 13);
+
+    while (suplentes.length < 13) {
+        suplentes.push(null);
+    }
+
+    return { titulares, suplentes };
 }
 
 // RUTA PARA JUGAR EL PARTIDO
@@ -110,27 +196,47 @@ router.get('/jugar-partido/:idPartido', requireLogin, async (req, res) => {
         let equipoVisitanteUsuario = null;
 
         for (let partido of partidosDeHoy) {
-            const jugadoresLocal = await seleccionarMejorOnce(partido.equipoLocal._id);
-            const jugadoresVisitante = await seleccionarMejorOnce(partido.equipoVisitante._id);
+            let equipoLocalData = { nombre: partido.equipoLocal.nombre, titulares: [], suplentes: [] };
+            let equipoVisitanteData = { nombre: partido.equipoVisitante.nombre, titulares: [], suplentes: [] };
+
+            // --- CONFIGURACIÓN EQUIPO LOCAL ---
+            if (partido.equipoLocal._id.toString() === partidaJuego.clubSeleccionado._id.toString()) {
+                const clubUser = await Club.findById(partido.equipoLocal._id).populate('plantilla');
+                equipoLocalData.titulares = clubUser.plantilla.slice(0, 11);
+                equipoLocalData.suplentes = clubUser.plantilla.slice(11, 18); // Del 12 al 18 van al banquillo
+            } else {
+                const convocatoria = await seleccionarConvocatoriaIA(partido.equipoLocal._id, partido.equipoVisitante.reputacion);
+                equipoLocalData.titulares = convocatoria.titulares;
+                equipoLocalData.suplentes = convocatoria.suplentes;
+            }
+
+            // --- CONFIGURACIÓN EQUIPO VISITANTE ---
+            if (partido.equipoVisitante._id.toString() === partidaJuego.clubSeleccionado._id.toString()) {
+                const clubUser = await Club.findById(partido.equipoVisitante._id).populate('plantilla');
+                equipoVisitanteData.titulares = clubUser.plantilla.slice(0, 11);
+                equipoVisitanteData.suplentes = clubUser.plantilla.slice(11, 18);
+            } else {
+                const convocatoria = await seleccionarConvocatoriaIA(partido.equipoVisitante._id, partido.equipoLocal.reputacion);
+                equipoVisitanteData.titulares = convocatoria.titulares;
+                equipoVisitanteData.suplentes = convocatoria.suplentes;
+            }
             
-            const resultado = simularPartido(
-                { nombre: partido.equipoLocal.nombre, jugadores: jugadoresLocal },
-                { nombre: partido.equipoVisitante.nombre, jugadores: jugadoresVisitante }
-            );
+            // Enviamos los objetos completos (con titulares y suplentes) al simulador de partidos
+            const resultado = simularPartido(equipoLocalData, equipoVisitanteData);
 
             partido.golesLocal = resultado.marcador.local;
-            partido.golesVisitante = resultado.marcador.visible; 
+            partido.golesVisitante = resultado.marcador.visitante; 
             partido.jugado = true;
             await partido.save();
 
-            // Limpiamos los convocados del equipo local y del visitante tras jugar
+            // Limpieza de canteranos
             await clubesDAO.limpiarConvocados(partido.equipoLocal._id);
             await clubesDAO.limpiarConvocados(partido.equipoVisitante._id);
 
             if (partido._id.toString() === partidoId) {
                 resultadoUsuario = resultado;
-                equipoLocalUsuario = { nombre: partido.equipoLocal.nombre, jugadores: jugadoresLocal };
-                equipoVisitanteUsuario = { nombre: partido.equipoVisitante.nombre, jugadores: jugadoresVisitante };
+                equipoLocalUsuario = equipoLocalData;
+                equipoVisitanteUsuario = equipoVisitanteData;
             }
         }
 
