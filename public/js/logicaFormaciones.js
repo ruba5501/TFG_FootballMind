@@ -231,12 +231,26 @@ const GestorTactico = {
         }
     },
 
-    subirCanterano: async function(jugadorId) {
-        if (!confirm("¿Deseas subir a este jugador?")) return;
-        try {
-            const response = await fetch(`/subirCanterano/${jugadorId}`, { method: 'POST' });
-            if (response.ok) location.reload();
-        } catch (error) { console.error(error); }
+    subirCanterano: function(jugadorId) {
+        UI.confirmar(
+            "Convocar Canterano", 
+            "¿Deseas convocar a este jugador para el próximo partido?", 
+            "Convocar Jugador", 
+            async () => {
+                try {
+                    const response = await fetch(`/subirCanterano/${jugadorId}`, { method: 'POST' });
+                    if (response.ok) {
+                        UI.notificarExito("Jugador convocado correctamente", () => {
+                            location.reload();
+                        });
+                    } else {
+                        console.error("Error en la respuesta del servidor");
+                    }
+                } catch (error) { 
+                    console.error("Error al conectar con el servidor:", error); 
+                }
+            }
+        );
     },
     
     verAtributos: function(jugadorId) {

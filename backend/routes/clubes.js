@@ -150,15 +150,55 @@ clubRouter.post('/guardarTactica/:clubId', requireLogin, async (req, res) => {
 clubRouter.post('/subirCanterano/:jugadorId', requireLogin, async (req, res) => {
     try {
         const { jugadorId } = req.params;
+        // Buscamos el filial que contiene este jugador en su plantilla
         const filial = await Club.findOne({ plantilla: jugadorId });
         
-        if (!filial) return res.status(404).json({ error: "Jugador no encontrado" });
+        if (!filial) return res.status(404).json({ error: "Canterano no encontrado" });
+        if (!filial.clubMatriz) return res.status(400).json({ error: "Este filial no tiene un club matriz" });
 
+        // Añade el jugador al array de la plantilla del primer equipo sin quitarlo del filial
         await clubesDAO.convocarCanterano(filial.clubMatriz, jugadorId);
-      //falta la logica para subirlo para siempre
+
         res.json({ success: true, mensaje: "Convocado para el próximo partido" });
     } catch (err) {
-        res.status(500).json({ error: "Error al convocar" });
+        console.error(err);
+        res.status(500).json({ error: "Error al convocar al jugador" });
+    }
+});
+
+clubRouter.post('/cantera/promocionar/:jugadorId', requireLogin, async (req, res) => {
+    try {
+        const { jugadorId } = req.params;
+        const filial = await Club.findOne({ plantilla: jugadorId });
+
+        if (!filial) return res.status(404).json({ error: "Canterano no encontrado" });
+        if (!filial.clubMatriz) return res.status(400).json({ error: "Este filial no posee un club matriz" });
+
+        // Quita del filial y añade definitivamente al primer equipo utilizando tu DAO
+        await clubesDAO.promoverCanteranoDefinitivo(filial.clubMatriz, filial._id, jugadorId);
+
+        res.json({ success: true, mensaje: "Jugador promovido permanentemente al primer equipo" });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Error al promocionar definitivamente al jugador" });
+    }
+});
+
+clubRouter.post('/cantera/despedir/:jugadorId', requireLogin, async (req, res) => {
+    try {
+        const { jugadorId } = req.params;
+        
+        const resultado = await Club.findOneAndUpdate(
+            { plantilla: jugadorId },
+            { $pull: { plantilla: jugadorId } }
+        );
+
+        if (!resultado) return res.status(404).json({ error: "Jugador no encontrado en ningún filial" });
+
+        res.json({ success: true, mensaje: "Se le ha otorgado la carta de libertad al jugador" });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Error al rescindir el contrato" });
     }
 });
 

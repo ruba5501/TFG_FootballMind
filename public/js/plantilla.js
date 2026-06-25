@@ -237,14 +237,56 @@ function cancelarMision(ojeadorId) {
     });
 }
 
-function subirPrimerEquipo(id) {
-    if(confirm("¿Estás seguro de que quieres subir a este jugador? Ocupará una ficha del primer equipo.")) {
-        fetch(`/cantera/promocionar/${id}`, { method: 'POST' })
-            .then(res => res.json())
-            .then(data => {
-                if(data.success) window.location.href = '/plantilla';
-            });
-    }
+// Promocionar definitivamente al primer equipo
+function subirPrimerEquipo(id, partidaId) {
+    UI.confirmar(
+        "Promocionar Canterano", 
+        "¿Estás seguro de que quieres subir a este jugador? Ocupará una ficha del primer equipo permanentemente.",
+        "Promocionar Jugador",
+        function() {
+            fetch(`/cantera/promocionar/${id}`, { method: 'POST' })
+                .then(res => {
+                    if (!res.ok) throw new Error("Error en el servidor");
+                    return res.json();
+                })
+                .then(data => {
+                    if(data.success) {
+                        UI.notificarExito(data.mensaje, () => {
+                            window.location.href = `/cantera/${partidaId}`;
+                        });
+                    } else {
+                        alert(data.error || "No se pudo promocionar al jugador");
+                    }
+                })
+                .catch(err => console.error("Error:", err));
+        }
+    );
+}
+
+// Dar la carta de libertad (Despedir canterano)
+function despedirCanterano(id, partidaId) {
+    UI.confirmar(
+        "Dar Carta de Libertad", 
+        "¿Estás completamente seguro de dar la carta de libertad a este canterano? Dejará de pertenecer al club inmediatamente.",
+        "Otorgar Libertad",
+        function() {
+            fetch(`/cantera/despedir/${id}`, { method: 'POST' })
+                .then(res => {
+                    if (!res.ok) throw new Error("Error en el servidor");
+                    return res.json();
+                })
+                .then(data => {
+                    if(data.success) {
+                        UI.notificarExito(data.mensaje, () => {
+                            window.location.href = `/cantera/${partidaId}`;
+                        });
+                    } else {
+                        alert(data.error || "No se pudo despedir al jugador");
+                    }
+                })
+                .catch(err => console.error("Error:", err));
+        }
+    );
 }
 
 
