@@ -91,18 +91,16 @@ async function generarJugadoresNuevaPartida(partidaId, listaClubes, nombrePartid
                 mentalidad = mentalidadesDisponibles[Math.floor(Math.random() * mentalidadesDisponibles.length)];
             }
 
-            // Filtrar los pesos de las formaciones basándonos en el estilo elegido
             const formacionesPermitidas = FILTROS_ESTILOS[estiloJuego];
             let pesosFiltrados = {};
             formacionesPermitidas.forEach(f => {
                 if (PESOS_FORMACIONES[f]) pesosFiltrados[f] = PESOS_FORMACIONES[f];
             });
 
-            // Obtener formación coherente con el estilo de juego
             const nombreTactica = obtenerFormacionAleatoria(pesosFiltrados);
             const tacticaInfo = FORMACIONES[nombreTactica];
 
-            let titulares = tacticaInfo.posiciones.map(pos => {
+            let titularesEsquema = tacticaInfo.posiciones.map(pos => {
                 if (Math.random() > 0.7 && MAPA_FLEXIBLE[pos]) {
                     const opciones = MAPA_FLEXIBLE[pos];
                     return opciones[Math.floor(Math.random() * opciones.length)];
@@ -111,9 +109,9 @@ async function generarJugadoresNuevaPartida(partidaId, listaClubes, nombrePartid
             });
 
             let extras = ['POR', 'POR'];
-            const poolDef = titulares.filter(p => ['DFC', 'LI', 'LD'].includes(p));
-            const poolMed = titulares.filter(p => ['MC', 'MCD', 'MCO', 'MD', 'MI'].includes(p));
-            const poolDel = titulares.filter(p => ['DC', 'SD', 'EI', 'ED'].includes(p));
+            const poolDef = titularesEsquema.filter(p => ['DFC', 'LI', 'LD'].includes(p));
+            const poolMed = titularesEsquema.filter(p => ['MC', 'MCD', 'MCO', 'MD', 'MI'].includes(p));
+            const poolDel = titularesEsquema.filter(p => ['DC', 'SD', 'EI', 'ED'].includes(p));
 
             for(let i=0; i<4; i++){
                 extras.push(poolDef[Math.floor(Math.random() * poolDef.length)]|| 'DFC');
@@ -129,13 +127,13 @@ async function generarJugadoresNuevaPartida(partidaId, listaClubes, nombrePartid
                 extras.push(POSICIONES_EXTRAS[Math.floor(Math.random() * POSICIONES_EXTRAS.length)]);
             }
 
-            let plantillaBase = [...titulares, ...extras];
+            let plantillaBase = [...titularesEsquema, ...extras];
             let indicesTitulares = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
             let delanteros = [];
             let medios = [];
             let otros = [];
             indicesTitulares.forEach(idx => {
-                const pos = titulares[idx];
+                const pos = titularesEsquema[idx];
                 if (['DC', 'EI', 'ED', 'SD'].includes(pos)){
                     delanteros.push(idx);
                 }
@@ -169,11 +167,8 @@ async function generarJugadoresNuevaPartida(partidaId, listaClubes, nombrePartid
 
             let indicesEstrellas = estrellasFinales;
 
-            let jugadoresDelClub = [];
+            let jugadoresDelClubEnMemoria = [];
             let dorsalesOcupados = [];
-            let idsTitulares = [];
-            let idsSuplentes = [];
-            let idsReservas = [];
 
             const competicionesDelClub = club.competiciones || [];
             const AFINIDADES = {
@@ -190,6 +185,7 @@ async function generarJugadoresNuevaPartida(partidaId, listaClubes, nombrePartid
                 'SD': ['DC', 'MCO', 'EI', 'ED'],
                 'DC': ['SD']
             };
+
             for (let i = 0; i < plantillaBase.length; i++) {
                 const posicion = plantillaBase[i];
                 let secundarias = [];
@@ -220,15 +216,8 @@ async function generarJugadoresNuevaPartida(partidaId, listaClubes, nombrePartid
                 const fisico = generarFisico(posicion, arquetipo);
                 const { nombreCompleto, nacionalidad, finContrato } = obtenerIdentidad(club.pais, rep, false, ratings.ca, new Date(2025, 6, 1));      
                 const idJugador = new mongoose.Types.ObjectId();
-                if (i < 11) {
-                    idsTitulares.push(idJugador);
-                } else if (i < 23) { 
-                    idsSuplentes.push(idJugador);
-                } else {
-                    idsReservas.push(idJugador);
-                }
 
-                jugadoresDelClub.push({
+                jugadoresDelClubEnMemoria.push({
                     _id: idJugador,
                     partidaId: partidaId,
                     nombre: nombreCompleto,
@@ -265,23 +254,113 @@ async function generarJugadoresNuevaPartida(partidaId, listaClubes, nombrePartid
                     }))
                 });
             }
-            const orden = { 'ESTRELLA': 1, 'TITULAR': 2, 'ROTACION': 3, 'RESERVA': 4 };
-            jugadoresDelClub.sort((a, b) => orden[a.rolInterno] - orden[b.rolInterno]);
 
-            const idsJugadoresFinales = jugadoresDelClub.map(j => j._id);
-            for (let jugador of jugadoresDelClub) {
+            let plantillaOrdenada = [];
+            if (tacticaInfo && jugadoresDelClubEnMemoria.length > 0) {
+                const posicionesRequeridas = tacticaInfo.posiciones; // Las 11 posiciones fijas del dibujo táctico
+                const copiaPool = [...jugadoresDelClubEnMemoria];
+                const titularesOptimistas = new Array(11).fill(null);
+
+                // Paso A: Asignar por posición NATURAL y de mayor a menor valoración
+                posicionesRequeridas.forEach((posRequerida, index) => {
+                    const candidatos = copiaPool.filter(j => j.posicionPrincipal === posRequerida);
+                    if (candidatos.length > 0) {
+                        candidatos.sort((a, b) => b.valoracion - a.valoracion);
+                        titularesOptimistas[index] = candidatos[0];
+                        const idx = copiaPool.findIndex(j => j._id.toString() === candidatos[0]._id.toString());
+                        copiaPool.splice(idx, 1);
+                    }
+                });
+
+                // Paso B: Llenar huecos con posiciones SECUNDARIAS
+                posicionesRequeridas.forEach((posRequerida, index) => {
+                    if (!titularesOptimistas[index]) {
+                        const candidatos = copiaPool.filter(j => (j.posicionesSecundarias || []).includes(posRequerida));
+                        if (candidatos.length > 0) {
+                            candidatos.sort((a, b) => b.valoracion - a.valoracion);
+                            titularesOptimistas[index] = candidatos[0];
+                            const idx = copiaPool.findIndex(j => j._id.toString() === candidatos[0]._id.toString());
+                            copiaPool.splice(idx, 1);
+                        }
+                    }
+                });
+
+                // Paso C: Parche de emergencia (Mayor calidad sobrante disponible)
+                posicionesRequeridas.forEach((posRequerida, index) => {
+                    if (!titularesOptimistas[index]) {
+                        copiaPool.sort((a, b) => b.valoracion - a.valoracion);
+                        const elegido = copiaPool.shift();
+                        if (elegido) titularesOptimistas[index] = elegido;
+                    }
+                });
+
+                // Paso D: Ordenar el resto de jugadores sobrantes (suplentes/reservas)
+                let suplentesBalanceados = [];
+
+                // 1. Garantizar portero suplente si existe
+                const indexPortero = copiaPool.findIndex(j => j.posicionPrincipal === 'POR');
+                if (indexPortero !== -1) {
+                    suplentesBalanceados.push(copiaPool.splice(indexPortero, 1)[0]);
+                }
+
+                // 2. Ordenamos el pool restante por valoración para asegurar que los mejores vayan al banquillo
+                copiaPool.sort((a, b) => b.valoracion - a.valoracion);
+
+                // 3. Intentamos repartir los huecos de forma rotativa (Def, Med, Del) sacándolos de copiaPool
+                const tipologia = {
+                    def: ['DFC', 'LI', 'LD'],
+                    med: ['MC', 'MCD', 'MCO', 'MD', 'MI'],
+                    del: ['DC', 'SD', 'EI', 'ED']
+                };
+
+                let tipologiaActual = 'def';
+
+                // Extraemos de copiaPool respetando el orden de calidad pero alternando líneas
+                while (suplentesBalanceados.length < 13 && copiaPool.length > 0) {
+                    let targetPositions = tipologia[tipologiaActual];
+                    
+                    // Buscamos el mejor jugador disponible de la línea actual
+                    let idx = copiaPool.findIndex(j => targetPositions.includes(j.posicionPrincipal));
+                    
+                    // Si no hay de esa línea, tomamos simplemente el primero disponible (el mejor que quede)
+                    if (idx === -1) idx = 0; 
+
+                    // Lo movemos de copiaPool al banquillo
+                    suplentesBalanceados.push(copiaPool.splice(idx, 1)[0]);
+
+                    // Rotamos la línea para el siguiente ciclo
+                    if (tipologiaActual === 'def') tipologiaActual = 'med';
+                    else if (tipologiaActual === 'med') tipologiaActual = 'del';
+                    else tipologiaActual = 'def';
+                }
+
+                // 4. Todo lo que sobre de copiaPool va limpio a la reserva (sin duplicados)
+                let reservasRestantes = [...copiaPool];
+
+                // Reunimos la plantilla final idéntica a tu estructura segura
+                plantillaOrdenada = [...titularesOptimistas.filter(Boolean), ...suplentesBalanceados, ...reservasRestantes];
+            
+            } else {
+                plantillaOrdenada = [...jugadoresDelClubEnMemoria];
+            }
+
+            // Mapeamos los conjuntos de ID correspondientes basados en el nuevo orden limpio
+            const idsTitulares = plantillaOrdenada.slice(0, 11).map(j => j._id);
+            const idsSuplentes = plantillaOrdenada.slice(11, 24).map(j => j._id);
+            const idsReservas = plantillaOrdenada.slice(24).map(j => j._id);
+            const idsJugadoresFinales = plantillaOrdenada.map(j => j._id);
+
+            // Asignación de dorsales coherentes con su nuevo orden de importancia real
+            for (let jugador of plantillaOrdenada) {
                 jugador.dorsal = asignarDorsalRealista(jugador.posicionPrincipal, jugador.rolInterno, dorsalesOcupados);
                 dorsalesOcupados.push(jugador.dorsal);
                 
                 const { rolInterno, ...jugadorParaInsertar } = jugador;
                 todosLosJugadores.push(jugadorParaInsertar);
             }
-            const titularesFinal = jugadoresDelClub.filter(j => idsTitulares.includes(j._id));
-            const capitan = titularesFinal.sort((a, b) => b.atributos.mental.liderazgo - a.atributos.mental.liderazgo)[0]?._id;
-            const lanzadorPenaltis = titularesFinal.sort((a, b) => b.atributos.tiro.lanzamientoPenaltis - a.atributos.tiro.lanzamientoPenaltis)[0]?._id;
-            const lanzadorFaltas = titularesFinal.sort((a, b) => b.atributos.tiro.lanzamientoFaltas - a.atributos.tiro.lanzamientoFaltas)[0]?._id;
-            const lanzadorFaltasLejanas = titularesFinal.sort((a, b) => b.atributos.tiro.tiroLejano - a.atributos.tiro.tiroLejano)[0]?._id;
-            const lanzadorCorners = titularesFinal.sort((a, b) => b.atributos.pase.centros - a.atributos.pase.centros)[0]?._id;
+
+            // Extraemos los 11 titulares reales en memoria para decidir los capitanes y lanzadores perfectos
+            const titularesFinal = plantillaOrdenada.slice(0, 11);
 
             const tacticaActualizada = {
                 formacion: nombreTactica,
@@ -290,13 +369,13 @@ async function generarJugadoresNuevaPartida(partidaId, listaClubes, nombrePartid
                 titulares: idsTitulares,
                 suplentes: idsSuplentes,
                 reservas: idsReservas,
-                capitan: titularesFinal.sort((a, b) => b.atributos.mental.liderazgo - a.atributos.mental.liderazgo)[0]?._id || idsTitulares[0],
-                penaltis: titularesFinal.sort((a, b) => b.atributos.tiro.lanzamientoPenaltis - a.atributos.tiro.lanzamientoPenaltis)[0]?._id || idsTitulares[10],
-                faltasIzquierda: titularesFinal.sort((a, b) => b.atributos.tiro.lanzamientoFaltas - a.atributos.tiro.lanzamientoFaltas)[0]?._id || idsTitulares[7],
-                faltasDerecha: titularesFinal.sort((a, b) => b.atributos.tiro.lanzamientoFaltas - a.atributos.tiro.lanzamientoFaltas)[0]?._id || idsTitulares[7],
-                faltasLejanas: titularesFinal.sort((a, b) => b.atributos.tiro.tiroLejano - a.atributos.tiro.tiroLejano)[0]?._id || idsTitulares[7],
-                cornersIzquierda: titularesFinal.sort((a, b) => b.atributos.pase.centros - a.atributos.pase.centros)[0]?._id || idsTitulares[7],
-                cornersDerecha: titularesFinal.sort((a, b) => b.atributos.pase.centros - a.atributos.pase.centros)[0]?._id || idsTitulares[7]
+                capitan: [...titularesFinal].sort((a, b) => b.atributos.mental.liderazgo - a.atributos.mental.liderazgo)[0]?._id || idsTitulares[0],
+                penaltis: [...titularesFinal].sort((a, b) => b.atributos.tiro.lanzamientoPenaltis - a.atributos.tiro.lanzamientoPenaltis)[0]?._id || idsTitulares[10],
+                faltasIzquierda: [...titularesFinal].sort((a, b) => b.atributos.tiro.lanzamientoFaltas - a.atributos.tiro.lanzamientoFaltas)[0]?._id || idsTitulares[7],
+                faltasDerecha: [...titularesFinal].sort((a, b) => b.atributos.tiro.lanzamientoFaltas - a.atributos.tiro.lanzamientoFaltas)[0]?._id || idsTitulares[7],
+                faltasLejanas: [...titularesFinal].sort((a, b) => b.atributos.tiro.tiroLejano - a.atributos.tiro.tiroLejano)[0]?._id || idsTitulares[7],
+                cornersIzquierda: [...titularesFinal].sort((a, b) => b.atributos.pase.centros - a.atributos.pase.centros)[0]?._id || idsTitulares[7],
+                cornersDerecha: [...titularesFinal].sort((a, b) => b.atributos.pase.centros - a.atributos.pase.centros)[0]?._id || idsTitulares[7]
             };
 
             operacionesClubes.push({
@@ -308,7 +387,7 @@ async function generarJugadoresNuevaPartida(partidaId, listaClubes, nombrePartid
                     } }
                 }
             });
-            contadorTotal += jugadoresDelClub.length;
+            contadorTotal += plantillaOrdenada.length;
         }
 
         if (todosLosJugadores.length > 0) {

@@ -18,8 +18,6 @@ const GestorTactico = {
         }
 
         this.dibujarAlineacion(formacionInicial);
-
-        // Inicializamos los carruseles del modal táctico automáticamente
         this.initModalTacticas();
     },
 
@@ -64,7 +62,7 @@ const GestorTactico = {
         });
     },
     
-    repartirJugadores: function(configTactica) {
+    /*repartirJugadores: function(configTactica) {
         const titulares = Array.from(document.querySelectorAll('#lista-titulares .jugador-item')).slice(0, 11);
         const copiaTitulares = [...titulares];
         const asignacion = new Array(11);
@@ -83,9 +81,12 @@ const GestorTactico = {
         });
 
         return asignacion;
+    },*/
+    repartirJugadores: function(configTactica) {
+        return Array.from(document.querySelectorAll('#lista-titulares .jugador-item')).slice(0, 11);
     },
 
-    dibujarAlineacion: function(formacionActual) {
+    /*dibujarAlineacion: function(formacionActual) {
         const contenedorJugadores = document.getElementById('capa-jugadores');
         const config = this.formacionesDisponibles[formacionActual];
         if (!contenedorJugadores || !config) return;
@@ -101,6 +102,50 @@ const GestorTactico = {
             const posEnTactica = config.posiciones[i]; 
             const posPrincipal = li.getAttribute('data-posicion'); 
             const secundarias = (li.getAttribute('data-secundarias') || "").split(',').filter(s => s !== "");
+
+            let colorClase = 'bg-danger'; 
+            if (posPrincipal === posEnTactica) {
+                colorClase = 'bg-primary'; 
+            } else if (secundarias.includes(posEnTactica)) {
+                colorClase = 'bg-warning text-dark'; 
+            }
+
+            const nombreFull = li.querySelector('.nombre-txt')?.innerText || "Jugador";
+            const partes = nombreFull.trim().split(' ');
+            const nombreProcesado = partes.length > 1 
+                ? `${partes[0][0]}. ${partes.slice(1).join(' ')}`
+                : partes[0];
+
+            const node = document.createElement('div');
+            node.className = 'player-node'; 
+            node.style.top = coords.t + '%';
+            node.style.left = coords.l + '%';
+            node.innerHTML = `
+                <div class="circle ${colorClase}" title="Natural: ${posPrincipal}">${posEnTactica}</div>
+                <div class="name">${nombreProcesado}</div>
+            `;
+            contenedorJugadores.appendChild(node);
+        });
+    },*/
+    dibujarAlineacion: function(formacionActual) {
+        const contenedorJugadores = document.getElementById('capa-jugadores');
+        const config = this.formacionesDisponibles[formacionActual];
+        if (!contenedorJugadores || !config) return;
+
+        contenedorJugadores.innerHTML = ''; 
+        
+        const titularesAsignados = this.repartirJugadores(config);
+
+        titularesAsignados.forEach((li, i) => {
+            if (!li) return; 
+
+            // Se respeta estrictamente el índice i del DOM para obtener su coordenada en el esquema
+            const coords = config.coordenadas[i];
+            const posEnTactica = config.posiciones[i]; 
+            const posPrincipal = li.getAttribute('data-posicion'); 
+            const secundarias = (li.getAttribute('data-secundarias') || "").split(',').filter(s => s !== "");
+
+            if (!coords) return; // Salvaguarda en caso de que falte alguna coordenada
 
             let colorClase = 'bg-danger'; 
             if (posPrincipal === posEnTactica) {

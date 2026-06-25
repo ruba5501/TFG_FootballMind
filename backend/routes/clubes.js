@@ -45,25 +45,44 @@ clubRouter.get('/formacion/:partidaId', requireLogin, async (req, res) => {
     try {
         const partida = await partidasDAO.obtenerPartidaPorId(req.params.partidaId);
         if (!partida) {
-          return res.redirect('/');
+            return res.redirect('/');
         }
 
         const clubUsuario = await clubesDAO.buscarClubPorId(partida.clubSeleccionado);
         const filial = await clubesDAO.buscarFilialPorId(clubUsuario._id);
 
-        let porteros = clubUsuario.plantilla.filter(j => j.posicionPrincipal === 'POR');
-        let resto = clubUsuario.plantilla.filter(j => j.posicionPrincipal !== 'POR');
+        if (!clubUsuario.tactica || !clubUsuario.tactica.titulares || clubUsuario.tactica.titulares.length === 0) {
+            let porteros = clubUsuario.plantilla.filter(j => j.posicionPrincipal === 'POR');
+            let resto = clubUsuario.plantilla.filter(j => j.posicionPrincipal !== 'POR');
 
-        porteros.sort((a, b) => b.media - a.media);
-        resto.sort((a, b) => b.media - a.media);
+            porteros.sort((a, b) => b.media - a.media);
+            resto.sort((a, b) => b.media - a.media);
 
-        let titulares = [porteros[0], ...resto.slice(0, 10)];
-        let demas = [...porteros.slice(1), ...resto.slice(10)];
+            let titulares = [porteros[0], ...resto.slice(0, 10)];
+            let demas = [...porteros.slice(1), ...resto.slice(10)];
 
-        demas.sort((a, b) => (ORDEN_POSICIONES[a.posicionPrincipal] || 99) - (ORDEN_POSICIONES[b.posicionPrincipal] || 99));
-        titulares.sort((a, b) => (ORDEN_POSICIONES[a.posicionPrincipal] || 99) - (ORDEN_POSICIONES[b.posicionPrincipal] || 99));
+            demas.sort((a, b) => (ORDEN_POSICIONES[a.posicionPrincipal] || 99) - (ORDEN_POSICIONES[b.posicionPrincipal] || 99));
+            titulares.sort((a, b) => (ORDEN_POSICIONES[a.posicionPrincipal] || 99) - (ORDEN_POSICIONES[b.posicionPrincipal] || 99));
 
-        clubUsuario.plantilla = [...titulares, ...demas];
+            clubUsuario.plantilla = [...titulares, ...demas];
+            
+            // Guardamos el orden inicial por defecto para que no se recalcule en el siguiente refresco
+            await Club.findByIdAndUpdate(clubUsuario._id, {
+                $set: {
+                    plantilla: clubUsuario.plantilla.map(j => j._id),
+                    "tactica.titulares": titulares.map(j => j._id),
+                    "tactica.suplentes": demas.slice(0, 13).map(j => j._id),
+                    "tactica.reservas": demas.slice(13).map(j => j._id)
+                }
+            });
+        } else {
+            // Si ya hay táctica guardada, respetamos de forma estricta el orden guardado en el array de 'plantilla'
+            const mapaPlantilla = new Map(clubUsuario.plantilla.map(j => [j._id.toString(), j]));
+            
+            // Re-mapeamos basándonos en el orden exacto de los IDs guardados de la colección original
+            const clubCrudo = await Club.findById(clubUsuario._id);
+            clubUsuario.plantilla = clubCrudo.plantilla.map(id => mapaPlantilla.get(id.toString())).filter(Boolean);
+        }
 
         res.render('formacion', {
             partida,
@@ -81,8 +100,6 @@ clubRouter.post('/guardarAlineacion/:clubId', requireLogin, async (req, res) => 
     try {
         const { nuevaPlantilla, formacion } = req.body;
         
-        // Actualizamos la plantilla, la formación y repartimos a los jugadores 
-        // en titulares, suplentes y reservas automáticamente
         await Club.findByIdAndUpdate(req.params.clubId, {
             $set: {
                 plantilla: nuevaPlantilla,

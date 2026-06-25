@@ -82,8 +82,6 @@ async function generarEmpleadosNuevaPartida(partidaId, listaClubes, nombrePartid
                 }
             }
 
-            // Simplificamos el update. La táctica ya se actualizó en generarJugadoresNuevaPartida.
-            // Aquí solo inyectamos los empleados generados.
             operacionesClubes.push({
                 updateOne: {
                     filter: { _id: club._id },
