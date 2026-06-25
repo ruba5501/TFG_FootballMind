@@ -18,6 +18,9 @@ const GestorTactico = {
         }
 
         this.dibujarAlineacion(formacionInicial);
+
+        // Inicializamos los carruseles del modal táctico automáticamente
+        this.initModalTacticas();
     },
 
     seleccionarJugador: function(li) {
@@ -60,9 +63,8 @@ const GestorTactico = {
             }
         });
     },
-
     
-   repartirJugadores: function(configTactica) {
+    repartirJugadores: function(configTactica) {
         const titulares = Array.from(document.querySelectorAll('#lista-titulares .jugador-item')).slice(0, 11);
         const copiaTitulares = [...titulares];
         const asignacion = new Array(11);
@@ -93,18 +95,18 @@ const GestorTactico = {
         const titularesAsignados = this.repartirJugadores(config);
 
         titularesAsignados.forEach((li, i) => {
-            if (!li) return; // Seguridad
+            if (!li) return; 
 
             const coords = config.coordenadas[i];
             const posEnTactica = config.posiciones[i]; 
             const posPrincipal = li.getAttribute('data-posicion'); 
             const secundarias = (li.getAttribute('data-secundarias') || "").split(',').filter(s => s !== "");
 
-            let colorClase = 'bg-danger'; // Rojo (Fuera de lugar)
+            let colorClase = 'bg-danger'; 
             if (posPrincipal === posEnTactica) {
-                colorClase = 'bg-primary'; // Azul (Posición Principal)
+                colorClase = 'bg-primary'; 
             } else if (secundarias.includes(posEnTactica)) {
-                colorClase = 'bg-warning text-dark'; // Amarillo (Posición Secundaria)
+                colorClase = 'bg-warning text-dark'; 
             }
 
             const nombreFull = li.querySelector('.nombre-txt')?.innerText || "Jugador";
@@ -154,7 +156,6 @@ const GestorTactico = {
         const formacion = document.getElementById('selector-formacion').value;
         
         try {
-            // Hacemos una única petición a la ruta correcta (sin el /club/ delante)
             const response = await fetch(`/guardarAlineacion/${clubId}`, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
@@ -188,6 +189,44 @@ const GestorTactico = {
             });
             if (response.ok) location.reload();
         } catch (error) { console.error(error); }
+    },
+
+    initModalTacticas: function() {
+        const carruselEstilos = document.getElementById('carouselEstilos');
+        if (carruselEstilos) {
+            carruselEstilos.addEventListener('slid.bs.carousel', function (event) {
+                const idEstilo = event.relatedTarget.getAttribute('data-val');
+                const inputEstilo = document.getElementById('input-estilo-juego');
+                if (inputEstilo) inputEstilo.value = idEstilo;
+            });
+        }
+
+        const carruselMentalidades = document.getElementById('carouselMentalidades');
+        if (carruselMentalidades) {
+            carruselMentalidades.addEventListener('slid.bs.carousel', function (event) {
+                const idMentalidad = event.relatedTarget.getAttribute('data-val');
+                const inputMentalidad = document.getElementById('input-mentalidad');
+                if (inputMentalidad) inputMentalidad.value = idMentalidad;
+            });
+        }
+    },
+
+    guardarEstiloMentalidad: async function(clubId, estilo, mentalidad) {
+        try {
+            const response = await fetch(`/guardarTactica/${clubId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    estiloJuego: estilo, 
+                    mentalidad: mentalidad 
+                })
+            });
+
+            if (response.ok) location.reload();
+        } catch (error) {
+            console.error("Error al guardar la filosofía táctica:", error);
+            alert("Error al conectar con el servidor al guardar tácticas");
+        }
     },
 
     subirCanterano: async function(jugadorId) {

@@ -102,11 +102,31 @@ clubRouter.post('/guardarAlineacion/:clubId', requireLogin, async (req, res) => 
 
 clubRouter.post('/actualizarRoles/:clubId', requireLogin, async (req, res) => {
     try {
-        await clubesDAO.actualizarRolesTacticos(req.params.clubId, req.body);
+        await clubesDAO.actualizarRoles(req.params.clubId, req.body);
         res.json({ success: true });
     } catch (err) {
-        console.error(err);
+        console.error("Error al actualizar roles:", err);
         res.status(500).json({ error: "Error al actualizar roles" });
+    }
+});
+
+clubRouter.post('/guardarTactica/:clubId', requireLogin, async (req, res) => {
+    try {
+        const { estiloJuego, mentalidad } = req.body;
+        const clubId = req.params.clubId;
+
+        // Validamos rápidamente que nos lleguen datos correctos
+        if (!estiloJuego || !mentalidad) {
+            return res.status(400).json({ error: "Faltan datos tácticos requeridos" });
+        }
+
+        // Llamamos al DAO encargado de interactuar con la base de datos
+        await clubesDAO.actualizarTactica(clubId, estiloJuego, mentalidad);
+        
+        res.json({ success: true });
+    } catch (err) {
+        console.error("Error al guardar filosofía en la ruta:", err);
+        res.status(500).json({ error: "Error al actualizar la filosofía táctica" });
     }
 });
 

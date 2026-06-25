@@ -1,0 +1,102 @@
+<div class="modal fade" id="modalTacticas" tabindex="-1" aria-labelledby="modalTacticasLabel" aria-hidden="true">
+    <div class="modal-dialog modal-md">
+        <div class="modal-content bg-dark text-white border-primary">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title" id="modalTacticasLabel"><i class="bi bi-sliders"></i> Filosofía y Mentalidad</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="form-tacticas-estilo">
+                    
+                    <div class="mb-4 text-center">
+                        <label class="form-label text-info fw-bold mb-3 uppercase tracking-wider">
+                            <i class="bi bi-palette"></i> Estilo de Juego del Equipo
+                        </label>
+                        
+                        <% 
+                        const estilos = [
+                            { id: 'ESTÁNDAR', nom: 'Estándar', desc: 'Estilo equilibrado sin priorizar ninguna faceta o instrucción extrema.' },
+                            { id: 'TIKI-TAKA', nom: 'Tiki-Taka', desc: 'Foco en la posesión extrema, pases cortos y paciencia hasta abrir huecos.' },
+                            { id: 'CONTRAATAQUE', nom: 'Contraataque', desc: 'Defensa sólida en bloque medio/bajo y transiciones ofensivas veloces a la contra.' },
+                            { id: 'AUTOBÚS', nom: 'Poner el Autobús', desc: 'Líneas muy juntas cerca de tu área buscando que te hagan pocas ocasiones.' },
+                            { id: 'BALÓN LARGO', nom: 'Balón Largo', desc: 'Salto de líneas buscando directamente la cabeza del ariete o segundas jugadas.' },
+                            { id: 'PRESIÓN ALTA', nom: 'Presión Alta', desc: 'Asfixia la salida del rival en su propio campo inmediatamente tras perder el balón.' },
+                            { id: 'JUEGO POR BANDAS', nom: 'Juego por Bandas', desc: 'Apertura del juego hacia los extremos y laterales para doblar y desbordar.' },
+                            { id: 'PONER CENTROS', nom: 'Poner Centros', desc: 'Llegar a línea de fondo y bombardear el área rival buscando rematadores corpulentos.' }
+                        ];
+                        const idxEstiloInicial = estilos.findIndex(e => e.id === clubUsuario.tactica.estiloJuego);
+                        const indexEstilo = idxEstiloInicial !== -1 ? idxEstiloInicial : 0;
+                        %>
+
+                        <input type="hidden" id="input-estilo-juego" name="estiloJuego" value="<%= estilos[indexEstilo].id %>">
+
+                        <div id="carouselEstilos" class="carousel slide border border-secondary rounded p-3 bg-black bg-opacity-40" data-bs-ride="false" data-bs-interval="false">
+                            <div class="carousel-inner">
+                                <% estilos.forEach((e, idx) => { %>
+                                    <div class="carousel-item <%= idx === indexEstilo ? 'active' : '' %>" data-val="<%= e.id %>">
+                                        <h4 class="text-white fw-bold"><%= e.nom %></h4>
+                                        <p class="text-white-50 small px-5 mb-0" style="min-height: 40px;"><%= e.desc %></p>
+                                    </div>
+                                <% }) %>
+                            </div>
+                            <button class="carousel-control-prev" type="button" data-bs-target="#carouselEstilos" data-bs-slide="prev">
+                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Anterior</span>
+                            </button>
+                            <button class="carousel-control-next" type="button" data-bs-target="#carouselEstilos" data-bs-slide="next">
+                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Siguiente</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <hr class="border-secondary my-4">
+
+                    <div class="mb-2 text-center">
+                        <label class="form-label text-warning fw-bold mb-3 uppercase tracking-wider">
+                            <i class="bi bi-shield-shaded"></i> Mentalidad Colectiva
+                        </label>
+
+                        <% 
+                        const mentalidades = [
+                            { id: 'MUY_DEFENSIVA', nom: 'Muy Defensiva', desc: 'Prioridad total a mantener portería a cero, arriesgando lo mínimo.' },
+                            { id: 'DEFENSIVA', nom: 'Defensiva', desc: 'Bloque cauteloso, vigilando las contras enemigas antes de desplegarse.' },
+                            { id: 'EQUILIBRADA', nom: 'Equilibrada', desc: 'Neutral. El equipo ataca o defiende según lo pida el ritmo del partido.' },
+                            { id: 'OFENSIVA', nom: 'Ofensiva', desc: 'Mentalidad proactiva, adelantando líneas e incentivando la llegada al área.' },
+                            { id: 'ULTRA_OFENSIVA', nom: 'Ultra Ofensiva', desc: 'Asedio total. Todos al ataque asumiendo riesgos masivos atrás.' }
+                        ];
+                        const idxMentalidadInicial = mentalidades.findIndex(m => m.id === clubUsuario.tactica.mentalidad);
+                        const indexMentalidad = idxMentalidadInicial !== -1 ? idxMentalidadInicial : 2;
+                        %>
+
+                        <input type="hidden" id="input-mentalidad" name="mentalidad" value="<%= mentalidades[indexMentalidad].id %>">
+
+                        <div id="carouselMentalidades" class="carousel slide border border-secondary rounded p-3 bg-black bg-opacity-40" data-bs-ride="false" data-bs-interval="false">
+                            <div class="carousel-inner">
+                                <% mentalidades.forEach((m, idx) => { %>
+                                    <div class="carousel-item <%= idx === indexMentalidad ? 'active' : '' %>" data-val="<%= m.id %>">
+                                        <h4 class="text-white fw-bold"><%= m.nom %></h4>
+                                        <p class="text-white-50 small px-5 mb-0" style="min-height: 40px;"><%= m.desc %></p>
+                                    </div>
+                                <% }) %>
+                            </div>
+                            <button class="carousel-control-prev" type="button" data-bs-target="#carouselMentalidades" data-bs-slide="prev">
+                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Anterior</span>
+                            </button>
+                            <button class="carousel-control-next" type="button" data-bs-target="#carouselMentalidades" data-bs-slide="next">
+                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Siguiente</span>
+                            </button>
+                        </div>
+                    </div>
+
+                </form>
+            </div>
+            <div class="modal-footer border-secondary">
+                <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-primary" onclick="GestorTactico.guardarEstiloMentalidad('<%= clubUsuario._id %>', document.getElementById('input-estilo-juego').value, document.getElementById('input-mentalidad').value)">Guardar Tácticas</button>
+            </div>
+        </div>
+    </div>
+</div>
