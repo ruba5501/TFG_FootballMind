@@ -43,11 +43,9 @@ const GestorTactico = {
     intercambiarDOM: function(node1, node2) {
         const parent1 = node1.parentNode;
         const parent2 = node2.parentNode;
-        const next1 = node1.nextSibling;
-        const next2 = node2.nextSibling;
-
-        parent1.insertBefore(node2, next1);
-        parent2.insertBefore(node1, next2);
+        
+        parent1.appendChild(node2);
+        parent2.appendChild(node1);
     },
 
     actualizarNumeracion: function() {
@@ -62,75 +60,25 @@ const GestorTactico = {
         });
     },
     
-    /*repartirJugadores: function(configTactica) {
-        const titulares = Array.from(document.querySelectorAll('#lista-titulares .jugador-item')).slice(0, 11);
-        const copiaTitulares = [...titulares];
-        const asignacion = new Array(11);
-
-        configTactica.posiciones.forEach((posRequerida, index) => {
-            const i = copiaTitulares.findIndex(j => j.getAttribute('data-posicion') === posRequerida);
-            if (i !== -1) {
-                asignacion[index] = copiaTitulares.splice(i, 1)[0];
-            }
-        });
-
-        configTactica.posiciones.forEach((pos, index) => {
-            if (!asignacion[index]) {
-                asignacion[index] = copiaTitulares.shift();
-            }
-        });
-
-        return asignacion;
-    },*/
     repartirJugadores: function(configTactica) {
         return Array.from(document.querySelectorAll('#lista-titulares .jugador-item')).slice(0, 11);
     },
 
-    /*dibujarAlineacion: function(formacionActual) {
-        const contenedorJugadores = document.getElementById('capa-jugadores');
-        const config = this.formacionesDisponibles[formacionActual];
-        if (!contenedorJugadores || !config) return;
-
-        contenedorJugadores.innerHTML = ''; 
-        
-        const titularesAsignados = this.repartirJugadores(config);
-
-        titularesAsignados.forEach((li, i) => {
-            if (!li) return; 
-
-            const coords = config.coordenadas[i];
-            const posEnTactica = config.posiciones[i]; 
-            const posPrincipal = li.getAttribute('data-posicion'); 
-            const secundarias = (li.getAttribute('data-secundarias') || "").split(',').filter(s => s !== "");
-
-            let colorClase = 'bg-danger'; 
-            if (posPrincipal === posEnTactica) {
-                colorClase = 'bg-primary'; 
-            } else if (secundarias.includes(posEnTactica)) {
-                colorClase = 'bg-warning text-dark'; 
-            }
-
-            const nombreFull = li.querySelector('.nombre-txt')?.innerText || "Jugador";
-            const partes = nombreFull.trim().split(' ');
-            const nombreProcesado = partes.length > 1 
-                ? `${partes[0][0]}. ${partes.slice(1).join(' ')}`
-                : partes[0];
-
-            const node = document.createElement('div');
-            node.className = 'player-node'; 
-            node.style.top = coords.t + '%';
-            node.style.left = coords.l + '%';
-            node.innerHTML = `
-                <div class="circle ${colorClase}" title="Natural: ${posPrincipal}">${posEnTactica}</div>
-                <div class="name">${nombreProcesado}</div>
-            `;
-            contenedorJugadores.appendChild(node);
-        });
-    },*/
     dibujarAlineacion: function(formacionActual) {
         const contenedorJugadores = document.getElementById('capa-jugadores');
         const config = this.formacionesDisponibles[formacionActual];
         if (!contenedorJugadores || !config) return;
+
+        const contenedoresEtiquetas = document.querySelectorAll('.label-posicion-fija');
+        contenedoresEtiquetas.forEach(contenedor => {
+            const index = parseInt(contenedor.getAttribute('data-index'));
+            const nuevaPosicionTexto = config.posiciones[index];
+
+            const badge = contenedor.querySelector('.badge-posicion-tactica');
+            if (badge && nuevaPosicionTexto) {
+                badge.textContent = nuevaPosicionTexto;
+            }
+        });
 
         contenedorJugadores.innerHTML = ''; 
         

@@ -40,7 +40,7 @@
                         <i class="bi bi-mortarboard"></i> Cantera
                     </button>
                     <button class="btn btn-warning" onclick="guardarTodo()">
-                        <i class="bi bi-save"></i> Guardar Todo
+                        <i class="bi bi-save"></i> Guardar Alineación
                     </button>
                 </div>
             </div>
@@ -53,9 +53,26 @@
                 </div>
                 
                 <div class="p-2 bg-primary text-white small fw-bold">TITULARES</div>
-                <ul id="lista-titulares" class="list-group list-group-flush">
-                    <% clubUsuario.plantilla.slice(0, 11).forEach((j) => { %>
-                        <%- include('partials/jugador_items', { j, esTitular: true, filial: filial }) %>
+                <ul id="lista-titulares" class="list-group list-group-flush list-titulares-esquema">
+                    <% 
+                        const esquemaPosiciones = formaciones[clubUsuario.tactica.formacion].posiciones; 
+                    %>
+                    <% clubUsuario.plantilla.slice(0, 11).forEach((j, index) => { %>
+                        <% const rolDelHueco = esquemaPosiciones[index]; %>
+                        
+                        <div class="d-flex align-items-center bg-dark border-bottom border-secondary px-2 fila-tactica-fija">
+                            
+                            <div class="col-auto text-center me-2 label-posicion-fija" data-index="<%= index %>">
+                                <span class="badge bg-warning text-dark fw-bold badge-posicion-tactica" style="min-width: 48px; font-size: 0.8rem; display: inline-block;">
+                                    <%= rolDelHueco %>
+                                </span>
+                            </div>
+                            
+                            <div class="flex-grow-1 style-jugador-container">
+                                <%- include('partials/jugador_items', { j, esTitular: true, filial: filial }) %>
+                            </div>
+                            
+                        </div>
                     <% }) %>
                 </ul>
 
