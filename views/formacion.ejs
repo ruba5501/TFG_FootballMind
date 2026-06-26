@@ -69,7 +69,7 @@
                             </div>
                             
                             <div class="flex-grow-1 style-jugador-container">
-                                <%- include('partials/jugador_items', { j, esTitular: true, filial: filial }) %>
+                                <%- include('partials/jugador_items', { j, esTitular: true, filial: filial, competicionActual: competicionActual }) %>
                             </div>
                             
                         </div>
@@ -79,14 +79,14 @@
                 <div class="p-2 bg-info text-dark small fw-bold">SUPLENTES</div>
                 <ul id="lista-suplentes" class="list-group list-group-flush">
                     <% clubUsuario.plantilla.slice(11, 24).forEach(j => { %>
-                        <%- include('partials/jugador_items', { j, esTitular: false, filial: filial }) %>
+                        <%- include('partials/jugador_items', { j, esTitular: false, filial: filial, competicionActual: competicionActual }) %>
                     <% }) %>
                 </ul>
 
                 <div class="p-2 bg-secondary text-white small fw-bold">RESERVAS</div>
                 <ul id="lista-reservas" class="list-group list-group-flush">
                     <% clubUsuario.plantilla.slice(24).forEach(j => { %>
-                        <%- include('partials/jugador_items', { j, esTitular: false, filial: filial }) %>
+                        <%- include('partials/jugador_items', { j, esTitular: false, filial: filial, competicionActual: competicionActual }) %>
                     <% }) %>
                 </ul>
             </div>
@@ -100,18 +100,37 @@
 <%- include('partials/modal_tacticas') %>
 <%- include('partials/modal_subir_cantera') %>
 
-<script src="/js/logicaFormaciones.js"></script>
+<script src="/js/bootstrap.bundle.min.js"></script>
+<script src="/js/ui.js"></script> 
 <script src="/js/vistaAlertas.js"></script>
+<script src="/js/logicaFormaciones.js"></script>
+
 <script>
     const FORMACIONES_DATA = JSON.parse('<%- JSON.stringify(formaciones) %>');
     const CLUB_ID = '<%= clubUsuario._id %>';
 
     document.addEventListener('DOMContentLoaded', () => {
+        // Inicializa el campo de fútbol visual
         GestorTactico.init('<%= clubUsuario.tactica.formacion %>', FORMACIONES_DATA);
+        
+        // CAPTURA DEL ERROR DE CONVOCATORIA DE JORNADA
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('errorConvocatoria') === 'true') {
+            if (typeof UI !== 'undefined' && UI.notificarError) {
+                UI.notificarError(
+                    "Acción Cancelada", 
+                    "No se ha podido disputar la jornada. Tienes futbolistas de baja médica o suspendidos dentro de tus 18 convocados (titulares o suplentes). Haz los cambios pertinentes antes de avanzar."
+                );
+                // Limpia la URL estéticamente para que no se quede el "?errorConvocatoria=true" al recargar
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+        }
     });
 
+    // Función limpia para salvar la estrategia
     function guardarTodo() {
-        const formacionActual = document.getElementById('selector-formacion').value;
-        GestorTactico.guardarCambios(CLUB_ID, formacionActual);
+        if (typeof GestorTactico !== 'undefined') {
+            GestorTactico.guardarCambios(CLUB_ID);
+        }
     }
 </script>

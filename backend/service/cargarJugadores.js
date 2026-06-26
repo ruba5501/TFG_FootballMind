@@ -411,6 +411,43 @@ function obtenerFormacionAleatoria(pesosFiltrados){
     return opciones[0] || '4-4-2'; // Fallback por si acaso
 }
 
+function generarEstadoInicial() {
+    const selectorRnd = Math.random();
+    
+    let moral, satisfaccion, entrenamiento;
+
+    if (selectorRnd < 0.15) {
+        // PERFIL 1: El "Rebelde / Desmotivado" (15% de probabilidad)
+        // Jugadores transferibles, enfadados con la directiva o vagos.
+        moral = Math.floor(Math.random() * 21) + 40;         // Rango: 40 - 60 
+        satisfaccion = Math.floor(Math.random() * 21) + 35;  // Rango: 35 - 55 
+        rendimiento = Math.floor(Math.random() * 26) + 45; // Rango: 45 - 70 
+    } 
+    else if (selectorRnd < 0.40) {
+        // PERFIL 2: El "Cumplidor / Apagado" (25% de probabilidad)
+        //El típico jugador de rotación que no da problemas pero no brilla.
+        moral = Math.floor(Math.random() * 16) + 65;         // Rango: 65 - 80 
+        satisfaccion = Math.floor(Math.random() * 16) + 65;  // Rango: 65 - 80
+        rendimiento = Math.floor(Math.random() * 16) + 70; // Rango: 70 - 85
+    } 
+    else {
+        // PERFIL 3: El "Comprometido / Estrella" (60% de probabilidad)
+        // La mayoría de la plantilla: felices, profesionales y listos para jugar.
+        moral = Math.floor(Math.random() * 211) + 80;         // Rango: 80 - 100
+        satisfaccion = Math.floor(Math.random() * 21) + 80;  // Rango: 80 - 100
+        rendimiento = Math.floor(Math.random() * 21) * 80; // Rango: 80 - 100
+    }
+
+    return {
+        forma: 100,
+        moral,
+        satisfaccion,
+        rendimiento,
+        lesion: null,
+        sancionado: false
+    };
+}
+
 function generarFisico(pos, arquetipo) {
     let minAlt = 172, maxAlt = 190;
     const rangos = {

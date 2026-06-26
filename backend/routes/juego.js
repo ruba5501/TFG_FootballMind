@@ -9,8 +9,8 @@ const Club = require('../models/club');
 const Jugador = require('../models/jugador');
 const Partido = require('../models/partido');
 const Competicion = require('../models/competicion');
-//Rutas
-const { FORMACIONES } = require('./ruta/a/tu/archivo/de/formaciones');
+
+const { FORMACIONES } = require('../service/cargarFormaciones');
 // Motor
 const { simularPartido } = require('../engine/motorJuego');
 const { requireLogin } = require('../middleware/autenticacion');
@@ -67,26 +67,26 @@ async function simularPartidosPendientes(partidaId, fecha, clubUsuarioId) {
 }
 
 // Rendimiento base según la calidad física/técnica actual + potencial
-function calcularRendimiento(jugador, posicionAValorar) {
+function calcularNivel(jugador, posicionAValorar) {
     const forma = jugador.estado?.forma ?? 100;
     const moral = jugador.estado?.moral ?? 100;
+    const rendimiento = jugador.estado?.rendimiento ?? 80;
 
     // Mezcla de calidad presente (80%) y destellos de futuro (20%)
     const capacidadActual = (jugador.valoracion * 0.8) + (jugador.potencial * 0.2);
-    let rendimientoBase = (capacidadActual * 0.7) + (forma * 0.2) + (moral * 0.1);
-
+    let nivelBase = (capacidadActual * 0.55) + (forma * 0.20) + (rendimiento * 0.15) + (moral * 0.10);
     // Penalización por jugar fuera de su rol natural
     if (jugador.posicionPrincipal !== posicionAValorar) {
         const secundarias = jugador.posicionesSecundarias || [];
         const adaptacion = secundarias.includes(posicionAValorar) ? 0.90 : 0.60;
-        rendimientoBase *= adaptacion;
+        nivelBase *= adaptacion;
     }
 
-    return rendimientoBase;
+    return nivelBase;
 }
 
 // CONVOCATORIA INTELIGENTE DE LA IA
-async function seleccionarConvocatoriaIA(clubId, rivalReputacion, formacionPredefinida = '4-3-3') {
+async function seleccionarConvocatoriaIA(clubId, rivalReputacion, competicionId, formacionPredefinida = '4-3-3') {
     const plantillaTotal = await Jugador.find({ clubActual: clubId });
     const club = await Club.findById(clubId);
     if (!club || plantillaTotal.length === 0) return { titulares: [], suplentes: [] };
@@ -94,8 +94,12 @@ async function seleccionarConvocatoriaIA(clubId, rivalReputacion, formacionPrede
     // 1. Filtrar disponibles sanos
     const disponibles = plantillaTotal.filter(j => {
         if (j.estado?.lesion !== null) return false;
-        if (j.estado?.sancionado === true) return false;
         if ((j.estado?.forma ?? 100) < 40) return false; 
+        if (j.estado?.sanciones && j.estado.sanciones.length > 0) {
+        // Buscamos si tiene una sanción activa para LA COMPETICIÓN DE HOY
+        const sancionActiva = j.estado.sanciones.find(s => s.competicionId === competicionId && s.partidosRestantes > 0);
+            if (sancionActiva) return false; // Si le quedan partidos por cumplir en esta competición, NO está disponible
+        }
         return true;
     });
 
@@ -103,7 +107,7 @@ async function seleccionarConvocatoriaIA(clubId, rivalReputacion, formacionPrede
     const diferenciaReputacion = club.reputacion - rivalReputacion;
     let nivelRotacion = 'NINGUNA';
 
-    if (diferenciaReputacion > 15 && diferenciaReputacion <= 30) {
+    if (diferenciaReputacion > 20 && diferenciaReputacion <= 30) {
         nivelRotacion = 'MODERADA';
     } else if (diferenciaReputacion > 30) {
         nivelRotacion = 'INTENSA'; 
@@ -122,7 +126,7 @@ async function seleccionarConvocatoriaIA(clubId, rivalReputacion, formacionPrede
         let candidatos = disponibles
             .filter(j => j.posicionPrincipal === posicion && !elegidosIds.has(j._id.toString()))
             .map(j => {
-                let pesoAlineacion = calcularRendimiento(j, posicion);
+                let pesoAlineacion = calcularNivel(j, posicion);
                 const formaJugador = j.estado?.forma ?? 100;
 
                 // Modificadores de peso según estrategia de partido
@@ -143,7 +147,7 @@ async function seleccionarConvocatoriaIA(clubId, rivalReputacion, formacionPrede
             const parches = disponibles
                 .filter(j => !elegidosIds.has(j._id.toString()) && 
                             (j.posicionPrincipal === posicion || (j.posicionesSecundarias || []).includes(posicion)))
-                .sort((a, b) => calcularRendimiento(b, posicion) - calcularRendimiento(a, posicion)); // Corregido el mapeo limpio
+                .sort((a, b) => calcularNivel(b, posicion) - calcularNivel(a, posicion));
             
             if (parches.length > 0) {
                 const elegido = parches[0];
@@ -163,7 +167,7 @@ async function seleccionarConvocatoriaIA(clubId, rivalReputacion, formacionPrede
     // 4. Confección del banquillo reglamentario (13 suplentes)
     let suplentes = disponibles
         .filter(j => !elegidosIds.has(j._id.toString()))
-        .sort((a, b) => calcularRendimiento(b, b.posicionPrincipal) - calcularRendimiento(a, a.posicionPrincipal))
+        .sort((a, b) => calcularNivel(b, b.posicionPrincipal) - calcularNivel(a, a.posicionPrincipal))
         .slice(0, 13);
 
     while (suplentes.length < 13) {
@@ -179,6 +183,36 @@ router.get('/jugar-partido/:idPartido', requireLogin, async (req, res) => {
         const partidoId = req.params.idPartido;
         const partidoUsuario = await Partido.findById(partidoId).populate('equipoLocal equipoVisitante');
         const partidaJuego = await Partida.findById(partidoUsuario.partidaId).populate('clubSeleccionado');
+
+        // 1. DOBLE SEGURO ANTES DE SIMULAR: Comprobar la convocatoria del usuario de hoy
+        const clubUsuarioId = partidaJuego.clubSeleccionado._id.toString();
+        
+        // Buscamos la plantilla fresca del club del usuario
+        const clubUserVerificacion = await Club.findById(clubUsuarioId).populate('plantilla');
+        
+        // Los convocados que irán hoy al partido (11 Titulares + 7 Suplentes según tu lógica = 18 primeros de la lista)
+        const convocadosUsuario = clubUserVerificacion.plantilla.slice(0, 18);
+        
+        const tieneBajasConvocadas = convocadosUsuario.some(jugador => {
+            if (!jugador) return false;
+            
+            // Verificación A: ¿Está lesionado?
+            const lesionado = jugador.estado?.lesion !== null && jugador.estado?.lesion !== undefined;
+            
+            // Verificación B: ¿Tiene una sanción activa en esta competición?
+            let sancionado = false;
+            if (jugador.estado?.sanciones && Array.isArray(jugador.estado.sanciones)) {
+                sancionado = jugador.estado.sanciones.some(s => 
+                    s && s.competicionId === partidoUsuario.competicionId && s.partidosRestantes > 0
+                );
+            }
+            
+            return lesionado || sancionado;
+        });
+
+        if (tieneBajasConvocadas) {
+            return res.redirect(`/tactica?errorConvocatoria=true`);
+        }
 
         const inicioDia = new Date(partidaJuego.fechaActual);
         inicioDia.setHours(0, 0, 0, 0);
@@ -200,28 +234,25 @@ router.get('/jugar-partido/:idPartido', requireLogin, async (req, res) => {
             let equipoVisitanteData = { nombre: partido.equipoVisitante.nombre, titulares: [], suplentes: [] };
 
             // --- CONFIGURACIÓN EQUIPO LOCAL ---
-            if (partido.equipoLocal._id.toString() === partidaJuego.clubSeleccionado._id.toString()) {
-                const clubUser = await Club.findById(partido.equipoLocal._id).populate('plantilla');
-                equipoLocalData.titulares = clubUser.plantilla.slice(0, 11);
-                equipoLocalData.suplentes = clubUser.plantilla.slice(11, 18); // Del 12 al 18 van al banquillo
+            if (partido.equipoLocal._id.toString() === clubUsuarioId) {
+                equipoLocalData.titulares = clubUserVerificacion.plantilla.slice(0, 11);
+                equipoLocalData.suplentes = clubUserVerificacion.plantilla.slice(11, 18); 
             } else {
-                const convocatoria = await seleccionarConvocatoriaIA(partido.equipoLocal._id, partido.equipoVisitante.reputacion);
+                const convocatoria = await seleccionarConvocatoriaIA(partido.equipoLocal._id, partido.equipoVisitante.reputacion, partido.competicionId);
                 equipoLocalData.titulares = convocatoria.titulares;
                 equipoLocalData.suplentes = convocatoria.suplentes;
             }
 
             // --- CONFIGURACIÓN EQUIPO VISITANTE ---
-            if (partido.equipoVisitante._id.toString() === partidaJuego.clubSeleccionado._id.toString()) {
-                const clubUser = await Club.findById(partido.equipoVisitante._id).populate('plantilla');
-                equipoVisitanteData.titulares = clubUser.plantilla.slice(0, 11);
-                equipoVisitanteData.suplentes = clubUser.plantilla.slice(11, 18);
+            if (partido.equipoVisitante._id.toString() === clubUsuarioId) {
+                equipoVisitanteData.titulares = clubUserVerificacion.plantilla.slice(0, 11);
+                equipoVisitanteData.suplentes = clubUserVerificacion.plantilla.slice(11, 18);
             } else {
-                const convocatoria = await seleccionarConvocatoriaIA(partido.equipoVisitante._id, partido.equipoLocal.reputacion);
+                const convocatoria = await seleccionarConvocatoriaIA(partido.equipoVisitante._id, partido.equipoLocal.reputacion, partido.competicionId);
                 equipoVisitanteData.titulares = convocatoria.titulares;
                 equipoVisitanteData.suplentes = convocatoria.suplentes;
             }
             
-            // Enviamos los objetos completos (con titulares y suplentes) al simulador de partidos
             const resultado = simularPartido(equipoLocalData, equipoVisitanteData);
 
             partido.golesLocal = resultado.marcador.local;
@@ -229,7 +260,6 @@ router.get('/jugar-partido/:idPartido', requireLogin, async (req, res) => {
             partido.jugado = true;
             await partido.save();
 
-            // Limpieza de canteranos
             await clubesDAO.limpiarConvocados(partido.equipoLocal._id);
             await clubesDAO.limpiarConvocados(partido.equipoVisitante._id);
 
@@ -240,35 +270,21 @@ router.get('/jugar-partido/:idPartido', requireLogin, async (req, res) => {
             }
         }
 
-        //por si hay una recarga de pagina o un fallo durante la simulacion
         if (!resultadoUsuario) {
             const partidoYaJugado = await Partido.findById(partidoId).populate('equipoLocal equipoVisitante');
             
             if (partidoYaJugado && partidoYaJugado.jugado) {
-                // Reconstruimos el objeto resultado básico que espera la vista
                 resultadoUsuario = {
-                    marcador: {
-                        local: partidoYaJugado.golesLocal,
-                        visitante: partidoYaJugado.golesVisitante
-                    },
-                    // Añadimos arrays vacíos o simulados para las crónicas si tu plantilla los exige
+                    marcador: { local: partidoYaJugado.golesLocal, visitante: partidoYaJugado.golesVisitante },
                     goleadores: [], 
                     incidencias: []
                 };
 
-                // Recuperamos las plantillas con su orden actual para pintar los nombres en la vista
                 const clubLocal = await Club.findById(partidoYaJugado.equipoLocal._id).populate('plantilla');
                 const clubVisitante = await Club.findById(partidoYaJugado.equipoVisitante._id).populate('plantilla');
 
-                // Pasamos los primeros 11 como los jugadores que disputaron el partido
-                equipoLocalUsuario = { 
-                    nombre: partidoYaJugado.equipoLocal.nombre, 
-                    jugadores: clubLocal.plantilla.slice(0, 11) 
-                };
-                equipoVisitanteUsuario = { 
-                    nombre: partidoYaJugado.equipoVisitante.nombre, 
-                    jugadores: clubVisitante.plantilla.slice(0, 11) 
-                };
+                equipoLocalUsuario = { nombre: partidoYaJugado.equipoLocal.nombre, jugadores: clubLocal.plantilla.slice(0, 11) };
+                equipoVisitanteUsuario = { nombre: partidoYaJugado.equipoVisitante.nombre, jugadores: clubVisitante.plantilla.slice(0, 11) };
             } else {
                 return res.status(404).send("Partido no encontrado o no disponible.");
             }

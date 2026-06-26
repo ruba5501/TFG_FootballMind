@@ -153,29 +153,41 @@ const GestorTactico = {
     },
 
     guardarCambios: async function(clubId) {
-        const nuevaPlantilla = Array.from(document.querySelectorAll('.jugador-item'))
-                                    .map(li => li.getAttribute('data-id'));
+        // Buscamos si hay algún jugador bloqueado metido en Titulares (0-11) o Suplentes (11-24)
+        const titularesYSuplentes = Array.from(document.querySelectorAll('#lista-titulares .jugador-item, #lista-suplentes .jugador-item'));
+        
+        const tieneNoDisponibles = titularesYSuplentes.some(li => li.getAttribute('data-bloqueado') === 'true');
+        
+        if (tieneNoDisponibles) {
+            UI.notificarError(
+                "Convocatoria Inválida", 
+                "No puedes guardar la alineación. Tienes jugadores lesionados o sancionados entre los titulares o suplentes. Muévelos a la Reserva usando el botón de desconvocar (🔽)."
+            );
+            return;
+        }
+
+        const nuevaPlantilla = Array.from(document.querySelectorAll('.jugador-item')).map(li => li.getAttribute('data-id'));
         const formacion = document.getElementById('selector-formacion').value;
         
         try {
             const response = await fetch(`/guardarAlineacion/${clubId}`, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ 
-                    nuevaPlantilla: nuevaPlantilla, 
-                    formacion: formacion 
-                })
+                body: JSON.stringify({ nuevaPlantilla: nuevaPlantilla, formacion: formacion })
             });
-
+            
             if (response.ok) {
-                alert("Alineación y táctica guardadas correctamente");
-                location.reload();
+                // 🌟 Nueva alerta estética de éxito
+                UI.notificarExito("Alineación y táctica guardadas correctamente.", () => {
+                    location.reload();
+                });
             } else {
-                throw new Error("Error en la respuesta del servidor");
+                const errData = await response.json();
+                UI.notificarError("Error del Servidor", errData.error || "No se pudo guardar la táctica.");
             }
-        } catch (error) {
-            console.error("Error al guardar:", error);
-            alert("Error al conectar con el servidor");
+        } catch (error) { 
+            console.error(error); 
+            UI.notificarError("Error de Conexión", "Hubo un problema de red al intentar guardar.");
         }
     },
 
@@ -265,5 +277,26 @@ const GestorTactico = {
             .then(html => {
                 contenedor.innerHTML = `<div class="p-3">${html}</div>`;
             });
-    }
+    },
+
+    desconvocarJugador: function(liJugador) {
+        const listaReservas = document.getElementById('lista-reservas');
+        const selectorFormacion = document.getElementById('selector-formacion');
+        const formacionActual = selectorFormacion ? selectorFormacion.value : '4-3-3';
+
+        if (!listaReservas || !liJugador) return;
+
+        // Si el usuario tenía este jugador seleccionado en azul, limpiamos la selección
+        if (this.jugadorSeleccionado === liJugador) {
+            liJugador.classList.remove('selected', 'bg-primary');
+            this.jugadorSeleccionado = null;
+        }
+
+        // Movemos el elemento li directamente al contenedor de reservas (al final)
+        listaReservas.appendChild(liJugador);
+
+        // Forzamos al sistema a repintar el campo de fútbol y recalcular los números de los titulares
+        this.dibujarAlineacion(formacionActual);
+        this.actualizarNumeracion();
+    },
 };

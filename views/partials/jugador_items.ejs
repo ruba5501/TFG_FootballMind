@@ -1,66 +1,137 @@
 <% 
-    let esCanteranoVal = false;
-    if (typeof filial !== 'undefined' && filial && filial.plantilla) {
-        esCanteranoVal = filial.plantilla.some(p => p._id.toString() === j._id.toString());
-    }
+    // 🛡️ Salvaguarda absoluta para evitar que el render colapse si el jugador viene vacío o null
+    if (typeof j !== 'undefined' && j) {
+        
+        // 1. Verificar si es del filial
+        let esCanteranoVal = false;
+        if (typeof filial !== 'undefined' && filial && filial.plantilla) {
+            esCanteranoVal = filial.plantilla.some(p => p && p._id && p._id.toString() === j._id.toString());
+        }
 
-    const formaVal = j.estadoFisico || 100;
-    
-    let colorClase = 'bg-fitness-low';
-    if (formaVal > 80) {
-        colorClase = 'bg-fitness-high';
-    } else if (formaVal > 50) {
-        colorClase = 'bg-fitness-mid';
-    }
-    
-    const valorForma = formaVal; 
+        // 2. Extraer estado de forma segura garantizando valores numéricos
+        const estadoJugador = j.estado || {};
+        const formaVal = typeof estadoJugador.forma !== 'undefined' ? estadoJugador.forma : 100;
+        const moralVal = typeof estadoJugador.moral !== 'undefined' ? estadoJugador.moral : 100;
+        const rendimientoVal = typeof estadoJugador.rendimiento !== 'undefined' ? estadoJugador.rendimiento : 80;
+
+        // 3. Control de lesiones limpio
+        const estaLesionado = !!(estadoJugador.lesion);
+        const textoLesion = estaLesionado ? estadoJugador.lesion : '';
+
+        // 4. Control de sanciones limpio
+        let estaSancionadoHoy = false;
+        let partidosSancionRestantes = 0;
+        
+        if (typeof competicionActual !== 'undefined' && competicionActual && Array.isArray(estadoJugador.sanciones)) {
+            const sancionMatch = estadoJugador.sanciones.find(s => s && s.competicionId === competicionActual && s.partidosRestantes > 0);
+            if (sancionMatch) {
+                estaSancionadoHoy = true;
+                partidosSancionRestantes = sancionMatch.partidosRestantes;
+            }
+        }
+
+        // Bloqueo total si tiene cruz médica o roja disciplinaria
+        const jugadorBloqueado = estaLesionado || estaSancionadoHoy;
+
+        // 5. Asignación limpia de clases CSS para evitar atascos de comillas
+        let clForma = 'bg-danger';
+        if (formaVal > 80) clForma = 'bg-success';
+        else if (formaVal > 50) clForma = 'bg-warning';
+
+        let clMoral = 'bg-danger';
+        if (moralVal > 75) clMoral = 'bg-info';
+        else if (moralVal > 45) clMoral = 'bg-warning text-dark';
+
+        let clRendimiento = 'bg-secondary';
+        if (rendimientoVal > 75) clRendimiento = 'bg-primary';
+        else if (rendimientoVal > 45) clRendimiento = 'bg-warning text-dark';
+
+        // Clases de la fila contenedora
+        let clasesFila = [];
+        if (typeof esTitular !== 'undefined' && esTitular) clasesFila.push('fw-bold');
+        if (jugadorBloqueado) clasesFila.push('opacity-50');
 %>
 
-<li class="list-group-item bg-dark text-white border-secondary d-flex align-items-center jugador-item <%= esTitular ? 'fw-bold' : '' %>" 
+<li class="list-group-item bg-dark text-white border-secondary d-flex align-items-center jugador-item <%= clasesFila.join(' ') %>" 
     data-id="<%= j._id %>" 
-    data-posicion="<%= j.posicionPrincipal %>"
-    data-secundarias="<%= (j.posicionesSecundarias || []).join(',') %>"
+    data-posicion="<%= j.posicionPrincipal || '???' %>"
+    data-secundarias="<%= Array.isArray(j.posicionesSecundarias) ? j.posicionesSecundarias.join(',') : '' %>"
+    data-bloqueado="<%= jugadorBloqueado ? 'true' : 'false' %>"
     onclick="GestorTactico.seleccionarJugador(this)">
     
     <div class="flex-grow-1">
-        <div class="d-flex justify-content-between align-items-center p-2 rounded hover-shadow">
+        <div class="d-flex justify-content-between align-items-center p-1 rounded hover-shadow">
             
-            <div class="d-flex align-items-center text-truncate" style="max-width: 50%;">
-                <strong class="nombre-txt text-truncate"><%= j.nombre %></strong>
+            <div class="d-flex align-items-center text-truncate gap-1" style="max-width: 50%;">
+                <strong class="nombre-txt text-truncate"><%= j.nombre || 'Sin nombre' %></strong>
+                
+                <% if (estaLesionado) { %>
+                    <span class="badge bg-danger text-white ms-1" style="font-size: 0.65rem;" title="Lesión: <%= textoLesion %>">
+                        <i class="bi bi-plus-square-fill"></i> <%= textoLesion %>
+                    </span>
+                <% } %>
+                
+                <% if (estaSancionadoHoy) { %>
+                    <span class="badge bg-danger text-white ms-1" style="font-size: 0.65rem;" title="Sancionado en <%= competicionActual %>">
+                        <i class="bi bi-file-fill text-warning"></i> <%= partidosSancionRestantes %> P.
+                    </span>
+                <% } %>
             </div>
             
-            <div class="d-flex gap-3 text-center">
+            <div class="d-flex gap-2 text-center">
                 <div>
-                    <small style="font-size: 0.7rem; text-transform: uppercase;">Val</small>
-                    <span class="badge bg-primary text-white d-block fw-bold fs-6"><%= j.valoracion %></span>
+                    <small style="font-size: 0.6rem; text-transform: uppercase; display:block; color:#aaa;">Val</small>
+                    <span class="badge bg-primary text-white p-1 fw-bold" style="min-width:24px;"><%= j.valoracion || 0 %></span>
                 </div>
                 <div>
-                    <small style="font-size: 0.7rem; text-transform: uppercase;">Pot</small>
-                    <span class="badge bg-info text-dark d-block fw-bold fs-6"><%= j.potencial %></span>
+                    <small style="font-size: 0.6rem; text-transform: uppercase; display:block; color:#aaa;">Pot</small>
+                    <span class="badge bg-info text-dark p-1 fw-bold" style="min-width:24px;"><%= j.potencial || 0 %></span>
                 </div>
                 <div>
-                    <small style="font-size: 0.7rem; text-transform: uppercase;">Pos</small>
-                    <span class="badge bg-secondary text-white d-block fw-bold fs-6"><%= j.posicionPrincipal %></span>
+                    <small style="font-size: 0.6rem; text-transform: uppercase; display:block; color:#aaa;">Pos</small>
+                    <span class="badge bg-secondary text-white p-1 fw-bold" style="min-width:32px;"><%= j.posicionPrincipal || '?' %></span>
                 </div>
             </div>
         </div>
         
-        <div class="d-flex align-items-center gap-2 ms-1">
-            <div class="fitness-container" style="width: 60px; height: 8px; background: #444; border-radius: 4px; overflow: hidden;">
-                <div class="fitness-bar <%= colorClase %>" 
-                     style="--p: <%= valorForma %>; width: calc(var(--p) * 1%); height: 100%;">
+        <div class="d-flex align-items-center gap-3 ms-1 mt-1 flex-wrap">
+    
+            <div class="d-flex align-items-center gap-1" title="Forma Física: <%= formaVal %>%">
+                <small style="font-size: 0.6rem; color: #bbb;">FOR:</small>
+                <div style="width: 35px; height: 5px; background: #444; border-radius: 2px; overflow: hidden;">
+                    <div class="<%= clForma %>" style="--w-forma: <%= formaVal %>; width: calc(var(--w-forma) * 1%); height: 100%;"></div>
+                </div>
+            </div>
+
+            <div class="d-flex align-items-center gap-1" title="Moral / Ánimo: <%= moralVal %>%">
+                <small style="font-size: 0.6rem; color: #bbb;">MOR:</small>
+                <div style="width: 35px; height: 5px; background: #444; border-radius: 2px; overflow: hidden;">
+                    <div class="<%= clMoral %>" style="--w-moral: <%= moralVal %>; width: calc(var(--w-moral) * 1%); height: 100%;"></div>
+                </div>
+            </div>
+
+            <div class="d-flex align-items-center gap-1" title="Rendimiento / Entreno: <%= rendimientoVal %>%">
+                <small style="font-size: 0.6rem; color: #bbb;">REN:</small>
+                <div style="width: 35px; height: 5px; background: #444; border-radius: 2px; overflow: hidden;">
+                    <div class="<%= clRendimiento %>" style="--w-ren: <%= rendimientoVal %>; width: calc(var(--w-ren) * 1%); height: 100%;"></div>
                 </div>
             </div>
             
-            <small style="font-size: 0.7rem;"><%= formaVal %>%</small>
-            
             <% if (esCanteranoVal) { %>
-                <span class="badge bg-info text-dark" style="font-size: 0.5rem;">CANTERA</span>
+                <span class="badge bg-light text-dark p-1" style="font-size: 0.5rem; letter-spacing: 0.5px;">FILIAL</span>
             <% } %>
-        </div>
+        </div>  
     </div>
 
-    <button type="button" class="btn btn-sm btn-outline-info ms-2" onclick="event.stopPropagation(); GestorTactico.verAtributos('<%= j._id %>')">
-        <i class="bi bi-bar-chart-fill"></i>
+    <button type="button" class="btn btn-sm btn-outline-info ms-2 p-1" style="line-height:1;" onclick="event.stopPropagation(); GestorTactico.verAtributos('<%= j._id %>')">
+        <i class="bi bi-bar-chart-fill" style="font-size: 0.75rem;"></i>
+    </button>
+
+    <button type="button" class="btn btn-sm btn-outline-danger ms-1 p-1" style="line-height:1;" title="Enviar a reservas / Vaciar hueco" onclick="event.stopPropagation(); GestorTactico.desconvocarJugador(this.closest('.jugador-item'))">
+        <i class="bi bi-box-arrow-down" style="font-size: 0.75rem;"></i>
     </button>
 </li>
+
+<% 
+    } // Cierre de la salvaguarda de existencia del jugador
+%>

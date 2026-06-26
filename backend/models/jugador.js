@@ -121,7 +121,12 @@ const jugadorSchema = new mongoose.Schema({
     forma: { type: Number, default: 100 },
     moral: { type: Number, default: 100 },
     satisfaccion: { type: Number, default: 100 },
-    lesion: { type: String, default: null }
+    lesion: { type: String, default: null },
+    sanciones: [{
+        competicionId: { type: String }, // 'LIGA', 'CHAMPIONS', 'COPA'
+        partidosRestantes: { type: Number, default: 0 } // Cuántos partidos le quedan de castigo
+    }],
+    rendimiento: { type: Number, default: 80 }
   },
 
   mercado: {

@@ -61,5 +61,34 @@ const UI = {
             bsModal.hide();
             if (callbackRedirect) callbackRedirect();
         });
+    },
+
+    // Reemplazo estético de alert() de error o validación
+    notificarError: function(titulo, mensaje) {
+        const modalId = 'modal-error-dinamico';
+        let modalEl = document.getElementById(modalId);
+        if (modalEl) modalEl.remove();
+
+        const modalHTML = `
+            <div class="modal fade" id="${modalId}" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content bg-dark text-white border-danger">
+                        <div class="modal-header border-danger">
+                            <h5 class="modal-title text-danger"><i class="bi bi-exclamation-triangle-fill me-2"></i>${titulo}</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>${mensaje}</p>
+                        </div>
+                        <div class="modal-footer border-secondary">
+                            <button type="button" class="btn btn-danger w-100" data-bs-dismiss="modal">Entendido</button>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+        const bsModal = new bootstrap.Modal(document.getElementById(modalId));
+        bsModal.show();
     }
 };
