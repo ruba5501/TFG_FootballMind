@@ -240,7 +240,7 @@ async function generarJugadoresNuevaPartida(partidaId, listaClubes, nombrePartid
                     valorMercado: calcularValorMercado(ratings.ca, ratings.pa, edad),
                     salario: calcularSalario(ratings.ca, ratings.pa, edad, rep),
                     finContrato: finContrato,
-                    estado: { forma: 100, moral: Math.floor(Math.random() * 21) + 80, satisfaccion: 100, lesion: null },
+                    estado: generarEstadoInicial(),
                     statsTemporada: competicionesDelClub.map(compId => ({
                         competicionId: compId,
                         pj: 0,
@@ -433,9 +433,9 @@ function generarEstadoInicial() {
     else {
         // PERFIL 3: El "Comprometido / Estrella" (60% de probabilidad)
         // La mayoría de la plantilla: felices, profesionales y listos para jugar.
-        moral = Math.floor(Math.random() * 211) + 80;         // Rango: 80 - 100
+        moral = Math.floor(Math.random() * 21) + 80;         // Rango: 80 - 100
         satisfaccion = Math.floor(Math.random() * 21) + 80;  // Rango: 80 - 100
-        rendimiento = Math.floor(Math.random() * 21) * 80; // Rango: 80 - 100
+        rendimiento = Math.floor(Math.random() * 21) + 80; // Rango: 80 - 100
     }
 
     return {

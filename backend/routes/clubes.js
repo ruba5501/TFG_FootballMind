@@ -87,12 +87,45 @@ clubRouter.get('/formacion/:partidaId', requireLogin, async (req, res) => {
                 }
             });
         } else {
-            // Si ya hay táctica guardada, respetamos de forma estricta el orden guardado en el array de 'plantilla'
-            const mapaPlantilla = new Map(clubUsuario.plantilla.map(j => [j._id.toString(), j]));
+            // 1. Filtramos la plantilla para tener un mapa limpio de jugadores REALES indexados por su ID
+            const plantillaValida = clubUsuario.plantilla.filter(j => j !== null && j !== undefined);
+            const mapaPlantilla = new Map(plantillaValida.map(j => [j._id.toString(), j]));
             
-            // Re-mapeamos basándonos en el orden exacto de los IDs guardados de la colección original
-            const clubCrudo = await Club.findById(clubUsuario._id);
-            clubUsuario.plantilla = clubCrudo.plantilla.map(id => mapaPlantilla.get(id.toString())).filter(Boolean);
+            // 2. Traemos las listas tácticas guardadas que SÍ contienen los 'null' en sus posiciones
+            const tactica = clubUsuario.tactica;
+            const idsTitulares = tactica.titulares || [];
+            const idsSuplentes = tactica.suplentes || [];
+            const idsReservas = tactica.reservas || [];
+
+            // CONTROL DE JUGADORES HUÉRFANOS (Canteranos recién subidos)
+            const idsMapeados = new Set([...idsTitulares, ...idsSuplentes, ...idsReservas].filter(Boolean).map(id => id.toString()));
+            
+            // Buscamos si hay algún jugador de la plantilla real del club que NO esté en ese Set
+            const huerfanos = [];
+            plantillaValida.forEach(j => {
+                if (!idsMapeados.has(j._id.toString())) {
+                    huerfanos.push(j._id); // Guardamos el ID del jugador rezagado
+                }
+            });
+
+            // 3. Reconstruimos la plantilla uniendo los bloques + los huérfanos al final del todo (Reservas)
+            const estructuraVisual = [...idsTitulares, ...idsSuplentes, ...idsReservas, ...huerfanos];
+
+            clubUsuario.plantilla = estructuraVisual.map(id => {
+                // Si el ID es null o es el string 'vacio', inyectamos el objeto dummy de hueco libre
+                if (!id || id === 'vacio') {
+                    return { 
+                        _id: 'vacio', 
+                        nombre: 'Sin asignar', 
+                        posicionPrincipal: '--', 
+                        media: 0, 
+                        esVacio: true 
+                    };
+                }
+                
+                // Si es un ID real, lo recuperamos del mapa de jugadores
+                return mapaPlantilla.get(id.toString());
+            }).filter(Boolean); // Limpieza por si acaso un ID ya no existiera
         }
 
         res.render('formacion', {
@@ -111,18 +144,25 @@ clubRouter.get('/formacion/:partidaId', requireLogin, async (req, res) => {
 clubRouter.post('/guardarAlineacion/:clubId', requireLogin, async (req, res) => {
     try {
         const { nuevaPlantilla, formacion } = req.body;
+        const clubId = req.params.clubId;
+
+        const nuevosTitulares = nuevaPlantilla.slice(0, 11);
+        const nuevosSuplentes = nuevaPlantilla.slice(11, 24);
+        const nuevasReservas = nuevaPlantilla.slice(24);
+
+        const plantillaLimpiaSinVacios = nuevaPlantilla.filter(id => id !== null && id !== 'vacio');
         
         await Club.findByIdAndUpdate(req.params.clubId, {
             $set: {
-                plantilla: nuevaPlantilla,
+                plantilla: plantillaLimpiaSinVacios,
                 "tactica.formacion": formacion,
-                "tactica.titulares": nuevaPlantilla.slice(0, 11),
-                "tactica.suplentes": nuevaPlantilla.slice(11, 24),
-                "tactica.reservas": nuevaPlantilla.slice(24)
+                "tactica.titulares": nuevosTitulares,
+                "tactica.suplentes": nuevosSuplentes,
+                "tactica.reservas": nuevasReservas
             }
         });
 
-        res.json({ success: true });
+        res.json({ OK: true });
     } catch (err) {
         console.error("Error al guardar alineación y formación:", err);
         res.status(500).json({ error: "No se pudo guardar la estrategia" });
