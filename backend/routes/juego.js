@@ -502,12 +502,9 @@ router.get('/clasificacion/:partidaId/:competicionId', requireLogin, async (req,
             });
         }
 
-        // 🛑 NUEVO: Detectar si ya empezó la fase eliminatoria
         const tieneEliminatorias = todosLosPartidos.some(p => p.tipo === 'ELIMINATORIA' || p.tipo === 'FINAL');
 
-        // ==========================================
         // BLOQUE 1: PROCESAR TABLA DE CLASIFICACIÓN
-        // ==========================================
         const tabla = {};
         const mapaEquiposGrupos = {};
 
@@ -530,7 +527,6 @@ router.get('/clasificacion/:partidaId/:competicionId', requireLogin, async (req,
                 }
             });
 
-            // OJO: Solo sumamos a la tabla los partidos que fueron de tipo 'LIGA'
             if (p.jugado && p.tipo === 'LIGA') {
                 const idLocal = p.equipoLocal._id.toString();
                 const idVisit = p.equipoVisitante._id.toString();
@@ -565,9 +561,7 @@ router.get('/clasificacion/:partidaId/:competicionId', requireLogin, async (req,
             });
         }
 
-        // ==========================================
         // BLOQUE 2: PROCESAR CUADRO DE ELIMINATORIAS (SI TIENE)
-        // ==========================================
         const rondas = {};
         if (tieneEliminatorias) {
             const getNombreRonda = (jornada, tipo) => {
@@ -610,8 +604,8 @@ router.get('/clasificacion/:partidaId/:competicionId', requireLogin, async (req,
             partidosPorJornada,
             jornadas,
             jornadaActual,
-            rondas,               // Enviamos las rondas eliminatorias
-            tieneEliminatorias    // Flag para saber si mostramos el Navbar de pestañas
+            rondas,             
+            tieneEliminatorias    
         });
 
     } catch (error) {

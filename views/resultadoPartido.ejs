@@ -59,7 +59,7 @@
                 <% eventosSeguros.forEach(evento => { %>
                     <% if (evento) { %>
                         <li class="list-group-item bg-transparent text-white border-secondary border-opacity-25 py-2.5">
-                            <strong class="text-warning me-2">Min <%= evento.minuto ?? '??' %>:</strong> 
+                            <strong class="text-light me-2">Min <%= evento.minuto ?? '??' %>:</strong> 
                             <% if(evento.tipo === 'GOL') { %>
                                 <span class="text-success fw-bold"><i class="bi bi-ball me-1"></i> ⚽ GOL</span>
                             <% } else if(evento.tipo === 'PENALTI_TANDA') { %>
@@ -67,7 +67,7 @@
                             <% } else if(evento.tipo === 'INFO') { %>
                                 <span class="text-light fw-bold text-uppercase"><i class="bi bi-info-square me-1"></i> 📢 NOTA</span>
                             <% } else { %>
-                                <span class="text-muted"><i class="bi bi-exclamation-triangle me-1"></i> ⚠ Ocasión</span>
+                                <span class="text-warning"> ⚠ Ocasión</span>
                             <% } %>
                             <span class="ms-1 text-white-50">- <%= evento.texto || '' %></span>
                         </li>
