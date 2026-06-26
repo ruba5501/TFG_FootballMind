@@ -24,16 +24,24 @@ function getMedia(jugador, categoria, attrs) {
  * Reduce la energía de los jugadores basándose en su resistencia y motivación.
  */
 function aplicarCansancio(equipo) {
-    equipo.jugadores.forEach(j => {
-        const resistencia = j.atributos.fisico.resistencia;
-        const motivacion = j.atributos.mental.motivacion;
+    // 🛡️ SALVAGUARDA: Si el objeto no existe, o no tiene jugadores, evitamos el crash
+    if (!equipo) return;
+    
+    // Si pasaste el array directamente o la propiedad mapeada
+    const listaJugadores = equipo.jugadores || equipo.titulares || (Array.isArray(equipo) ? equipo : []);
+
+    listaJugadores.forEach(j => {
+        if (!j || !j.atributos || !j.estado) return; // Saltamos si el objeto es un hueco vacío
         
-        // Jugadores motivados se cansan un poco menos (sacan fuerzas de flaqueza)
-        const factorMente = 1 - ((motivacion - 50) / 500); // Pequeña bonificación
+        const resistencia = j.atributos.fisico?.resistencia ?? 50;
+        const motivacion = j.atributos.mental?.motivacion ?? 50;
+        
+        // Jugadores motivados se cansan un poco menos
+        const factorMente = 1 - ((motivacion - 50) / 500); 
         
         // Desgaste base
         const perdida = (0.7 - (resistencia * 0.005)) * factorMente; 
-        j.estado.forma = Math.max(0, j.estado.forma - perdida);
+        j.estado.forma = Math.max(0, (j.estado.forma || 100) - perdida);
     });
 }
 
@@ -217,6 +225,22 @@ function ejecutarPenaltiIndividual(tirador, portero) {
  * MOTOR DE SIMULACIÓN PRINCIPAL ENTRADA
  */
 function simularPartido(local, visitante, tipoPartido = 'LIGA') {
+    // 🛡️ RE-MAPEO DE SEGURIDAD: Nos aseguramos de que ambos objetos tengan la propiedad .jugadores bien definida
+    if (local && !local.jugadores) {
+        local.jugadores = local.titulares || (Array.isArray(local) ? local : []);
+    }
+    if (visitante && !visitante.jugadores) {
+        visitante.jugadores = visitante.titulares || (Array.isArray(visitante) ? visitante : []);
+    }
+
+    // Si después del re-mapeo siguen vacíos, evitamos lanzar el bucle
+    if (!local || !local.jugadores || local.jugadores.length === 0) {
+        throw new Error("El equipo local no tiene jugadores disponibles para simular.");
+    }
+    if (!visitante || !visitante.jugadores || visitante.jugadores.length === 0) {
+        throw new Error("El equipo visitante no tiene jugadores disponibles para simular.");
+    }
+
     let estadoPartido = {
         golesLocal: 0,
         golesVisitante: 0,
@@ -236,10 +260,9 @@ function simularPartido(local, visitante, tipoPartido = 'LIGA') {
     if ((tipoPartido === 'ELIMINATORIA' || tipoPartido === 'FINAL') && estadoPartido.golesLocal === estadoPartido.golesVisitante) {
         estadoPartido.eventos.push({ minuto: 90, tipo: 'INFO', texto: `Empate ${estadoPartido.golesLocal}-${estadoPartido.golesVisitante}. ¡Nos vamos a la prórroga!` });
         
-        // Simula del 91 al 120 con la misma exactitud futbolística
         estadoPartido = simularTramoMinutos(local, visitante, 91, 120, estadoPartido);
 
-        // 3. ¿SÍGUEN EMPATADOS? -> TANDA DE PENALTIS STATS
+        // 3. ¿SIGUEN EMPATADOS?
         if (estadoPartido.golesLocal === estadoPartido.golesVisitante) {
             const tanda = simularTandaPenaltis(local, visitante, estadoPartido.eventos);
             ganadorPenaltis = tanda.ganadorId;
@@ -251,8 +274,8 @@ function simularPartido(local, visitante, tipoPartido = 'LIGA') {
         marcador: { local: estadoPartido.golesLocal, visitante: estadoPartido.golesVisitante },
         posesion: { local: Math.floor(Math.min(99, Math.max(1, estadoPartido.posesionLocal))), visitante: 100 - Math.floor(Math.min(99, Math.max(1, estadoPartido.posesionLocal))) },
         eventos: estadoPartido.eventos,
-        ganadorPenaltis: ganadorPenaltis, // Enviará el ID del club ganador
-        marcadorTanda: marcadorTanda      // Por si quieres renderizar los penaltis en el front
+        ganadorPenaltis: ganadorPenaltis, 
+        marcadorTanda: marcadorTanda      
     };
 }
 

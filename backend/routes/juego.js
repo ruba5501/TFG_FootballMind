@@ -3,6 +3,7 @@ const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
 
+const clubesDAO = require('../daos/clubesDAO');
 // Modelos
 const Partida = require('../models/partida');
 const Club = require('../models/club');
@@ -34,14 +35,29 @@ async function simularPartidosPendientes(partidaId, fecha, clubUsuarioId) {
         
         if (esPartidoUsuario) continue; 
 
-        const jugadoresLocal = await seleccionarMejorOnce(partido.equipoLocal._id);
-        const jugadoresVisitante = await seleccionarMejorOnce(partido.equipoVisitante._id);
+        // 🛡️ REEMPLAZO COHERENTE CON TU MOTOR DE IA:
+        // Mandamos a la IA a armar las alineaciones usando la reputación del rival y la competición actual
+        const convocatoriaLocal = await seleccionarConvocatoriaIA(
+            partido.equipoLocal._id, 
+            partido.equipoVisitante.reputacion || 50, 
+            partido.competicionId?.toString()
+        );
+        
+        const convocatoriaVisitante = await seleccionarConvocatoriaIA(
+            partido.equipoVisitante._id, 
+            partido.equipoLocal.reputacion || 50, 
+            partido.competicionId?.toString()
+        );
 
-        // 1. Simulación total delegada al motor inteligente (pasa el tipo de partido)
+        // Extraemos solo los titulares para el motor de simulación
+        const jugadoresLocal = convocatoriaLocal.titulares;
+        const jugadoresVisitante = convocatoriaVisitante.titulares;
+
+        // 1. Simulación total delegada al motor inteligente
         let resultado = simularPartido(
             { id: partido.equipoLocal._id, nombre: partido.equipoLocal.nombre, jugadores: jugadoresLocal },
             { id: partido.equipoVisitante._id, nombre: partido.equipoVisitante.nombre, jugadores: jugadoresVisitante },
-            partido.tipo // <--- CRÍTICO: Avisa si es LIGA, ELIMINATORIA o FINAL
+            partido.tipo // LIGA, ELIMINATORIA o FINAL
         );
 
         partido.golesLocal = resultado.marcador.local;
@@ -58,7 +74,7 @@ async function simularPartidosPendientes(partidaId, fecha, clubUsuarioId) {
         } else {
             // Si no hubo penaltis, nos aseguramos de que esté limpio
             partido.ganadorPenaltis = null;
-            partido.marcadorTanda = { golesLocal: null, golesVisitante: null };
+            partido.marcadorTanda = { golesLocal: null, golesVolume: null };
         }
 
         partido.jugado = true;
@@ -96,9 +112,8 @@ async function seleccionarConvocatoriaIA(clubId, rivalReputacion, competicionId,
         if (j.estado?.lesion !== null) return false;
         if ((j.estado?.forma ?? 100) < 40) return false; 
         if (j.estado?.sanciones && j.estado.sanciones.length > 0) {
-        // Buscamos si tiene una sanción activa para LA COMPETICIÓN DE HOY
-        const sancionActiva = j.estado.sanciones.find(s => s.competicionId === competicionId && s.partidosRestantes > 0);
-            if (sancionActiva) return false; // Si le quedan partidos por cumplir en esta competición, NO está disponible
+            const sancionActiva = j.estado.sanciones.find(s => s.competicionId === competicionId && s.partidosRestantes > 0);
+            if (sancionActiva) return false;
         }
         return true;
     });
@@ -113,8 +128,8 @@ async function seleccionarConvocatoriaIA(clubId, rivalReputacion, competicionId,
         nivelRotacion = 'INTENSA'; 
     }
 
-    // Integración de tu objeto global FORMACIONES
-    const configuracionFormacion = FORMACIONES[club.formacion] || FORMACIONES[formacionPredefined] || FORMACIONES['4-3-3'];
+    // 🛡️ CORREGIDO: formacionPredefinida corregida
+    const configuracionFormacion = FORMACIONES[club.formacion] || FORMACIONES[formacionPredefinida] || FORMACIONES['4-3-3'];
     const posicionesRequeridas = configuracionFormacion.posiciones;
 
     const titulares = [];
@@ -129,7 +144,6 @@ async function seleccionarConvocatoriaIA(clubId, rivalReputacion, competicionId,
                 let pesoAlineacion = calcularNivel(j, posicion);
                 const formaJugador = j.estado?.forma ?? 100;
 
-                // Modificadores de peso según estrategia de partido
                 if (nivelRotacion === 'MODERADA' && formaJugador < 85) {
                     pesoAlineacion -= 10; 
                 } 
@@ -140,9 +154,9 @@ async function seleccionarConvocatoriaIA(clubId, rivalReputacion, competicionId,
 
                 return { jugador: j, peso: pesoAlineacion };
             })
-            .sort((a, b) => b.weight - a.weight);
+            // 🛡️ CORREGIDO: b.peso y a.peso en vez de b.weight
+            .sort((a, b) => b.peso - a.peso);
 
-        // Si por culpa de los castigos de rotación la casilla se queda vacía, buscamos parches limpios
         if (candidatos.length === 0 || candidatos[0].peso < 30) {
             const parches = disponibles
                 .filter(j => !elegidosIds.has(j._id.toString()) && 
