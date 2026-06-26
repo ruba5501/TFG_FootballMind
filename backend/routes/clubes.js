@@ -4,6 +4,7 @@ const partidasDAO = require('../daos/partidasDAO');
 const clubesDAO = require('../daos/clubesDAO');
 const competicionesDAO = require('../daos/competicionesDAO');
 const Partida = require('../models/partida');
+const Partido = require('../models/partido');
 const Club = require('../models/club');
 const Jugador = require('../models/jugador');
 const Empleado = require('../models/empleado');
@@ -51,6 +52,16 @@ clubRouter.get('/formacion/:partidaId', requireLogin, async (req, res) => {
         const clubUsuario = await clubesDAO.buscarClubPorId(partida.clubSeleccionado);
         const filial = await clubesDAO.buscarFilialPorId(clubUsuario._id);
 
+        const proximoPartido = await Partido.findOne({
+            partidaId: partida._id,
+            jugado: false,
+            $or: [
+                { equipoLocal: clubUsuario._id },
+                { equipoVisitante: clubUsuario._id }
+            ]
+        }).sort({ fecha: 1 });
+        const competicionActual = proximoPartido ? proximoPartido.competicionId.toString() : '';
+
         if (!clubUsuario.tactica || !clubUsuario.tactica.titulares || clubUsuario.tactica.titulares.length === 0) {
             let porteros = clubUsuario.plantilla.filter(j => j.posicionPrincipal === 'POR');
             let resto = clubUsuario.plantilla.filter(j => j.posicionPrincipal !== 'POR');
@@ -88,7 +99,8 @@ clubRouter.get('/formacion/:partidaId', requireLogin, async (req, res) => {
             partida,
             clubUsuario,
             filial,
-            formaciones: FORMACIONES
+            formaciones: FORMACIONES,
+            competicionActual: competicionActual
         });
     } catch (err) {
         console.error(err);
