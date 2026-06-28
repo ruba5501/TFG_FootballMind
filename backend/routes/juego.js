@@ -644,12 +644,17 @@ router.get('/copa/:partidaId/:competicionId', requireLogin, async (req, res) => 
         const rondas = {};
         
         // Helper para traducir el número de jornada a texto según tus reglas
-        const getNombreRonda = (jornada, tipo) => {
-            if (tipo === 'FINAL') return 'Gran Final';
-            if (jornada === 5) return 'Octavos de Final';
-            if (jornada === 6) return 'Cuartos de Final';
-            if (jornada === 7) return 'Semifinales';
-            return `Ronda ${jornada}`; // Por si hay rondas previas
+        const getNombreRonda = (jornada) => {
+            switch (jornada) {
+                case 0: return 'Ronda Previa';
+                case 1: return '1/16 de Final';
+                case 2: return 'Octavos de Final';
+                case 3: return 'Cuartos de Final';
+                case 4: return 'Semifinal (Ida)';
+                case 5: return 'Semifinal (Vuelta)';
+                case 6: return 'Gran Final';
+                default: return `Ronda ${jornada}`;
+            }
         };
 
         partidosCopa.forEach(p => {

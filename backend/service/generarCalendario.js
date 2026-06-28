@@ -9,14 +9,13 @@ const fs = require('fs');
 // CALENDARIO MAESTRO ABSOLUTO DE LA TEMPORADA
 const CALENDARIO_MAESTRO = {
     COPA: { 
-        0: 6,   // Ronda Previa
-        1: 9,   // 1/32 -> Diciembre
-        2: 15,  // 1/16
-        3: 17,  // 1/8
-        4: 20,  // 1/4
-        5: 24,  // 1/2 Ida
-        6: 28,  // 1/2 Vuelta
-        7: 35   // Final
+        0: 13,   // Ronda Previa
+        1: 16,  // 1/16
+        2: 19,  // 1/8
+        3: 25,  // 1/4
+        4: 29,  // 1/2 Ida
+        5: 36,  // 1/2 Vuelta
+        6: 40   // Final
     },
     LIGA_EUROPA: {
         ucl: [5, 7, 10, 12, 15, 17, 22, 23], 
@@ -36,9 +35,41 @@ const CALENDARIO_MAESTRO = {
 };
 
 // Helper para generar una matriz con el Lunes de inicio de cada semana de la temporada
-function generarFechasSemanas(anioInicio) {
+function generarFechasSemanas(fechaReferencia) {
+    let anioInicio;
+
+    // BLINDAJE: Si es un objeto Date válido
+    if (fechaReferencia instanceof Date && !isNaN(fechaReferencia)) {
+        anioInicio = fechaReferencia.getFullYear();
+        const mes = fechaReferencia.getMonth(); // 0 = Enero, 11 = Diciembre
+
+        // Si está entre Enero y Junio, la temporada empezó el año anterior
+        if (mes >= 0 && mes <= 5) {
+            anioInicio = anioInicio - 1;
+        }
+    } 
+    // BLINDAJE: Si le pasaste un string de fecha válido, lo convertimos
+    else if (typeof fechaReferencia === 'string' && !isNaN(Date.parse(fechaReferencia))) {
+        const fechaParseada = new Date(fechaReferencia);
+        anioInicio = fechaParseada.getFullYear();
+        const mes = fechaParseada.getMonth();
+        if (mes >= 0 && mes <= 5) anioInicio = anioInicio - 1;
+    }
+    // BLINDAJE: Si lo que llegó es directamente el año (número o string numérico)
+    else if (!isNaN(fechaReferencia)) {
+        anioInicio = parseInt(fechaReferencia, 10);
+    } 
+    // Por si llega undefined, null o algo raro, usamos el año actual por defecto
+    else {
+        console.warn("[Calendario] fechaReferencia inválida o no definida. Usando año actual por defecto.");
+        anioInicio = new Date().getFullYear();
+    }
+
     const fechas = [];
+    // Temporada arranca estimadamente el 11 de Agosto del año de inicio
     let fechaBucle = new Date(anioInicio, 7, 11); 
+    
+    // Ajustar al primer lunes
     while (fechaBucle.getDay() !== 1) {
         fechaBucle.setDate(fechaBucle.getDate() - 1); 
     }
@@ -91,7 +122,6 @@ function llamarOrTools(equipos, enfrentamientos) {
     });
 }
 
-// CORREGIDO: Declarado correctamente 'bloquearViernes' como parámetro por defecto
 function obtenerFechaRealista(fechaBase, tipoCompeticion, nombreCompeticion = '', indicePartido = 0, esUltimaJornada = false, jornada = 0, totalPartidos = 10, bloquearLunes = false, bloquearViernes = false) {
     const nuevaFecha = new Date(fechaBase);
     const nombre = nombreCompeticion.toLowerCase();
@@ -201,24 +231,26 @@ function obtenerFechaRealista(fechaBase, tipoCompeticion, nombreCompeticion = ''
         }
     }
     else if (tipoCompeticion === 'copa') {
-        const esSemis = (jornada === 5 || jornada === 6 || jornada === 7 || jornada === 8); 
-        const esFinal = (jornada === 9 || jornada === 7 && nombre.includes('final'));
+        const esSemis = (jornada === 4 || jornada === 5); 
+        const esFinal = (jornada === 6);
 
         if (esFinal) {
-            nuevaFecha.setDate(nuevaFecha.getDate() + 5); 
+            nuevaFecha.setDate(nuevaFecha.getDate() + 5); // Desplazar al fin de semana asignado
             nuevaFecha.setHours(21, 0, 0, 0);
         } else {
             let diaExtra;
             if (esSemis) {
-                diaExtra = (indicePartido % 2 === 0) ? 2 : 3; 
+                diaExtra = (indicePartido % 2 === 0) ? 2 : 3; // Miércoles o Jueves
             } else {
-                diaExtra = (indicePartido % 3) + 1; 
+                diaExtra = (indicePartido % 3) + 1; // Martes, Miércoles o Jueves equitativo
             }
             
             nuevaFecha.setDate(nuevaFecha.getDate() + diaExtra);
             const esTarde = (indicePartido % 2 === 0 && !esSemis);
             nuevaFecha.setHours(esTarde ? 19 : 21, 0, 0, 0);
         }
+        nuevaFecha.setSeconds(0, 0);
+        return nuevaFecha;
     }
     else if (tipoCompeticion === 'liga') {
         if (esUltimaJornada) {
@@ -548,6 +580,7 @@ async function generarRondaInicialCopa(partidaId, competicion, anioInicio) {
     let enfrentamientos = [];
 
     if (N > OBJETIVO) {
+        // Hay ronda previa (Ronda 0 - 1/32)
         const numParaEliminar = N - OBJETIVO;
         const numEquiposEnPrevia = numParaEliminar * 2;
         const participantesPrevia = equiposOrdenados.slice(N - numEquiposEnPrevia);
@@ -572,6 +605,7 @@ async function generarRondaInicialCopa(partidaId, competicion, anioInicio) {
             partidosParaInsertar.push(crearObjeto(partidaId, competicion._id, 0, p.loc._id, p.vis._id, fechaSegura, 'ELIMINATORIA', llaveCopaId));
         }
     } else {
+        // No hay previa, saltamos directos a los Dieciseisavos (Ronda 1 - 1/16)
         const numSemana = CALENDARIO_MAESTRO.COPA[1]; 
         let fechaBaseRonda = new Date(semanasFechas[numSemana]);
 
@@ -885,7 +919,7 @@ async function generarDieciseisavosEuropa(partidaId, competicion, tablaPosicione
     ];
     
     let partidosParaInsertar = [];
-    const semanasFechas = generarFechasSemanas(fechaUltimaJornada.getFullYear());
+    const semanasFechas = generarFechasSemanas(fechaUltimaJornada);    
     
     const configSem = CALENDARIO_MAESTRO.ELIMINATORIAS_EUROPA.playoffs;
     let fechaBaseIda = new Date(semanasFechas[configSem.ida]);
@@ -914,8 +948,8 @@ async function generarDieciseisavosEuropa(partidaId, competicion, tablaPosicione
 
 async function generarOctavosEuropa(partidaId, competicion, tablaPosiciones, ganadoresPlayoff, fechaUltimaJornada) {
     let partidosParaInsertar = [];
-    const semanasFechas = generarFechasSemanas(fechaUltimaJornada.getFullYear());
-    
+    const semanasFechas = generarFechasSemanas(fechaUltimaJornada);   
+
     const configSem = CALENDARIO_MAESTRO.ELIMINATORIAS_EUROPA.octavos;
     let fechaBaseIda = new Date(semanasFechas[configSem.ida]);
     let fechaBaseVuelta = new Date(semanasFechas[configSem.vuelta]);
@@ -948,8 +982,8 @@ async function generarCuadroFinalEuropa(partidaId, competicion, ganadoresRondaAn
     const esChampions = nombreComp.includes('champions');
 
     let partidosParaInsertar = [];
-    const semanasFechas = generarFechasSemanas(fechaBaseRondaAnterior.getFullYear());
-    
+    const semanasFechas = generarFechasSemanas(fechaBaseRondaAnterior);
+
     let configSem;
     if (faseNombre === 'CUARTOS') configSem = CALENDARIO_MAESTRO.ELIMINATORIAS_EUROPA.cuartos;
     else if (faseNombre === 'SEMIFINAL') configSem = CALENDARIO_MAESTRO.ELIMINATORIAS_EUROPA.semis;
@@ -1008,8 +1042,8 @@ async function generarCuadroFinalEuropa(partidaId, competicion, ganadoresRondaAn
 
 async function generarPlayoffsSudamericana(partidaId, compSudamericanaId, nombreCompeticion, resultadosLib, resultadosSud, fechaUltimaJornada) {
     let partidos = [];
-    const semanasFechas = generarFechasSemanas(fechaUltimaJornada.getFullYear());
-    
+    const semanasFechas = generarFechasSemanas(fechaUltimaJornada);
+
     let fechaBaseIda = new Date(semanasFechas[CALENDARIO_MAESTRO.ELIMINATORIAS_EUROPA.playoffs.ida]);
     let fechaBaseVuelta = new Date(semanasFechas[CALENDARIO_MAESTRO.ELIMINATORIAS_EUROPA.playoffs.vuelta]);
 
@@ -1036,7 +1070,7 @@ async function generarPlayoffsSudamericana(partidaId, compSudamericanaId, nombre
 async function generarRondaEliminatoriaSudamerica(partidaId, competicion, equiposGanadores, jornadaNombre, fechaBase, numJornada) {
     let partidos = [];
     let bolsa = [...equiposGanadores].sort(() => Math.random() - 0.5);
-    const semanasFechas = generarFechasSemanas(fechaBase.getFullYear());
+    const semanasFechas = generarFechasSemanas(fechaBase);
 
     if (jornadaNombre.toUpperCase() === 'FINAL') {
         let fechaBaseFinal = new Date(semanasFechas[CALENDARIO_MAESTRO.ELIMINATORIAS_EUROPA.final.ucl]); 
@@ -1075,13 +1109,19 @@ async function generarRondaEliminatoriaSudamerica(partidaId, competicion, equipo
 }
 
 async function generarSiguienteRondaCopa(partidaId, competicion, equiposGanadores, jornadaNombre, fechaUltimaJornada, numJornada) {
+    if (numJornada === 5) {
+        console.log(`[${competicion.nombre}] La ronda de vuelta (5) ya fue generada previamente junto con la ida.`);
+        return;
+    }
+
     let bolsa = [...equiposGanadores].sort(() => Math.random() - 0.5);
     let partidos = [];
     
-    const semanasFechas = generarFechasSemanas(fechaUltimaJornada.getFullYear());
+    const semanasFechas = generarFechasSemanas(fechaUltimaJornada);
     const nombreComp = competicion.nombre.toLowerCase();
-    const esSemifinal = jornadaNombre.toLowerCase().includes('semifinal');
-    const esFinal = jornadaNombre.toLowerCase().includes('final') && !esSemifinal;
+    
+    const esSemifinal = (numJornada === 4); 
+    const esFinal = (numJornada === 6);
 
     let tieneVuelta = false;
     if (esSemifinal) {
@@ -1099,25 +1139,38 @@ async function generarSiguienteRondaCopa(partidaId, competicion, equiposGanadore
             const indicePartidoEntero = Math.floor(i / 2);
             
             const fechaEstimadaIda = obtenerFechaRealista(fechaBaseIda, 'copa', competicion.nombre, indicePartidoEntero, false, numJornada);
-            const llaveCopaId = `COPA_${numJornada}_LLAVE_${indicePartidoEntero + 1}`;
+            // Cambiado de 'llaveCopaId' a 'llave' para mantener coherencia con el motor y consultas
+            const llave = `COPA_${numJornada}_LLAVE_${indicePartidoEntero + 1}`;
             const tipoPartido = (esFinal && !tieneVuelta) ? 'FINAL' : 'ELIMINATORIA';
 
             const fechaSeguraIda = await buscarFechaLibre(partidaId, fechaEstimadaIda, bolsa[i], bolsa[i+1]);
-            partidos.push(crearObjeto(partidaId, competicion._id, numJornada, bolsa[i], bolsa[i+1], fechaSeguraIda, tipoPartido, llaveCopaId));
+            // Asegúrate de que tu función crearObjeto asigne este valor a la propiedad 'llave'
+            partidos.push(crearObjeto(partidaId, competicion._id, numJornada, bolsa[i], bolsa[i+1], fechaSeguraIda, tipoPartido, llave));
 
             if (tieneVuelta) {
                 const semanaVueltaMapeada = CALENDARIO_MAESTRO.COPA[numJornada + 1];
-                let fechaBaseVuelta = new Date(semanasFechas[semanasFechas[semanaVueltaMapeada] ? semanaVueltaMapeada : semanaIdaMapeada + 3]);
+                let fechaBaseVuelta;
+
+                if (semanasFechas[semanaVueltaMapeada]) {
+                    fechaBaseVuelta = new Date(semanasFechas[semanaVueltaMapeada]);
+                } else {
+                    fechaBaseVuelta = new Date(fechaBaseIda.getTime());
+                    fechaBaseVuelta.setDate(fechaBaseVuelta.getDate() + 21);
+                }
 
                 const fechaEstimadaVuelta = obtenerFechaRealista(fechaBaseVuelta, 'copa', competicion.nombre, indicePartidoEntero, false, numJornada + 1);
                 const fechaSeguraVuelta = await buscarFechaLibre(partidaId, fechaEstimadaVuelta, bolsa[i+1], bolsa[i]);
 
-                partidos.push(crearObjeto(partidaId, competicion._id, numJornada + 1, bolsa[i+1], bolsa[i], fechaSeguraVuelta, 'ELIMINATORIA', llaveCopaId));
+                // Se guarda explícitamente etiquetado como ronda 5 y con la misma 'llave'
+                partidos.push(crearObjeto(partidaId, competicion._id, numJornada + 1, bolsa[i+1], bolsa[i], fechaSeguraVuelta, 'ELIMINATORIA', llave));
             }
         }
     }
-    await Partido.insertMany(partidos);
-    console.log(`[${competicion.nombre}] Siguiente ronda (${jornadaNombre}) creada correctamente.`);
+    
+    if (partidos.length > 0) {
+        await Partido.insertMany(partidos);
+        console.log(`[${competicion.nombre}] Siguiente ronda (${jornadaNombre}) creada correctamente con jornadas y fechas limpias.`);
+    }
 }
 
 function crearObjeto(partidaId, competicionId, jornada, equipoLocal, equipoVisitante, fecha, tipo, llave = null, grupo = null) {
