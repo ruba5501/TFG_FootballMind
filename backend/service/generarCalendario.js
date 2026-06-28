@@ -1130,7 +1130,18 @@ async function generarRondaEliminatoriaSudamerica(partidaId, competicion, equipo
 
 async function generarSiguienteRondaCopa(partidaId, competicion, equiposGanadores, jornadaNombre, fechaUltimaJornada, numJornada) {
     if (numJornada === 5) {
-        console.log(`[${competicion.nombre}] La ronda de vuelta (5) ya fue generada previamente junto con la ida.`);
+        console.log(`[${competicion.nombre}] La ronda de vuelta (5) ya fue generada junto con la ida.`);
+        return;
+    }
+
+    // CONTROL CRÍTICO: Evitar duplicación de partidos si ya existen para esta jornada y competición
+    const partidosExistentes = await Partido.countDocuments({
+        partidaId,
+        competicionId: competicion._id,
+        jornada: numJornada
+    });
+    if (partidosExistentes > 0) {
+        console.log(`[${competicion.nombre}] La jornada ${numJornada} (${jornadaNombre}) ya tiene partidos creados. Saltando generación.`);
         return;
     }
 
@@ -1143,12 +1154,14 @@ async function generarSiguienteRondaCopa(partidaId, competicion, equiposGanadore
     const esSemifinal = (numJornada === 4); 
     const esFinal = (numJornada === 6);
 
+    // Mapeo corregido usando los nombres exactos de las copas
+    const copasConDobleSemi = ['copa del rey', 'coppa italia', 'taça de portugal', 'knvb beker', 'copa do brasil'];
+    
     let tieneVuelta = false;
     if (esSemifinal) {
-        const paisesDobleSemi = ['españa', 'italia', 'portugal', 'paises bajos', 'brasil'];
-        tieneVuelta = paisesDobleSemi.some(p => nombreComp.includes(p));
+        tieneVuelta = copasConDobleSemi.includes(nombreComp);
     } else if (esFinal) {
-        tieneVuelta = nombreComp.includes('brasil');
+        tieneVuelta = nombreComp.includes('brasil'); // Copa do Brasil tiene final de ida y vuelta
     }
     
     const semanaIdaMapeada = CALENDARIO_MAESTRO.COPA[numJornada];
@@ -1159,12 +1172,10 @@ async function generarSiguienteRondaCopa(partidaId, competicion, equiposGanadore
             const indicePartidoEntero = Math.floor(i / 2);
             
             const fechaEstimadaIda = obtenerFechaRealista(fechaBaseIda, 'copa', competicion.nombre, indicePartidoEntero, false, numJornada);
-            // Cambiado de 'llaveCopaId' a 'llave' para mantener coherencia con el motor y consultas
             const llave = `COPA_${numJornada}_LLAVE_${indicePartidoEntero + 1}`;
             const tipoPartido = (esFinal && !tieneVuelta) ? 'FINAL' : 'ELIMINATORIA';
 
             const fechaSeguraIda = await buscarFechaLibre(partidaId, fechaEstimadaIda, bolsa[i], bolsa[i+1]);
-            // Asegúrate de que tu función crearObjeto asigne este valor a la propiedad 'llave'
             partidos.push(crearObjeto(partidaId, competicion._id, numJornada, bolsa[i], bolsa[i+1], fechaSeguraIda, tipoPartido, llave));
 
             if (tieneVuelta) {
@@ -1181,7 +1192,7 @@ async function generarSiguienteRondaCopa(partidaId, competicion, equiposGanadore
                 const fechaEstimadaVuelta = obtenerFechaRealista(fechaBaseVuelta, 'copa', competicion.nombre, indicePartidoEntero, false, numJornada + 1);
                 const fechaSeguraVuelta = await buscarFechaLibre(partidaId, fechaEstimadaVuelta, bolsa[i+1], bolsa[i]);
 
-                // Se guarda explícitamente etiquetado como ronda 5 y con la misma 'llave'
+                // Se guarda etiquetado como jornada de vuelta (numJornada + 1)
                 partidos.push(crearObjeto(partidaId, competicion._id, numJornada + 1, bolsa[i+1], bolsa[i], fechaSeguraVuelta, 'ELIMINATORIA', llave));
             }
         }
@@ -1189,7 +1200,7 @@ async function generarSiguienteRondaCopa(partidaId, competicion, equiposGanadore
     
     if (partidos.length > 0) {
         await Partido.insertMany(partidos);
-        console.log(`[${competicion.nombre}] Siguiente ronda (${jornadaNombre}) creada correctamente con jornadas y fechas limpias.`);
+        console.log(`[${competicion.nombre}] Siguiente ronda (${jornadaNombre}) creada correctamente.`);
     }
 }
 

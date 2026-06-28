@@ -21,20 +21,29 @@
 
             // LÓGICA DE EMPAREJAMIENTO ALINEADO
             let cruces = [];
-            let mapaCruces = {}; // clave: idMenor_idMayor -> índice en el array 'cruces'
+            let mapaCruces = {}; 
             let hayPartidosVuelta = false;
 
             rondas[nombreRonda].forEach(p => {
+                // Generamos una clave única basada en los dos equipos ordenados alfabéticamente por su ID
                 const idLocal = p.equipoLocal._id.toString();
                 const idVisitante = p.equipoVisitante._id.toString();
-                
                 const claveUnica = [idLocal, idVisitante].sort().join('_');
 
+                // Si el partido es de la jornada de vuelta (jornada 5 o flag en el modelo) o ya existe una ida registrada para estos dos equipos
                 if (typeof mapaCruces[claveUnica] === 'undefined') {
+                    // Es el primer partido que encontramos de este cruce (Ida)
                     cruces.push({ ida: p, vuelta: null });
                     mapaCruces[claveUnica] = cruces.length - 1;
                 } else {
-                    cruces[mapaCruces[claveUnica]].vuelta = p;
+                    // Es el segundo partido (Vuelta). Nos aseguramos de que el asignado como 'ida' sea el de menor jornada
+                    let cruceExistente = cruces[mapaCruces[claveUnica]];
+                    if (p.jornada < cruceExistente.ida.jornada) {
+                        cruceExistente.vuelta = cruceExistente.ida;
+                        cruceExistente.ida = p;
+                    } else {
+                        cruceExistente.vuelta = p;
+                    }
                     hayPartidosVuelta = true;
                 }
             });
@@ -81,7 +90,7 @@
                             </div>
                         </div>
                     <% } else { %>
-                        <h6 class="text-info small fw-bold text-uppercase tracking-wider mb-3">Eliminatoria a Partido Único </h6>
+                        <h6 class="text-info small fw-bold text-uppercase tracking-wider mb-3">Eliminatoria a Partido Único</h6>
                     <% } %>
 
                     <div class="d-flex flex-column gap-3">

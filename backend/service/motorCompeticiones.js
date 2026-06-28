@@ -41,8 +41,9 @@ async function verificarYGenerarSiguienteRonda(partidaId, fechaSimulada) {
             // --- 1. BLOQUE INTERNACIONAL EUROPA (¡CORREGIDO SOLAPAMIENTO CON CHAMPIONSHIP!) ---
             if ((nombreComp.includes('europa') || nombreComp.includes('champions') || nombreComp.includes('conference')) 
                 && !nombreComp.includes('championship')) {
-                
-                if (tipoActual === 'LIGA' && jornadaActual === 8) {
+                const ultimaJornadaLiga = nombreComp.includes('conference') ? 6 : 8;
+
+                if (tipoActual === 'LIGA' && jornadaActual === ultimaJornadaLiga) {
                     const tablaPosiciones = await obtenerTablaPosicionesFormatoLiga(partidaId, compId);
                     await calendarioService.generarDieciseisavosEuropa(partidaId, competicion, tablaPosiciones, fechaSimulada);
                 } 
@@ -92,27 +93,30 @@ async function verificarYGenerarSiguienteRonda(partidaId, fechaSimulada) {
                     await calendarioService.generarSiguienteRondaCopa(partidaId, competicion, clasificados, 'Cuartos de Final', fechaSimulada, 3);
                 } 
                 else if (jornadaActual === 3) {
-                    console.log(`[MOTOR - ${competicion.nombre}] Fin de Cuartos. Generando Semifinales (Ida)...`);
+                    console.log(`[MOTOR - ${competicion.nombre}] Fin de Cuartos. Generando Semifinales...`);
                     const clasificados = await obtenerGanadoresGlobales(partidaId, partidosDeLaFase, false);
+                    
+                    // Pasamos numJornada = 4 para crear las semifinales
                     await calendarioService.generarSiguienteRondaCopa(partidaId, competicion, clasificados, 'Semifinal', fechaSimulada, 4);
                 } 
                 else if (jornadaActual === 4 || jornadaActual === 5) {
-                const paisesDobleSemi = ['españa', 'italia', 'portugal', 'paises bajos', 'brasil'];
-                const tieneVuelta = paisesDobleSemi.some(p => nombreComp.includes(p));
+                    // Mapeo exacto según los nombres reales de tu JSON de torneos con ida y vuelta
+                    const copasConDobleSemi = ['copa del rey', 'coppa italia', 'taça de portugal', 'knvb beker', 'copa do brasil'];
+                    const tieneVuelta = copasConDobleSemi.includes(nombreComp);
 
-                if (tieneVuelta) {
-                    if (jornadaActual === 4) {
-                        // Copa de doble partido: terminó la ida, NO se genera nada todavía.
-                        console.log(`[MOTOR - ${competicion.nombre}] Terminó Semifinal (Ida). Esperando a que se juegue la Vuelta...`);
-                        continue; 
-                    } else if (jornadaActual === 5) {
-                        console.log(`[MOTOR - ${competicion.nombre}] Fin de Semifinales (Vuelta). Generando Gran Final...`);
-                        // Pasamos jornadaIda = 4 para que calcule correctamente el global
-                        const finalistas = await obtenerGanadoresGlobales(partidaId, partidosDeLaFase, true, 4);
-                        await calendarioService.generarSiguienteRondaCopa(partidaId, competicion, finalistas, 'Gran Final', fechaSimulada, 6);
-                    }
-                } else {
-                        // Copa de partido único
+                    if (tieneVuelta) {
+                        if (jornadaActual === 4) {
+                            // Terminó la ida. NO hacemos nada, simplemente esperamos a la vuelta (jornada 5)
+                            console.log(`[MOTOR - ${competicion.nombre}] Terminó Semifinal (Ida). Esperando a que se juegue la Vuelta (Jornada 5)...`);
+                            continue; 
+                        } else if (jornadaActual === 5) {
+                            console.log(`[MOTOR - ${competicion.nombre}] Fin de Semifinales (Vuelta). Generando Gran Final...`);
+                            // Calculamos los ganadores comparando la jornada de vuelta (5) con su ida (4)
+                            const finalistas = await obtenerGanadoresGlobales(partidaId, partidosDeLaFase, true, 4);
+                            await calendarioService.generarSiguienteRondaCopa(partidaId, competicion, finalistas, 'Gran Final', fechaSimulada, 6);
+                        }
+                    } else {
+                        // Copas de partido único (FA Cup, DFB-Pokal, Coupe de France, Copa Argentina)
                         if (jornadaActual === 4) {
                             console.log(`[MOTOR - ${competicion.nombre}] Fin de Semifinales (Única). Generando Gran Final...`);
                             const finalistas = await obtenerGanadoresGlobales(partidaId, partidosDeLaFase, false);
@@ -121,20 +125,57 @@ async function verificarYGenerarSiguienteRonda(partidaId, fechaSimulada) {
                     }
                 }
                 else if (jornadaActual === 6) {
-                    console.log(`[MOTOR - ${competicion.nombre}] ¡La gran final ha concluido! Copa finalizada con éxito.`);
+                    console.log(`[MOTOR - ${competicion.nombre}] ¡La gran final ha concluido!`);
                 }
             }
 
             // --- 3. BLOQUE SUDAMÉRICA ---
             else if (nombreComp.includes('libertadores') || nombreComp.includes('sudamericana')) {
                 if (tipoActual === 'LIGA' && jornadaActual === 6) {
-                    console.log(`[MOTOR - ${competicion.nombre}] Fin de Fase de Grupos. Generando Rondas Eliminatorias Sudamericanas...`);
-                    const tablasGrupos = await obtenerTablasPosicionesGruposSudamerica(partidaId, compId);
+                    console.log(`[MOTOR - ${competicion.nombre}] Fin de Fase de Grupos Sudamericana.`);
                     
+                    // 1. Necesitamos obtener todas las tablas de las dos competiciones para cruzarlas
+                    const compLibertadores = await Competicion.findOne({ partidaId, nombre: /libertadores/i });
+                    const compSudamericana = await Competicion.findOne({ partidaId, nombre: /sudamericana/i });
+
+                    const tablasLib = await obtenerTablasPosicionesGruposSudamerica(partidaId, compLibertadores._id);
+                    const tablasSud = await obtenerTablasPosicionesGruposSudamerica(partidaId, compSudamericana._id);
+                    
+                    // 2. Extraer los clasificados correspondientes de cada grupo (1ºs, 2ºs y 3ºs)
+                    let primerosLib = [], segundosLib = [], tercerosLib = [];
+                    let segundosSud = [];
+
+                    Object.values(tablasLib).forEach(grupo => {
+                        if(grupo[0]) primerosLib.push(grupo[0]);
+                        if(grupo[1]) segundosLib.push(grupo[1]);
+                        if(grupo[2]) tercerosLib.push(grupo[2]); // Van a Play-offs de Sudamericana
+                    });
+
+                    Object.values(tablasSud).forEach(grupo => {
+                        if(grupo[1]) segundosSud.push(grupo[1]); // Van a Play-offs de Sudamericana
+                    });
+
                     if (nombreComp.includes('sudamericana')) {
-                        await calendarioService.generarPlayoffsSudamericana(partidaId, competicion, tablasGrupos, fechaSimulada);
+                        // Se envían los parámetros tal y como los espera la firma de la función:
+                        // (partidaId, compSudamericanaId, nombreCompeticion, resultadosLib [terceros], resultadosSud [segundos], fechaUltimaJornada)
+                        await calendarioService.generarPlayoffsSudamericana(
+                            partidaId, 
+                            competicion._id, 
+                            competicion.nombre, 
+                            tercerosLib, 
+                            segundosSud, 
+                            fechaSimulada
+                        );
                     } else {
-                        await calendarioService.generarOctavosLibertadores(partidaId, competicion, tablasGrupos, fechaSimulada);
+                        // Para la Libertadores, pasan los primeros y segundos de su propio torneo directamente a Octavos
+                        // Asegúrate de pasarle los arrays de primeros y segundos mapeados correctamente a su función
+                        await calendarioService.generarOctavosLibertadores(
+                            partidaId, 
+                            competicion, 
+                            primerosLib, 
+                            segundosLib, 
+                            fechaSimulada
+                        );
                     }
                 }
                 else if (tipoActual === 'ELIMINATORIA') {

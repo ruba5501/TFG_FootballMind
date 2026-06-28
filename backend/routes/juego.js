@@ -293,9 +293,6 @@ router.get('/jugar-partido/:idPartido', requireLogin, async (req, res) => {
                 });
 
                 if (partidoIda) {
-                    // CORRECCIÓN MATEMÁTICA CONSTANTE:
-                    // golesIdaLocal: Goles que metió el Local de la ida (que es el Visitante de hoy)
-                    // golesIdaVisitante: Goles que metió el Visitante de la ida (que es el Local de hoy)
                     opcionesEliminatoria = {
                         esVuelta: true,
                         golesIdaLocal: partidoIda.golesLocal,
@@ -616,7 +613,7 @@ router.get('/clasificacion/:partidaId/:competicionId', requireLogin, async (req,
         const rondas = {};
         if (tieneEliminatorias) {
             const getNombreRonda = (jornada, tipo) => {
-                if (tipo === 'FINAL' || jornada === 17) return 'Gran Final';
+                if (tipo === 'FINAL' || jornada === 17) return 'Final';
                 if (jornada === 9 || jornada === 10) return 'Ronda de Play-offs';
                 if (jornada === 11 || jornada === 12) return 'Octavos de Final';
                 if (jornada === 13 || jornada === 14) return 'Cuartos de Final';
@@ -666,6 +663,7 @@ router.get('/clasificacion/:partidaId/:competicionId', requireLogin, async (req,
 });
 
 // Ruta para ver el Cuadro de la Copa
+// --- CONTROLADOR CORREGIDO ---
 router.get('/copa/:partidaId/:competicionId', requireLogin, async (req, res) => {
     try {
         const { partidaId, competicionId } = req.params;
@@ -675,7 +673,6 @@ router.get('/copa/:partidaId/:competicionId', requireLogin, async (req, res) => 
         if (!partida || !competicion) return res.redirect('/inicioJuego/' + partidaId);
         const clubUsuario = partida.clubSeleccionado;
 
-        //Obtenemos TODOS los partidos de esa Copa
         const partidosCopa = await Partido.find({
             partidaId: partidaId,
             competicionId: competicionId
@@ -691,30 +688,36 @@ router.get('/copa/:partidaId/:competicionId', requireLogin, async (req, res) => 
                 mensaje: "La competición aún no ha comenzado."
             });
         }
-        // 3. Agrupamos los partidos por Rondas (Jornadas)
+
+        // Detectamos si es una copa con formato ida y vuelta en semis
+        const nombreComp = competicion.nombre.toLowerCase();
+        const copasConDobleSemi = ['copa del rey', 'coppa italia', 'taça de portugal', 'knvb beker', 'copa do brasil'];
+        const esDobleSemi = copasConDobleSemi.includes(nombreComp);
+
+        // 3. Agrupamos los partidos por Rondas
         const rondas = {};
         
-        // Helper para traducir el número de jornada a texto según tus reglas
         const getNombreRonda = (jornada) => {
             switch (jornada) {
                 case 0: return 'Ronda Previa';
                 case 1: return '1/16 de Final';
                 case 2: return 'Octavos de Final';
                 case 3: return 'Cuartos de Final';
-                case 4: return 'Semifinal (Ida)';
-                case 5: return 'Semifinal (Vuelta)';
-                case 6: return 'Gran Final';
+                case 4: 
+                    return esDobleSemi ? 'Semifinal' : 'Semifinal'; 
+                case 5: 
+                    return esDobleSemi ? 'Semifinal' : 'Semifinal'; // Ambas jornadas caen en la misma bolsa
+                case 6: return 'Final';
                 default: return `Ronda ${jornada}`;
             }
         };
 
         partidosCopa.forEach(p => {
-            const nombre = getNombreRonda(p.jornada, p.tipo);
+            const nombre = getNombreRonda(p.jornada);
             if (!rondas[nombre]) rondas[nombre] = [];
             rondas[nombre].push(p);
         });
 
-        //para usar AJAX y no recargar la pagina todo el rato
         if (req.query.ajax) {
             return res.render('partials/cuadroCopa', { 
                 rondas, 
