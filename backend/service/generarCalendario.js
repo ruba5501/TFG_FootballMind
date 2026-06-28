@@ -15,7 +15,7 @@ const CALENDARIO_MAESTRO = {
         3: 25,  // 1/4
         4: 29,  // 1/2 Ida
         5: 36,  // 1/2 Vuelta
-        6: 40   // Final
+        6: 39   // Final
     },
     LIGA_EUROPA: {
         ucl: [5, 7, 10, 12, 15, 17, 22, 23], 
@@ -26,8 +26,8 @@ const CALENDARIO_MAESTRO = {
         playoffs: { ida: 26, vuelta: 27, jIda: 9, jVuelta: 10 },   
         octavos:  { ida: 30, vuelta: 31, jIda: 11, jVuelta: 12 },
         cuartos:  { ida: 34, vuelta: 35, jIda: 13, jVuelta: 14 },
-        semis:    { ida: 38, vuelta: 39, jIda: 15, jVuelta: 16 },
-        final:    { ucl: 42, uel: 41, uec: 41 }
+        semis:    { ida: 37, vuelta: 38, jIda: 15, jVuelta: 16 },
+        final:    { ucl: 41, uel: 40, uec: 40 }
     },
     LIGA_SUDAMERICA: {
         copas: [7, 10, 12, 15, 17, 22]
@@ -294,6 +294,26 @@ function obtenerFechaRealista(fechaBase, tipoCompeticion, nombreCompeticion = ''
 
     nuevaFecha.setSeconds(0, 0);
     return nuevaFecha;
+}
+
+async function comprobarConflictoLiga(partidaId, equipoLocId, equipoVisId, fechaPropuesta, horasMinimas = 72) {
+    const msMinimos = horasMinimas * 60 * 60 * 1000;
+    
+    // Rango de peligro: 72 horas antes y 72 horas después de la fecha de copa/europa
+    const inicioPeligro = new Date(fechaPropuesta.getTime() - msMinimos);
+    const finPeligro = new Date(fechaPropuesta.getTime() + msMinimos);
+
+    const partidoConflicto = await Partido.findOne({
+        partidaId,
+        tipo: 'LIGA', // Solo esquivamos la liga regular que ya está fija en la BD
+        fecha: { $gte: inicioPeligro, $lte: finPeligro },
+        $or: [
+            { equipoLocal: equipoLocId }, { equipoVisitante: equipoLocId },
+            { equipoLocal: equipoVisId }, { equipoVisitante: equipoVisId }
+        ]
+    });
+
+    return !!partidoConflicto; // Devuelve true si colisionan las 72 horas
 }
 
 async function obtenerCampeonesVigentes(partidaId, anioActual, anioInicio) {

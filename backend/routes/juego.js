@@ -35,8 +35,7 @@ async function simularPartidosPendientes(partidaId, fecha, clubUsuarioId) {
         
         if (esPartidoUsuario) continue; 
 
-        // 🛡️ REEMPLAZO COHERENTE CON TU MOTOR DE IA:
-        // Mandamos a la IA a armar las alineaciones usando la reputación del rival y la competición actual
+        // Mandamos a la IA a armar las alineaciones
         const convocatoriaLocal = await seleccionarConvocatoriaIA(
             partido.equipoLocal._id, 
             partido.equipoVisitante.reputacion || 50, 
@@ -49,32 +48,55 @@ async function simularPartidosPendientes(partidaId, fecha, clubUsuarioId) {
             partido.competicionId?.toString()
         );
 
-        // Extraemos solo los titulares para el motor de simulación
         const jugadoresLocal = convocatoriaLocal.titulares;
         const jugadoresVisitante = convocatoriaVisitante.titulares;
 
-        // 1. Simulación total delegada al motor inteligente
+        // LÓGICA REINICIADA Y CORREGIDA PARA ELIMINATORIAS (IA)
+        let opcionesEliminatoria = { esVuelta: false };
+        if (partido.tipo === 'ELIMINATORIA') {
+            const partidoIda = await Partido.findOne({
+                partidaId: partido.partidaId,
+                competicionId: partido.competicionId,
+                llave: partido.llave, 
+                equipoLocal: partido.equipoVisitante._id, // En la ida el visitante de hoy fue Local
+                equipoVisitante: partido.equipoLocal._id, // En la ida el local de hoy fue Visitante
+                jugado: true
+            });
+
+            if (partidoIda) {
+                // CORRECCIÓN MATEMÁTICA: Mapeo directo de la ida al motor
+                // golesIdaLocal: Goles que metió el Local de la ida (que es el Visitante de hoy)
+                // golesIdaVisitante: Goles que metió el Visitante de la ida (que es el Local de hoy)
+                opcionesEliminatoria = {
+                    esVuelta: true,
+                    golesIdaLocal: partidoIda.golesLocal, 
+                    golesIdaVisitante: partidoIda.golesVisitante  
+                };
+            }
+        }
+
+        // Simulación total delegada al motor inteligente
         let resultado = simularPartido(
             { id: partido.equipoLocal._id, nombre: partido.equipoLocal.nombre, jugadores: jugadoresLocal },
             { id: partido.equipoVisitante._id, nombre: partido.equipoVisitante.nombre, jugadores: jugadoresVisitante },
-            partido.tipo // LIGA, ELIMINATORIA o FINAL
+            partido.tipo, 
+            opcionesEliminatoria 
         );
 
         partido.golesLocal = resultado.marcador.local;
         partido.golesVisitante = resultado.marcador.visitante;
+        partido.formacionLocal = partido.equipoLocal.formacion || '4-3-3';
+        partido.formacionVisitante = partido.equipoVisitante.formacion || '4-3-3';
 
         if (resultado.ganadorPenaltis) {
             partido.ganadorPenaltis = resultado.ganadorPenaltis;
-            
-            // Guardamos los goles de la tanda usando la nueva estructura
             partido.marcadorTanda = {
                 golesLocal: resultado.marcadorTanda.local,
                 golesVisitante: resultado.marcadorTanda.visitante
             };
         } else {
-            // Si no hubo penaltis, nos aseguramos de que esté limpio
             partido.ganadorPenaltis = null;
-            partido.marcadorTanda = { golesLocal: null, golesVolume: null };
+            partido.marcadorTanda = { golesLocal: null, golesVisitante: null }; 
         }
 
         partido.jugado = true;
@@ -154,7 +176,6 @@ async function seleccionarConvocatoriaIA(clubId, rivalReputacion, competicionId,
 
                 return { jugador: j, peso: pesoAlineacion };
             })
-            // 🛡️ CORREGIDO: b.peso y a.peso en vez de b.weight
             .sort((a, b) => b.peso - a.peso);
 
         if (candidatos.length === 0 || candidatos[0].peso < 30) {
@@ -198,29 +219,20 @@ router.get('/jugar-partido/:idPartido', requireLogin, async (req, res) => {
         const partidoUsuario = await Partido.findById(partidoId).populate('equipoLocal equipoVisitante');
         const partidaJuego = await Partida.findById(partidoUsuario.partidaId).populate('clubSeleccionado');
 
-        // 1. DOBLE SEGURO ANTES DE SIMULAR: Comprobar la convocatoria del usuario de hoy
         const clubUsuarioId = partidaJuego.clubSeleccionado._id.toString();
-        
-        // Buscamos la plantilla fresca del club del usuario
         const clubUserVerificacion = await Club.findById(clubUsuarioId).populate('plantilla');
         
-        // Los convocados que irán hoy al partido (11 Titulares + 7 Suplentes según tu lógica = 18 primeros de la lista)
         const convocadosUsuario = clubUserVerificacion.plantilla.slice(0, 18);
         
         const tieneBajasConvocadas = convocadosUsuario.some(jugador => {
             if (!jugador) return false;
-            
-            // Verificación A: ¿Está lesionado?
             const lesionado = jugador.estado?.lesion !== null && jugador.estado?.lesion !== undefined;
-            
-            // Verificación B: ¿Tiene una sanción activa en esta competición?
             let sancionado = false;
             if (jugador.estado?.sanciones && Array.isArray(jugador.estado.sanciones)) {
                 sancionado = jugador.estado.sanciones.some(s => 
                     s && s.competicionId === partidoUsuario.competicionId && s.partidosRestantes > 0
                 );
             }
-            
             return lesionado || sancionado;
         });
 
@@ -244,33 +256,72 @@ router.get('/jugar-partido/:idPartido', requireLogin, async (req, res) => {
         let equipoVisitanteUsuario = null;
 
         for (let partido of partidosDeHoy) {
-            let equipoLocalData = { nombre: partido.equipoLocal.nombre, titulares: [], suplentes: [] };
-            let equipoVisitanteData = { nombre: partido.equipoVisitante.nombre, titulares: [], suplentes: [] };
+            let equipoLocalData = { id: partido.equipoLocal._id, nombre: partido.equipoLocal.nombre, jugadores: [] };
+            let equipoVisitanteData = { id: partido.equipoVisitante._id, nombre: partido.equipoVisitante.nombre, jugadores: [] };
 
             // --- CONFIGURACIÓN EQUIPO LOCAL ---
             if (partido.equipoLocal._id.toString() === clubUsuarioId) {
-                equipoLocalData.titulares = clubUserVerificacion.plantilla.slice(0, 11);
+                equipoLocalData.jugadores = clubUserVerificacion.plantilla.slice(0, 11);
                 equipoLocalData.suplentes = clubUserVerificacion.plantilla.slice(11, 18); 
             } else {
                 const convocatoria = await seleccionarConvocatoriaIA(partido.equipoLocal._id, partido.equipoVisitante.reputacion, partido.competicionId);
-                equipoLocalData.titulares = convocatoria.titulares;
+                equipoLocalData.jugadores = convocatoria.titulares;
                 equipoLocalData.suplentes = convocatoria.suplentes;
             }
 
             // --- CONFIGURACIÓN EQUIPO VISITANTE ---
             if (partido.equipoVisitante._id.toString() === clubUsuarioId) {
-                equipoVisitanteData.titulares = clubUserVerificacion.plantilla.slice(0, 11);
+                equipoVisitanteData.jugadores = clubUserVerificacion.plantilla.slice(0, 11);
                 equipoVisitanteData.suplentes = clubUserVerificacion.plantilla.slice(11, 18);
             } else {
                 const convocatoria = await seleccionarConvocatoriaIA(partido.equipoVisitante._id, partido.equipoLocal.reputacion, partido.competicionId);
-                equipoVisitanteData.titulares = convocatoria.titulares;
+                equipoVisitanteData.jugadores = convocatoria.titulares;
                 equipoVisitanteData.suplentes = convocatoria.suplentes;
             }
             
-            const resultado = simularPartido(equipoLocalData, equipoVisitanteData);
+            // 🔍 LÓGICA REINICIADA Y CORREGIDA PARA ELIMINATORIAS
+            let opcionesEliminatoria = { esVuelta: false };
+            
+            if (partido.tipo === 'ELIMINATORIA') {
+                const partidoIda = await Partido.findOne({
+                    partidaId: partido.partidaId,
+                    competicionId: partido.competicionId,
+                    llave: partido.llave,
+                    equipoLocal: partido.equipoVisitante._id, // En la ida el visitante de hoy fue Local
+                    equipoVisitante: partido.equipoLocal._id, // En la ida el local de hoy fue Visitante
+                    jugado: true
+                });
+
+                if (partidoIda) {
+                    // CORRECCIÓN MATEMÁTICA CONSTANTE:
+                    // golesIdaLocal: Goles que metió el Local de la ida (que es el Visitante de hoy)
+                    // golesIdaVisitante: Goles que metió el Visitante de la ida (que es el Local de hoy)
+                    opcionesEliminatoria = {
+                        esVuelta: true,
+                        golesIdaLocal: partidoIda.golesLocal,
+                        golesIdaVisitante: partidoIda.golesVisitante
+                    };
+                }
+            }
+
+            // Simulación pasándole todos los parámetros requeridos por el motor
+            const resultado = simularPartido(equipoLocalData, equipoVisitanteData, partido.tipo, opcionesEliminatoria);
 
             partido.golesLocal = resultado.marcador.local;
             partido.golesVisitante = resultado.marcador.visitante; 
+            
+            // Guardamos los penaltis si existieron en el partido del usuario o simulados
+            if (resultado.ganadorPenaltis) {
+                partido.ganadorPenaltis = resultado.ganadorPenaltis;
+                partido.marcadorTanda = {
+                    golesLocal: resultado.marcadorTanda.local,
+                    golesVisitante: resultado.marcadorTanda.visitante
+                };
+            } else {
+                partido.ganadorPenaltis = null;
+                partido.marcadorTanda = { golesLocal: null, golesVisitante: null };
+            }
+
             partido.jugado = true;
             await partido.save();
 
@@ -566,7 +617,7 @@ router.get('/clasificacion/:partidaId/:competicionId', requireLogin, async (req,
         if (tieneEliminatorias) {
             const getNombreRonda = (jornada, tipo) => {
                 if (tipo === 'FINAL' || jornada === 17) return 'Gran Final';
-                if (jornada === 9 || jornada === 10) return 'Ronda de Play-offs (1/16)';
+                if (jornada === 9 || jornada === 10) return 'Ronda de Play-offs';
                 if (jornada === 11 || jornada === 12) return 'Octavos de Final';
                 if (jornada === 13 || jornada === 14) return 'Cuartos de Final';
                 if (jornada === 15 || jornada === 16) return 'Semifinales';

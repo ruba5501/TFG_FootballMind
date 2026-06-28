@@ -1,8 +1,4 @@
-// backend/engine/motorJuego.js
 
-/**
- * Obtiene el valor de un atributo o media de varios, aplicando el factor de forma (cansancio).
- */
 function getMedia(jugador, categoria, attrs) {
     let suma = 0;
     attrs.forEach(a => {
@@ -217,10 +213,7 @@ function ejecutarPenaltiIndividual(tirador, portero) {
     return (nivelTirador * suerteTirador) > (nivelPortero * suertePortero);
 }
 
-/**
- * MOTOR DE SIMULACIÓN PRINCIPAL ENTRADA
- */
-function simularPartido(local, visitante, tipoPartido = 'LIGA') {
+function simularPartido(local, visitante, tipoPartido = 'LIGA', opcionesEliminatoria = null) {
     if (local && !local.jugadores) {
         local.jugadores = local.titulares || (Array.isArray(local) ? local : []);
     }
@@ -241,24 +234,61 @@ function simularPartido(local, visitante, tipoPartido = 'LIGA') {
         posesionLocal: 50,
         momentumLocal: 0,
         momentumVisitante: 0,
+        events: [],
         eventos: []
     };
 
+    // 1. Simular los 90 minutos reglamentarios del partido actual
     estadoPartido = simularTramoMinutos(local, visitante, 1, 90, estadoPartido);
 
     let ganadorPenaltis = null;
     let marcadorTanda = null;
 
-    if ((tipoPartido === 'ELIMINATORIA' || tipoPartido === 'FINAL') && estadoPartido.golesLocal === estadoPartido.golesVisitante) {
-        estadoPartido.eventos.push({ minuto: 90, tipo: 'INFO', texto: `Empate ${estadoPartido.golesLocal}-${estadoPartido.golesVisitante}. ¡Nos vamos a la prórroga!` });
-        
-        estadoPartido = simularTramoMinutos(local, visitante, 91, 120, estadoPartido);
-
+    // 2. Control de Prórroga y Penaltis
+    if (tipoPartido === 'FINAL') {
+        // En una Final a partido único, si hay empate a los 90', hay prórroga directo
         if (estadoPartido.golesLocal === estadoPartido.golesVisitante) {
-            const tanda = simularTandaPenaltis(local, visitante, estadoPartido.eventos);
-            ganadorPenaltis = tanda.ganadorId;
-            marcadorTanda = tanda.marcadorTanda;
+            estadoPartido.eventos.push({ minuto: 90, tipo: 'INFO', texto: `Empate ${estadoPartido.golesLocal}-${estadoPartido.golesVisitante}. ¡Nos vamos a la prórroga!` });
+            estadoPartido = simularTramoMinutos(local, visitante, 91, 120, estadoPartido);
+
+            if (estadoPartido.golesLocal === estadoPartido.golesVisitante) {
+                const tanda = simularTandaPenaltis(local, visitante, estadoPartido.eventos);
+                ganadorPenaltis = tanda.ganadorId;
+                marcadorTanda = tanda.marcadorTanda;
+            }
         }
+    } 
+    else if (tipoPartido === 'ELIMINATORIA') {
+        // Solo se puede ir a prórroga si es el partido de VUELTA y el marcador GLOBAL está empatado
+        if (opcionesEliminatoria && opcionesEliminatoria.esVuelta) {
+            
+            // Goles del local actual en el global = goles de hoy (local) + goles de la ida (visitante)
+            const globalLocal = estadoPartido.golesLocal + (opcionesEliminatoria.golesIdaVisitante || 0);
+            // Goles del visitante actual en el global = goles de hoy (visitante) + goles de la ida (local)
+            const globalVisitante = estadoPartido.golesVisitante + (opcionesEliminatoria.golesIdaLocal || 0);
+
+            if (globalLocal === globalVisitante) {
+                estadoPartido.eventos.push({ 
+                    minuto: 90, 
+                    tipo: 'INFO', 
+                    texto: `Marcador de hoy: ${estadoPartido.golesLocal}-${estadoPartido.golesVisitante}. ¡Empate global ${globalLocal}-${globalVisitante}! Nos vamos a la prórroga.` 
+                });
+                
+                // Simulamos los 30 minutos de prórroga
+                estadoPartido = simularTramoMinutos(local, visitante, 91, 120, estadoPartido);
+
+                // Volvemos a calcular tras la prórroga
+                const nuevoGlobalLocal = estadoPartido.golesLocal + (opcionesEliminatoria.golesIdaVisitante || 0);
+                const nuevoGlobalVisitante = estadoPartido.golesVisitante + (opcionesEliminatoria.golesIdaLocal || 0);
+
+                if (nuevoGlobalLocal === nuevoGlobalVisitante) {
+                    const tanda = simularTandaPenaltis(local, visitante, estadoPartido.eventos);
+                    ganadorPenaltis = tanda.ganadorId;
+                    marcadorTanda = tanda.marcadorTanda;
+                }
+            }
+        }
+        // Si tipoPartido === 'ELIMINATORIA' pero NO es partido de vuelta, termina en los 90' sin importar el empate.
     }
 
     return {
