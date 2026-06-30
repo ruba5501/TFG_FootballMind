@@ -14,10 +14,11 @@ def solve():
         input_data = json.loads(sys.stdin.read())
         equipos = input_data['equipos']
         enfrentamientos = input_data['enfrentamientos']
-        
-        # Determinar si son 8 o 6 jornadas (UCL/UEL vs UECL)
+        # restricciones de fechas desde Node
+        # Formato esperado: { "equipo_id": [jornadas_prohibidas_list] }
+        restricciones = input_data.get('restricciones', {}) 
+
         num_jornadas = 6 if len(enfrentamientos) == 108 else 8
-        
         model = cp_model.CpModel()
         
         # Variables binarias: ¿El partido P se juega en la jornada J?
@@ -39,6 +40,15 @@ def solve():
                     if p['loc'] == eq_id or p['vis'] == eq_id:
                         partidos_del_equipo.append(x[p_idx, j])
                 model.Add(sum(partidos_del_equipo) <= 1)
+        
+        # Restricción 3: Evitar jornadas donde el equipo tenga conflicto de 72h con Liga
+        for eq_id, jornadas_prohibidas in restricciones.items():
+            for j in jornadas_prohibidas:
+                if 1 <= j <= num_jornadas:
+                    # Buscar todos los partidos de este equipo en esta jornada y setearlos a 0 (Falso)
+                    for p_idx, p in enumerate(enfrentamientos):
+                        if p['loc'] == eq_id or p['vis'] == eq_id:
+                            model.Add(x[p_idx, j] == 0)
 
         solver = cp_model.CpSolver()
         # Añadimos un pequeño componente aleatorio para que los calendarios varíen
