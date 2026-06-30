@@ -12,7 +12,7 @@ const CALENDARIO_MAESTRO = {
     COPA: { 
         0: 13,   // Ronda Previa
         1: 16,  // 1/16
-        2: 19,  // 1/8
+        2: 18,  // 1/8
         3: 25,  // 1/4
         4: 29,  // 1/2 Ida
         5: 36,  // 1/2 Vuelta
@@ -375,10 +375,30 @@ async function comprobarConflictoLiga(partidaId, equipoLocId, equipoVisId, fecha
 
     return !!partidoConflicto; 
 }
+
+async function verificarSiNuevaFechaEsSegura(partidaId, equipoA, equipoB, nuevaFecha, partidoIdExcluido, horasMargen = 72) {
+    const msMinimos = horasMargen * 60 * 60 * 1000;
+    const inicioPeligro = new Date(nuevaFecha.getTime() - msMinimos);
+    const finPeligro = new Date(nuevaFecha.getTime() + msMinimos);
+
+    const coincidencia = await mongoose.model('Partido').findOne({
+        partidaId,
+        _id: { $ne: partidoIdExcluido },
+        fecha: { $gte: inicioPeligro, $lte: finPeligro },
+        $or: [
+            { equipoLocal: equipoA }, { equipoVisitante: equipoA },
+            { equipoLocal: equipoB }, { equipoVisitante: equipoB }
+        ]
+    });
+
+    return !coincidencia; 
+}
+
 async function resolverConflictosLigaPorIntercambio(partidaId, partidosCopasOInternacionales) {
+    const Partido = mongoose.model('Partido');
     const partidosLigaModificados = new Set(); 
 
-    // 1. Pre-cargamos las competiciones que son "Copas o Internacionales" para buscar por ID eficientemente
+    // 1. Pre-cargamos las competiciones que son "Copas o Internacionales"
     const competicionesNoLiga = await mongoose.model('Competicion').find({
         partidaId,
         tipo: { $in: ['copa', 'internacional_europa', 'internacional_america'] }
@@ -386,26 +406,20 @@ async function resolverConflictosLigaPorIntercambio(partidaId, partidosCopasOInt
     const idsCompeticionesNoLiga = competicionesNoLiga.map(c => c._id.toString());
 
     for (const partidoCopa of partidosCopasOInternacionales) {
-        if (
-            !partidoCopa.equipoLocal || 
-            !partidoCopa.equipoVisitante || 
-            partidoCopa.equipoLocal === 'NULO' || 
-            partidoCopa.equipoVisitante === 'NULO' ||
-            partidoCopa.equipoLocal === '000000000000000000000000' ||
-            partidoCopa.equipoVisitante === '000000000000000000000000'
-        ) {
+        if (!partidoCopa.equipoLocal || !partidoCopa.equipoVisitante || 
+            partidoCopa.equipoLocal === 'NULO' || partidoCopa.equipoVisitante === 'NULO') {
             continue; 
         }
 
-        const msMinimos = 72 * 60 * 60 * 1000;
-        const inicioPeligro = new Date(partidoCopa.fecha.getTime() - msMinimos);
-        const finPeligro = new Date(partidoCopa.fecha.getTime() + msMinimos);
+        const ms72h = 72 * 60 * 60 * 1000;
+        const inicioPeligro = new Date(partidoCopa.fecha.getTime() - ms72h);
+        const finPeligro = new Date(partidoCopa.fecha.getTime() + ms72h);
 
-        // Buscar si el equipo Local o Visitante de Copa tiene un partido de LIGA doméstica en zona de peligro
+        // Buscar partidos de LIGA doméstica en zona de conflicto con este partido de Copa
         const partidosLigaConflictivos = await Partido.find({
             partidaId,
             tipo: 'LIGA',
-            competicionId: { $not: { $in: idsCompeticionesNoLiga } }, // Asegura que es liga doméstica
+            competicionId: { $not: { $in: idsCompeticionesNoLiga } },
             fecha: { $gte: inicioPeligro, $lte: finPeligro },
             $or: [
                 { equipoLocal: partidoCopa.equipoLocal }, { equipoVisitante: partidoCopa.equipoLocal },
@@ -415,79 +429,97 @@ async function resolverConflictosLigaPorIntercambio(partidaId, partidosCopasOInt
 
         for (const partidoLigaMal of partidosLigaConflictivos) {
             const partidoLigaMalIdStr = partidoLigaMal._id.toString();
-
             if (partidosLigaModificados.has(partidoLigaMalIdStr)) continue;
 
-            const jornadaLiga = partidoLigaMal.jornada;
-            const competicionLigaId = partidoLigaMal.competicionId;
+            let acomodadoEnFinDeSemana = false;
+            const diasAProbar = [-1, -2, 1, 2, 0]; // Sábado, Viernes, Domingo, Lunes...
 
-            const todosPartidosJornada = await Partido.find({
-                partidaId,
-                competicionId: competicionLigaId,
-                jornada: jornadaLiga,
-                tipo: 'LIGA'
-            });
+            // PASO 1: INTENTO DE REACOMODO IDEAL (72 HORAS DE DESCANSO)
+            for (const delta of diasAProbar) {
+                const fechaTentativa = new Date(partidoLigaMal.fecha);
+                fechaTentativa.setDate(fechaTentativa.getDate() + delta);
+                
+                const diaSemana = fechaTentativa.getDay(); 
+                if (diaSemana !== 5 && diaSemana !== 6 && diaSemana !== 0 && diaSemana !== 1) continue;
 
-            const partidoSocioSustituto = await (async () => {
-                for (const p of todosPartidosJornada) {
-                    const pIdStr = p._id.toString();
+                if (Math.abs(fechaTentativa.getTime() - partidoCopa.fecha.getTime()) < ms72h) continue;
 
-                    if (partidosLigaModificados.has(pIdStr)) continue;
+                const esSeguro = await verificarSiNuevaFechaEsSegura(
+                    partidaId, partidoLigaMal.equipoLocal, partidoLigaMal.equipoVisitante, 
+                    fechaTentativa, partidoLigaMal._id, 72
+                );
 
-                    const dia = new Date(p.fecha).getDay();
-                    const esFinDeSemana = (dia === 6 || dia === 0); 
+                if (esSeguro) {
+                    partidoLigaMal.fecha = fechaTentativa;
+                    await partidoLigaMal.save();
+                    partidosLigaModificados.add(partidoLigaMalIdStr);
+                    acomodadoEnFinDeSemana = true;
+                    break; 
+                }
+            }
+
+            // PASO 2: SALVAVIDAS (48 HORAS DE DESCANSO)
+            if (!acomodadoEnFinDeSemana) {
+                const ms48h = 48 * 60 * 60 * 1000;
+
+                for (const delta of diasAProbar) {
+                    const fechaTentativa = new Date(partidoLigaMal.fecha);
+                    fechaTentativa.setDate(fechaTentativa.getDate() + delta);
                     
-                    const involucraEquiposConflicto = 
-                        p.equipoLocal.toString() === partidoCopa.equipoLocal.toString() || 
-                        p.equipoLocal.toString() === partidoCopa.equipoVisitante.toString() ||
-                        p.equipoVisitante.toString() === partidoCopa.equipoLocal.toString() || 
-                        p.equipoVisitante.toString() === partidoCopa.equipoVisitante.toString();
+                    const diaSemana = fechaTentativa.getDay(); 
+                    if (diaSemana !== 5 && diaSemana !== 6 && diaSemana !== 0 && diaSemana !== 1) continue;
 
-                    if (!esFinDeSemana || involucraEquiposConflicto) continue;
+                    if (Math.abs(fechaTentativa.getTime() - partidoCopa.fecha.getTime()) < ms48h) continue;
 
-                    // 🔥 CORRECCIÓN CRÍTICA: Ahora comprobamos si los equipos del socio 
-                    // juegan CUALQUIER partido cuyas competiciones sean torneos alternativos (Copa/UCL/Libertadores)
-                    const conflictoCopaSocio = await Partido.findOne({
-                        partidaId,
-                        competicionId: { $in: idsCompeticionesNoLiga }, // 👈 Filtrado por competición, no por el tipo de partido
-                        fecha: { $gte: inicioPeligro, $lte: finPeligro }, 
-                        $or: [
-                            { equipoLocal: p.equipoLocal }, { equipoVisitante: p.equipoLocal },
-                            { equipoLocal: p.equipoVisitante }, { equipoVisitante: p.equipoVisitante }
-                        ]
-                    });
+                    const esSeguroSalvavidas = await verificarSiNuevaFechaEsSegura(
+                        partidaId, partidoLigaMal.equipoLocal, partidoLigaMal.equipoVisitante, 
+                        fechaTentativa, partidoLigaMal._id, 48
+                    );
 
-                    if (!conflictoCopaSocio) {
-                        return p; 
+                    if (esSeguroSalvavidas) {
+                        partidoLigaMal.fecha = fechaTentativa;
+                        await partidoLigaMal.save();
+                        partidosLigaModificados.add(partidoLigaMalIdStr);
+                        acomodadoEnFinDeSemana = true;
+                        break; 
                     }
                 }
-                return null;
-            })();
+            }
 
-            if (partidoSocioSustituto) {
-                const fechaOriginalMal = new Date(partidoLigaMal.fecha);
-                const fechaOriginalSustituto = new Date(partidoSocioSustituto.fecha);
+            // PLAN B : ANCLAJE FORZADO AL FIN DE SEMANA CENTRAL (SÁBADO/DOMINGO)
+            if (!acomodadoEnFinDeSemana) {
+                const diasForzados = [6, 0]; // 6 = Sábado, 0 = Domingo
+                let forzadoConExito = false;
 
-                partidoLigaMal.fecha = fechaOriginalSustituto;
-                partidoSocioSustituto.fecha = fechaOriginalMal;
+                for (const diaDestino of diasForzados) {
+                    const fechaForzada = new Date(partidoLigaMal.fecha);
+                    
+                    // Calculamos la distancia de días para forzarlo a caer en Sábado o Domingo
+                    const diaActual = fechaForzada.getDay();
+                    let diferenciaDias = diaDestino - diaActual;
+                    
+                    if (diferenciaDias > 3) diferenciaDias -= 7;
+                    if (diferenciaDias < -3) diferenciaDias += 7;
 
-                await partidoLigaMal.save();
-                await partidoSocioSustituto.save();
+                    fechaForzada.setDate(fechaForzada.getDate() + diferenciaDias);
 
-                partidosLigaModificados.add(partidoLigaMalIdStr);
-                partidosLigaModificados.add(partidoSocioSustituto._id.toString());
+                    // Verificamos de manera permisiva a 48h
+                    const ms48h = 48 * 60 * 60 * 1000;
+                    if (Math.abs(fechaForzada.getTime() - partidoCopa.fecha.getTime()) < ms48h) continue;
 
-                //console.log(`[Intercambio Global] Ajustada Jornada ${jornadaLiga}. Intercambio realizado con éxito.`);
-            } else {
-                if (partidoLigaMal.fecha < partidoCopa.fecha) {
-                    partidoLigaMal.fecha = new Date(partidoLigaMal.fecha.getTime() - (2 * 24 * 60 * 60 * 1000));
-                } else {
-                    partidoLigaMal.fecha = new Date(partidoLigaMal.fecha.getTime() + (2 * 24 * 60 * 60 * 1000));
+                    partidoLigaMal.fecha = fechaForzada;
+                    await partidoLigaMal.save();
+                    partidosLigaModificados.add(partidoLigaMalIdStr);
+                    forzadoConExito = true;
+                    // console.log(`[PLAN B REPARADO] Forzado al fin de semana (Día: ${diaDestino}) para evitar solapamientos.`);
+                    break;
                 }
-                await partidoLigaMal.save();
-                partidosLigaModificados.add(partidoLigaMalIdStr);
-                
-                //console.log(`[Intercambio Global] Ajustada Jornada ${jornadaLiga}. Aplicado Plan B de desplazamiento forzado.`);
+
+                // Emergencia absoluta: si ni Sábado ni Domingo sirvieron, se queda donde estaba originalmente 
+                // para no romper semanas futuras, asumiendo el riesgo mínimo.
+                if (!forzadoConExito) {
+                    partidosLigaModificados.add(partidoLigaMalIdStr);
+                }
             }
         }
     }
@@ -645,7 +677,7 @@ async function generarLiga(partidaId, competicion, anioInicio) {
         if (numEquipos === 22) {
             if (j === 14) esIntersemanal = true;
         } else if (numEquipos === 24) {
-            // INCREMENTADO: Ahora hay 5 jornadas intersemanales bien repartidas cada 8 jornadas
+            // 5 jornadas intersemanales bien repartidas cada 8 jornadas
             // Esto adelanta el final de la liga regular unas 2 semanas completas.
             if (j === 8 || j === 16 || j === 24 || j === 32 || j === 40) esIntersemanal = true;
         }
