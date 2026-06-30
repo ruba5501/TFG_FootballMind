@@ -35,4 +35,7 @@ const partidoSchema = new mongoose.Schema({
     }
 });
 
+partidoSchema.index({ partidaId: 1, fecha: 1 });
+partidoSchema.index({ partidaId: 1, competicionId: 1, jornada: 1, jugado: 1 });
+
 module.exports = mongoose.model('Partido', partidoSchema);

@@ -28,45 +28,44 @@ async function simularPartidosPendientes(partidaId, fecha, clubUsuarioId) {
         fecha: { $gte: inicioDia, $lte: finDia }
     }).populate('equipoLocal equipoVisitante');
 
-    for (let partido of partidos) {
+    //Creamos una matriz de promesas para procesar todos los partidos en paralelo
+    const promesasSimulacion = partidos.map(async (partido) => {
         // SI ES EL PARTIDO DEL USUARIO, LO SALTAMOS
         const esPartidoUsuario = partido.equipoLocal._id.toString() === clubUsuarioId.toString() || 
                                  partido.equipoVisitante._id.toString() === clubUsuarioId.toString();
         
-        if (esPartidoUsuario) continue; 
+        if (esPartidoUsuario) return; 
 
-        // Mandamos a la IA a armar las alineaciones
-        const convocatoriaLocal = await seleccionarConvocatoriaIA(
-            partido.equipoLocal._id, 
-            partido.equipoVisitante.reputacion || 50, 
-            partido.competicionId?.toString()
-        );
-        
-        const convocatoriaVisitante = await seleccionarConvocatoriaIA(
-            partido.equipoVisitante._id, 
-            partido.equipoLocal.reputacion || 50, 
-            partido.competicionId?.toString()
-        );
+        // Se ejecutan en paralelo las convocatorias del local y visitante de este partido
+        const [convocatoriaLocal, convocatoriaVisitante] = await Promise.all([
+            seleccionarConvocatoriaIA(
+                partido.equipoLocal._id, 
+                partido.equipoLocal.reputacion || 50, 
+                partido.competicionId?.toString()
+            ),
+            seleccionarConvocatoriaIA(
+                partido.equipoVisitante._id, 
+                partido.equipoLocal.reputacion || 50, 
+                partido.competicionId?.toString()
+            )
+        ]);
 
         const jugadoresLocal = convocatoriaLocal.titulares;
         const jugadoresVisitante = convocatoriaVisitante.titulares;
 
-        // LÓGICA REINICIADA Y CORREGIDA PARA ELIMINATORIAS (IA)
+        // LÓGICA PARA ELIMINATORIAS
         let opcionesEliminatoria = { esVuelta: false };
         if (partido.tipo === 'ELIMINATORIA') {
             const partidoIda = await Partido.findOne({
                 partidaId: partido.partidaId,
                 competicionId: partido.competicionId,
                 llave: partido.llave, 
-                equipoLocal: partido.equipoVisitante._id, // En la ida el visitante de hoy fue Local
-                equipoVisitante: partido.equipoLocal._id, // En la ida el local de hoy fue Visitante
+                equipoLocal: partido.equipoVisitante._id,
+                equipoVisitante: partido.equipoLocal._id,
                 jugado: true
             });
 
             if (partidoIda) {
-                // CORRECCIÓN MATEMÁTICA: Mapeo directo de la ida al motor
-                // golesIdaLocal: Goles que metió el Local de la ida (que es el Visitante de hoy)
-                // golesIdaVisitante: Goles que metió el Visitante de la ida (que es el Local de hoy)
                 opcionesEliminatoria = {
                     esVuelta: true,
                     golesIdaLocal: partidoIda.golesLocal, 
@@ -75,7 +74,7 @@ async function simularPartidosPendientes(partidaId, fecha, clubUsuarioId) {
             }
         }
 
-        // Simulación total delegada al motor inteligente
+        // Simulación matemática instantánea en memoria
         let resultado = simularPartido(
             { id: partido.equipoLocal._id, nombre: partido.equipoLocal.nombre, jugadores: jugadoresLocal },
             { id: partido.equipoVisitante._id, nombre: partido.equipoVisitante.nombre, jugadores: jugadoresVisitante },
@@ -100,8 +99,10 @@ async function simularPartidosPendientes(partidaId, fecha, clubUsuarioId) {
         }
 
         partido.jugado = true;
-        await partido.save();
-    }
+        return partido.save();  
+    });
+
+    await Promise.all(promesasSimulacion);
 }
 
 // Rendimiento base según la calidad física/técnica actual + potencial
@@ -216,13 +217,23 @@ async function seleccionarConvocatoriaIA(clubId, rivalReputacion, competicionId,
 router.get('/jugar-partido/:idPartido', requireLogin, async (req, res) => {
     try {
         const partidoId = req.params.idPartido;
+        
+        // Optimización inicial: Buscamos el partido base primero
         const partidoUsuario = await Partido.findById(partidoId).populate('equipoLocal equipoVisitante');
-        const partidaJuego = await Partida.findById(partidoUsuario.partidaId).populate('clubSeleccionado');
+        if (!partidoUsuario) return res.status(404).send("Partido no encontrado.");
+
+        // Ejecutamos las búsquedas de la partida y el club del usuario en paralelo para ahorrar tiempo
+        const [partidaJuego, clubUserVerificacion] = await Promise.all([
+            Partida.findById(partidoUsuario.partidaId).populate('clubSeleccionado'),
+            Club.findById(partidoUsuario.equipoLocal._id.toString() === req.session?.clubId ? partidoUsuario.equipoLocal._id : partidoUsuario.equipoVisitante._id).populate('plantilla') 
+            // Nota: Nos aseguramos de traer el club del usuario real usando una verificación o fallback directo
+        ]);
 
         const clubUsuarioId = partidaJuego.clubSeleccionado._id.toString();
-        const clubUserVerificacion = await Club.findById(clubUsuarioId).populate('plantilla');
-        
-        const convocadosUsuario = clubUserVerificacion.plantilla.slice(0, 18);
+        // Si el club verificado no coincide con el del usuario por lo que sea, lo re-buscamos rápido sin romper nada
+        const clubUsuarioReal = clubUserVerificacion._id.toString() === clubUsuarioId ? clubUserVerificacion : await Club.findById(clubUsuarioId).populate('plantilla');
+
+        const convocadosUsuario = clubUsuarioReal.plantilla.slice(0, 18);
         
         const tieneBajasConvocadas = convocadosUsuario.some(jugador => {
             if (!jugador) return false;
@@ -255,40 +266,49 @@ router.get('/jugar-partido/:idPartido', requireLogin, async (req, res) => {
         let equipoLocalUsuario = null;
         let equipoVisitanteUsuario = null;
 
-        for (let partido of partidosDeHoy) {
+        const promesasPartidos = partidosDeHoy.map(async (partido) => {
             let equipoLocalData = { id: partido.equipoLocal._id, nombre: partido.equipoLocal.nombre, jugadores: [] };
             let equipoVisitanteData = { id: partido.equipoVisitante._id, nombre: partido.equipoVisitante.nombre, jugadores: [] };
 
-            // --- CONFIGURACIÓN EQUIPO LOCAL ---
-            if (partido.equipoLocal._id.toString() === clubUsuarioId) {
-                equipoLocalData.jugadores = clubUserVerificacion.plantilla.slice(0, 11);
-                equipoLocalData.suplentes = clubUserVerificacion.plantilla.slice(11, 18); 
+            // Determinamos si es el equipo del usuario de forma rápida
+            const esLocalUsuario = partido.equipoLocal._id.toString() === clubUsuarioId;
+            const esVisitanteUsuario = partido.equipoVisitante._id.toString() === clubUsuarioId;
+
+            // Conseguimos las convocatorias (Si es IA, las dos llamadas se hacen en paralelo)
+            const promesasConvocatoria = [];
+            
+            if (esLocalUsuario) {
+                equipoLocalData.jugadores = clubUsuarioReal.plantilla.slice(0, 11);
+                equipoLocalData.suplentes = clubUsuarioReal.plantilla.slice(11, 18);
             } else {
-                const convocatoria = await seleccionarConvocatoriaIA(partido.equipoLocal._id, partido.equipoVisitante.reputacion, partido.competicionId);
-                equipoLocalData.jugadores = convocatoria.titulares;
-                equipoLocalData.suplentes = convocatoria.suplentes;
+                promesasConvocatoria.push(
+                    seleccionarConvocatoriaIA(partido.equipoLocal._id, partido.equipoVisitante.reputacion, partido.competicionId)
+                    .then(c => { equipoLocalData.jugadores = c.titulares; equipoLocalData.suplentes = c.suplentes; })
+                );
             }
 
-            // --- CONFIGURACIÓN EQUIPO VISITANTE ---
-            if (partido.equipoVisitante._id.toString() === clubUsuarioId) {
-                equipoVisitanteData.jugadores = clubUserVerificacion.plantilla.slice(0, 11);
-                equipoVisitanteData.suplentes = clubUserVerificacion.plantilla.slice(11, 18);
+            if (esVisitanteUsuario) {
+                equipoVisitanteData.jugadores = clubUsuarioReal.plantilla.slice(0, 11);
+                equipoVisitanteData.suplentes = clubUsuarioReal.plantilla.slice(11, 18);
             } else {
-                const convocatoria = await seleccionarConvocatoriaIA(partido.equipoVisitante._id, partido.equipoLocal.reputacion, partido.competicionId);
-                equipoVisitanteData.jugadores = convocatoria.titulares;
-                equipoVisitanteData.suplentes = convocatoria.suplentes;
+                promesasConvocatoria.push(
+                    seleccionarConvocatoriaIA(partido.equipoVisitante._id, partido.equipoLocal.reputacion, partido.competicionId)
+                    .then(c => { equipoVisitanteData.jugadores = c.titulares; equipoVisitanteData.suplentes = c.suplentes; })
+                );
             }
+
+            // Esperamos las alineaciones de este partido concreto
+            await Promise.all(promesasConvocatoria);
             
-            // 🔍 LÓGICA REINICIADA Y CORREGIDA PARA ELIMINATORIAS
+            // LÓGICA ELIMINATORIAS
             let opcionesEliminatoria = { esVuelta: false };
-            
             if (partido.tipo === 'ELIMINATORIA') {
                 const partidoIda = await Partido.findOne({
                     partidaId: partido.partidaId,
                     competicionId: partido.competicionId,
                     llave: partido.llave,
-                    equipoLocal: partido.equipoVisitante._id, // En la ida el visitante de hoy fue Local
-                    equipoVisitante: partido.equipoLocal._id, // En la ida el local de hoy fue Visitante
+                    equipoLocal: partido.equipoVisitante._id,
+                    equipoVisitante: partido.equipoLocal._id,
                     jugado: true
                 });
 
@@ -301,13 +321,12 @@ router.get('/jugar-partido/:idPartido', requireLogin, async (req, res) => {
                 }
             }
 
-            // Simulación pasándole todos los parámetros requeridos por el motor
+            // Simulación matemática
             const resultado = simularPartido(equipoLocalData, equipoVisitanteData, partido.tipo, opcionesEliminatoria);
 
             partido.golesLocal = resultado.marcador.local;
             partido.golesVisitante = resultado.marcador.visitante; 
             
-            // Guardamos los penaltis si existieron en el partido del usuario o simulados
             if (resultado.ganadorPenaltis) {
                 partido.ganadorPenaltis = resultado.ganadorPenaltis;
                 partido.marcadorTanda = {
@@ -320,18 +339,25 @@ router.get('/jugar-partido/:idPartido', requireLogin, async (req, res) => {
             }
 
             partido.jugado = true;
-            await partido.save();
+            
+            // Guardamos el partido y limpiamos los convocados en la base de datos
+            await Promise.all([
+                partido.save(),
+                clubesDAO.limpiarConvocados(partido.equipoLocal._id),
+                clubesDAO.limpiarConvocados(partido.equipoVisitante._id)
+            ]);
 
-            await clubesDAO.limpiarConvocados(partido.equipoLocal._id);
-            await clubesDAO.limpiarConvocados(partido.equipoVisitante._id);
-
+            // Si este bucle paralelo está procesando "NUESTRO" partido, guardamos la referencia para el render final
             if (partido._id.toString() === partidoId) {
                 resultadoUsuario = resultado;
                 equipoLocalUsuario = equipoLocalData;
                 equipoVisitanteUsuario = equipoVisitanteData;
             }
-        }
+        });
 
+        await Promise.all(promesasPartidos);
+
+        // Fallback por si acaso
         if (!resultadoUsuario) {
             const partidoYaJugado = await Partido.findById(partidoId).populate('equipoLocal equipoVisitante');
             
@@ -342,8 +368,10 @@ router.get('/jugar-partido/:idPartido', requireLogin, async (req, res) => {
                     incidencias: []
                 };
 
-                const clubLocal = await Club.findById(partidoYaJugado.equipoLocal._id).populate('plantilla');
-                const clubVisitante = await Club.findById(partidoYaJugado.equipoVisitante._id).populate('plantilla');
+                const [clubLocal, clubVisitante] = await Promise.all([
+                    Club.findById(partidoYaJugado.equipoLocal._id).populate('plantilla'),
+                    Club.findById(partidoYaJugado.equipoVisitante._id).populate('plantilla')
+                ]);
 
                 equipoLocalUsuario = { nombre: partidoYaJugado.equipoLocal.nombre, jugadores: clubLocal.plantilla.slice(0, 11) };
                 equipoVisitanteUsuario = { nombre: partidoYaJugado.equipoVisitante.nombre, jugadores: clubVisitante.plantilla.slice(0, 11) };
@@ -352,6 +380,7 @@ router.get('/jugar-partido/:idPartido', requireLogin, async (req, res) => {
             }
         }
 
+        // Obtener el resto de la jornada para pintarla en el lateral/abajo
         const resultadosMiCompeticion = await Partido.find({
             partidaId: partidoUsuario.partidaId,
             competicionId: partidoUsuario.competicionId,

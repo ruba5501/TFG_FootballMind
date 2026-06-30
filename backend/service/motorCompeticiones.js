@@ -8,6 +8,12 @@ async function verificarYGenerarSiguienteRonda(partidaId, fechaSimulada) {
         const inicioDia = new Date(fechaSimulada); inicioDia.setHours(0,0,0,0);
         const finDia = new Date(fechaSimulada); finDia.setHours(23,59,59,999);
 
+        const totalPartidosHoy = await Partido.countDocuments({ 
+            partidaId, 
+            fecha: { $gte: inicioDia, $lte: finDia } 
+        });
+        if (totalPartidosHoy === 0) return;
+        
         const competicionesDelDia = await Partido.distinct('competicionId', {
             partidaId,
             fecha: { $gte: inicioDia, $lte: finDia }

@@ -399,16 +399,23 @@ partidaRouter.get('/avanzar-hasta-partido/:id', requireLogin, async (req, res) =
             // Calculamos la diferencia real
             const diasSaltados = calcularDiferenciaDias(fechaInicio, fechaFin);
 
-            // IMPORTANTE: El bucle debe simular desde HOY hasta el día ANTERIOR al partido
             for (let i = 0; i < diasSaltados; i++) {
                 let fechaSimulada = new Date(fechaInicio);
                 fechaSimulada.setDate(fechaSimulada.getDate() + i);
 
-                // Esto simulará todos los partidos de CPU de esos días intermedios
+                //console.log(`\n--- ⏱️ INICIO SIMULACIÓN DÍA: ${fechaSimulada.toLocaleDateString()} ---`);
+
+                //console.time(" > Tiempo en Simular Partidos");
                 await juegoRouter.simularPartidosPendientes(partidaId, fechaSimulada, clubUsuarioId);
-                // Comprobar si en este día intermedio se cerró alguna ronda
+                //console.timeEnd(" > Tiempo en Simular Partidos");
+
+                //console.time(" > Tiempo en Motor Competiciones");
                 await motorCompeticiones.verificarYGenerarSiguienteRonda(partidaId, fechaSimulada);
+                //console.timeEnd(" > Tiempo en Motor Competiciones");
+
+                //console.time(" > Tiempo en Fichajes IA");
                 await IAFichajesCPU.procesarAccionesCPU(partidaId, fechaSimulada, partida.clubSeleccionado);
+                //console.timeEnd(" > Tiempo en Fichajes IA");
             }
 
             // Actualizamos la fecha de la partida al día del partido del usuario

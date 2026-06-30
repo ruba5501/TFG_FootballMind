@@ -238,15 +238,14 @@ function simularPartido(local, visitante, tipoPartido = 'LIGA', opcionesEliminat
         eventos: []
     };
 
-    // 1. Simular los 90 minutos reglamentarios del partido actual
+    // 1. Simular los 90 minutos reglamentarios
     estadoPartido = simularTramoMinutos(local, visitante, 1, 90, estadoPartido);
 
     let ganadorPenaltis = null;
     let marcadorTanda = null;
 
-    // 2. Control de Prórroga y Penaltis
+    // 2. Control Inteligente de Prórroga y Penaltis
     if (tipoPartido === 'FINAL') {
-        // En una Final a partido único, si hay empate a los 90', hay prórroga directo
         if (estadoPartido.golesLocal === estadoPartido.golesVisitante) {
             estadoPartido.eventos.push({ minuto: 90, tipo: 'INFO', texto: `Empate ${estadoPartido.golesLocal}-${estadoPartido.golesVisitante}. ¡Nos vamos a la prórroga!` });
             estadoPartido = simularTramoMinutos(local, visitante, 91, 120, estadoPartido);
@@ -259,12 +258,9 @@ function simularPartido(local, visitante, tipoPartido = 'LIGA', opcionesEliminat
         }
     } 
     else if (tipoPartido === 'ELIMINATORIA') {
-        // Solo se puede ir a prórroga si es el partido de VUELTA y el marcador GLOBAL está empatado
+        // CASO A: Es el partido de VUELTA de una serie de Ida y Vuelta
         if (opcionesEliminatoria && opcionesEliminatoria.esVuelta) {
-            
-            // Goles del local actual en el global = goles de hoy (local) + goles de la ida (visitante)
             const globalLocal = estadoPartido.golesLocal + (opcionesEliminatoria.golesIdaVisitante || 0);
-            // Goles del visitante actual en el global = goles de hoy (visitante) + goles de la ida (local)
             const globalVisitante = estadoPartido.golesVisitante + (opcionesEliminatoria.golesIdaLocal || 0);
 
             if (globalLocal === globalVisitante) {
@@ -274,10 +270,8 @@ function simularPartido(local, visitante, tipoPartido = 'LIGA', opcionesEliminat
                     texto: `Marcador de hoy: ${estadoPartido.golesLocal}-${estadoPartido.golesVisitante}. ¡Empate global ${globalLocal}-${globalVisitante}! Nos vamos a la prórroga.` 
                 });
                 
-                // Simulamos los 30 minutos de prórroga
                 estadoPartido = simularTramoMinutos(local, visitante, 91, 120, estadoPartido);
 
-                // Volvemos a calcular tras la prórroga
                 const nuevoGlobalLocal = estadoPartido.golesLocal + (opcionesEliminatoria.golesIdaVisitante || 0);
                 const nuevoGlobalVisitante = estadoPartido.golesVisitante + (opcionesEliminatoria.golesIdaLocal || 0);
 
@@ -287,8 +281,27 @@ function simularPartido(local, visitante, tipoPartido = 'LIGA', opcionesEliminat
                     marcadorTanda = tanda.marcadorTanda;
                 }
             }
+        } 
+        // 🚀 CASO B: ¡EL PARCHE! Es una eliminatoria a PARTIDO ÚNICO (Copas Nacionales iniciales)
+        else {
+            if (estadoPartido.golesLocal === estadoPartido.golesVisitante) {
+                estadoPartido.eventos.push({ 
+                    minuto: 90, 
+                    tipo: 'INFO', 
+                    texto: `Empate ${estadoPartido.golesLocal}-${estadoPartido.golesVisitante} en partido único de Copa. ¡Nos vamos a la prórroga!` 
+                });
+
+                // Simulamos la prórroga del partido único
+                estadoPartido = simularTramoMinutos(local, visitante, 91, 120, estadoPartido);
+
+                // Si persiste el empate tras el tiempo extra, directos a la tanda
+                if (estadoPartido.golesLocal === estadoPartido.golesVisitante) {
+                    const tanda = simularTandaPenaltis(local, visitante, estadoPartido.eventos);
+                    ganadorPenaltis = tanda.ganadorId;
+                    marcadorTanda = tanda.marcadorTanda;
+                }
+            }
         }
-        // Si tipoPartido === 'ELIMINATORIA' pero NO es partido de vuelta, termina en los 90' sin importar el empate.
     }
 
     return {

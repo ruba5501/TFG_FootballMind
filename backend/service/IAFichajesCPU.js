@@ -56,37 +56,42 @@ class IAFichajesCPU {
 
         const dia = fechaActual.getDate();
         const mes = fechaActual.getMonth();
-        const esMercado = [0, 6, 7].includes(mes);
+        const esMercado = [0, 6, 7].includes(mes); // Enero, Julio, Agosto
 
-        // LOGICA DE CAMBIO DE TEMPORADA (30 DE JUNIO)
+        // 1. LOGICA DE CAMBIO DE TEMPORADA (30 DE JUNIO)
         if (dia === 30 && mes === 5) {
             console.log("--- FINAL DE TEMPORADA: Procesando retornos y limpieza ---");
             await this.procesarRetornoCedidos(partidaId);
             await Negociacion.deleteMany({ partidaId });
         }
-        // LOGICA DE CIERRE DE MERCADO (1 SEPT / 1 FEB) 
+        
+        // 2. LOGICA DE CIERRE DE MERCADO (1 SEPT / 1 FEB) 
         if (dia === 1 && (mes === 8 || mes === 1)) {
             await Negociacion.deleteMany({ partidaId, finalizada: false });
         }
 
-        // Renovaciones
-        await this.revisarRenovacionesCPU(partidaId, fechaActual, clubUsuarioId);
+        // Las renovaciones solo se revisan los días 1 y 15 de cada mes, no cada 24 horas.
+        if (dia === 1 || dia === 15) {
+            await this.revisarRenovacionesCPU(partidaId, fechaActual, clubUsuarioId);
+        }
 
-        // Resolver negociaciones CPU-CPU
+        // 3. Resolver negociaciones CPU-CPU (Rápido)
         await this.resolverNegociacionesPendientes(partidaId, clubUsuarioId, fechaActual);
 
-        // Resolver contratos CPU-usuario
+        // 4. Resolver contratos CPU-usuario (Rápido)
         await this.procesarDecisionesJugadores(partidaId, fechaActual);
 
-        if (esMercado) {
+        // En periodo de fichajes, la IA solo busca y genera ofertas 3 veces por semana.
+        // Simulamos en los días con número impar (1, 3, 5, 7...) para reducir la carga un 50% sin alterar el mercado.
+        if (esMercado && (dia % 2 !== 0)) {
             // Movimientos entre CPU
-            const numIntentos = Math.floor(Math.random() * 6) + 3;
+            const numIntentos = Math.floor(Math.random() * 4) + 2; // Reducimos levemente el spam diario (de 3-8 a 2-5)
             for (let i = 0; i < numIntentos; i++) {
                 await this.simularMovimientosEntreCPU(partidaId, clubUsuarioId, fechaActual);
             }
 
             // Intentar fichar al usuario
-            const numOfertasAlUsuario = Math.floor(Math.random() * 5); 
+            const numOfertasAlUsuario = Math.floor(Math.random() * 3); // Máximo 2 ofertas al día para no saturar
             for (let i = 0; i < numOfertasAlUsuario; i++) {
                 await this.intentarFicharAlUsuario(partidaId, clubUsuarioId, fechaActual);
             }
