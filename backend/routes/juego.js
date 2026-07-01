@@ -53,8 +53,8 @@ async function simularPartidosPendientes(partidaId, fecha, clubUsuarioId) {
         const jugadoresLocal = convocatoriaLocal.titulares;
         const jugadoresVisitante = convocatoriaVisitante.titulares;
 
-        // LÓGICA PARA ELIMINATORIAS
-        let opcionesEliminatoria = { esVuelta: false };
+        // LÓGICA PARA ELIMINATORIAS REPARADA (IA)
+        let opcionesEliminatoria = { esVuelta: false, esIda: false };
         if (partido.tipo === 'ELIMINATORIA') {
             const partidoIda = await Partido.findOne({
                 partidaId: partido.partidaId,
@@ -68,9 +68,24 @@ async function simularPartidosPendientes(partidaId, fecha, clubUsuarioId) {
             if (partidoIda) {
                 opcionesEliminatoria = {
                     esVuelta: true,
+                    esIda: false,
                     golesIdaLocal: partidoIda.golesLocal, 
                     golesIdaVisitante: partidoIda.golesVisitante  
                 };
+            } else {
+                // Si no hay ida jugada, miramos si hay una vuelta agendada en el futuro
+                const tieneVueltaProgramada = await Partido.findOne({
+                    partidaId: partido.partidaId,
+                    competicionId: partido.competicionId,
+                    llave: partido.llave,
+                    equipoLocal: partido.equipoVisitante._id,
+                    equipoVisitante: partido.equipoLocal._id,
+                    jugado: false
+                });
+
+                if (tieneVueltaProgramada) {
+                    opcionesEliminatoria.esIda = true;
+                }
             }
         }
 
@@ -151,7 +166,6 @@ async function seleccionarConvocatoriaIA(clubId, rivalReputacion, competicionId,
         nivelRotacion = 'INTENSA'; 
     }
 
-    // 🛡️ CORREGIDO: formacionPredefinida corregida
     const configuracionFormacion = FORMACIONES[club.formacion] || FORMACIONES[formacionPredefinida] || FORMACIONES['4-3-3'];
     const posicionesRequeridas = configuracionFormacion.posiciones;
 
@@ -226,7 +240,6 @@ router.get('/jugar-partido/:idPartido', requireLogin, async (req, res) => {
         const [partidaJuego, clubUserVerificacion] = await Promise.all([
             Partida.findById(partidoUsuario.partidaId).populate('clubSeleccionado'),
             Club.findById(partidoUsuario.equipoLocal._id.toString() === req.session?.clubId ? partidoUsuario.equipoLocal._id : partidoUsuario.equipoVisitante._id).populate('plantilla') 
-            // Nota: Nos aseguramos de traer el club del usuario real usando una verificación o fallback directo
         ]);
 
         const clubUsuarioId = partidaJuego.clubSeleccionado._id.toString();
@@ -300,8 +313,8 @@ router.get('/jugar-partido/:idPartido', requireLogin, async (req, res) => {
             // Esperamos las alineaciones de este partido concreto
             await Promise.all(promesasConvocatoria);
             
-            // LÓGICA ELIMINATORIAS
-            let opcionesEliminatoria = { esVuelta: false };
+            // LÓGICA ELIMINATORIAS REPARADA (RUTA JUGAR)
+            let opcionesEliminatoria = { esVuelta: false, esIda: false };
             if (partido.tipo === 'ELIMINATORIA') {
                 const partidoIda = await Partido.findOne({
                     partidaId: partido.partidaId,
@@ -315,9 +328,24 @@ router.get('/jugar-partido/:idPartido', requireLogin, async (req, res) => {
                 if (partidoIda) {
                     opcionesEliminatoria = {
                         esVuelta: true,
+                        esIda: false,
                         golesIdaLocal: partidoIda.golesLocal,
                         golesIdaVisitante: partidoIda.golesVisitante
                     };
+                } else {
+                    // Si no se ha jugado la ida, miramos si hay una vuelta programada para marcar este como IDA
+                    const tieneVueltaProgramada = await Partido.findOne({
+                        partidaId: partido.partidaId,
+                        competicionId: partido.competicionId,
+                        llave: partido.llave,
+                        equipoLocal: partido.equipoVisitante._id,
+                        equipoVisitante: partido.equipoLocal._id,
+                        jugado: false
+                    });
+
+                    if (tieneVueltaProgramada) {
+                        opcionesEliminatoria.esIda = true;
+                    }
                 }
             }
 

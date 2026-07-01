@@ -369,7 +369,9 @@ class IAFichajesCPU {
             })
         ]);
 
-        console.log(`[IA-PROCESADO] ${objetivo.nombre} fichado como ${nuevoEstado} por ID: ${neg.clubEmisor}`);
+        const clubComprador = await Club.findById(neg.clubEmisor).select('nombre').lean();
+        const nombreClubComprador = clubComprador ? clubComprador.nombre : `ID: ${neg.clubEmisor}`;
+        console.log(`[IA-PROCESADO] ${objetivo.nombre} fichado como ${nuevoEstado} por: ${nombreClubComprador}`);
     }
 
     static async revisarRenovacionesCPU(partidaId, fechaActual, clubUsuarioId) {
@@ -385,7 +387,7 @@ class IAFichajesCPU {
 
         if (jugadoresAExpirar.length === 0) return;
 
-        // 🚀 BULK DE OPERACIONES PARALELAS: Actualizamos todos los contratos en paralelo
+        // OPERACIONES PARALELAS: Actualizamos todos los contratos en paralelo
         const promesasRenovacion = jugadoresAExpirar.map(jugador => {
             if (Math.random() > 0.3) {
                 const nuevaFecha = new Date(jugador.finContrato);

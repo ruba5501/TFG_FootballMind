@@ -282,7 +282,17 @@ function simularPartido(local, visitante, tipoPartido = 'LIGA', opcionesEliminat
                 }
             }
         } 
-        // 🚀 CASO B: ¡EL PARCHE! Es una eliminatoria a PARTIDO ÚNICO (Copas Nacionales iniciales)
+        // CASO B: Es el partido de IDA de una serie de Ida y Vuelta
+        else if (opcionesEliminatoria && opcionesEliminatoria.esIda) {
+            if (estadoPartido.golesLocal === estadoPartido.golesVisitante) {
+                estadoPartido.eventos.push({ 
+                    minuto: 90, 
+                    tipo: 'INFO', 
+                    texto: `Final del partido de ida. Todo se decidirá en el partido de vuelta.` 
+                });
+            }
+        }
+        // CASO C: Es una eliminatoria a PARTIDO ÚNICO
         else {
             if (estadoPartido.golesLocal === estadoPartido.golesVisitante) {
                 estadoPartido.eventos.push({ 
@@ -291,10 +301,8 @@ function simularPartido(local, visitante, tipoPartido = 'LIGA', opcionesEliminat
                     texto: `Empate ${estadoPartido.golesLocal}-${estadoPartido.golesVisitante} en partido único de Copa. ¡Nos vamos a la prórroga!` 
                 });
 
-                // Simulamos la prórroga del partido único
                 estadoPartido = simularTramoMinutos(local, visitante, 91, 120, estadoPartido);
 
-                // Si persiste el empate tras el tiempo extra, directos a la tanda
                 if (estadoPartido.golesLocal === estadoPartido.golesVisitante) {
                     const tanda = simularTandaPenaltis(local, visitante, estadoPartido.eventos);
                     ganadorPenaltis = tanda.ganadorId;
