@@ -388,10 +388,20 @@ async function generarJugadoresNuevaPartida(partidaId, listaClubes, nombrePartid
                 }
             });
             contadorTotal += plantillaOrdenada.length;
+            // Si acumulamos más de 600 jugadores en memoria, los guardamos y vaciamos el array
+            if (todosLosJugadores.length > 600) {
+                await Jugador.insertMany(todosLosJugadores);
+                todosLosJugadores = []; 
+            }
         }
 
+        // Guardamos los últimos jugadores que hayan quedado en el tintero
         if (todosLosJugadores.length > 0) {
             await Jugador.insertMany(todosLosJugadores);
+        }
+        
+        // Guardamos las actualizaciones de los clubes
+        if (operacionesClubes.length > 0) {
             await Club.bulkWrite(operacionesClubes);
         }
 

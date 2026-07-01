@@ -499,14 +499,9 @@ function obtenerIdentidad(paisClub, reputacion, esEmpleado, media = 60, fechaAct
 
     const nombre = pool.nombres[Math.floor(Math.random() * pool.nombres.length)];
     const apellido = pool.apellidos[Math.floor(Math.random() * pool.apellidos.length)];
-    const minAnios = 1;
-    const maxAnios = 5;
-    const aniosContrato = Math.floor(Math.random() * (maxAnios - minAnios + 1)) + minAnios;
-    const fechaFin = new Date(fechaActualPartida);
-    fechaFin.setFullYear(fechaFin.getFullYear() + aniosContrato);
-    fechaFin.setMonth(5);
-    fechaFin.setDate(30);
-    fechaFin.setHours(23, 59, 59);
+    const aniosContrato = Math.floor(Math.random() * 5) + 1;
+    const anyoFinal = fechaActualPartida.getFullYear() + aniosContrato;
+    const fechaFin = new Date(anyoFinal, 5, 30, 23, 59, 59);
     return { nombreCompleto: `${nombre} ${apellido}`, nacionalidad: nacionalidad , finContrato: fechaFin};
 }
 module.exports = { obtenerIdentidad };

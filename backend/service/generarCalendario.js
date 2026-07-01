@@ -785,7 +785,7 @@ async function buscarFechaLibre(partidaId, fechaEstimada, equipoLocId, equipoVis
 }
 
 async function generarRondaInicialCopa(partidaId, competicion, anioInicio) {
-    const equiposRaw = await Club.find({ partidaId, competiciones: competicion._id, esFilial: false, pais: competicion.pais });
+    const equiposRaw = await Club.find({ partidaId, competiciones: competicion._id, esFilial: false });
     if (equiposRaw.length === 0) return;
 
     const semanasFechas = generarFechasSemanas(anioInicio);
@@ -802,6 +802,7 @@ async function generarRondaInicialCopa(partidaId, competicion, anioInicio) {
     });
 
     const N = equiposOrdenados.length;
+    // 1. Determinar el OBJETIVO de la ronda final (1/16 o 1/8)
     let OBJETIVO = 32;
     if (N < 32) OBJETIVO = 16;
 
@@ -809,10 +810,12 @@ async function generarRondaInicialCopa(partidaId, competicion, anioInicio) {
     let enfrentamientos = [];
 
     if (N > OBJETIVO) {
-        const numParaEliminar = N - OBJETIVO;
-        const numEquiposEnPrevia = numParaEliminar * 2;
-        const participantesPrevia = equiposOrdenados.slice(N - numEquiposEnPrevia);
+        const numPartidosPrevia = N - OBJETIVO; 
+        const numEquiposEnPrevia = numPartidosPrevia * 2;
         
+        // Los peores clasificados 
+        const participantesPrevia = equiposOrdenados.slice(N - numEquiposEnPrevia);
+    
         const numSemana = CALENDARIO_MAESTRO.COPA[0]; 
         let fechaBaseRonda = new Date(semanasFechas[numSemana]);
 
@@ -833,6 +836,7 @@ async function generarRondaInicialCopa(partidaId, competicion, anioInicio) {
             partidosParaInsertar.push(crearObjeto(partidaId, competicion._id, 0, p.loc._id, p.vis._id, fechaSegura, 'ELIMINATORIA', llaveCopaId));
         }
     } else {
+        // Si no hacen falta previas porque caben todos perfectamente
         const numSemana = CALENDARIO_MAESTRO.COPA[1]; 
         let fechaBaseRonda = new Date(semanasFechas[numSemana]);
 
@@ -851,10 +855,8 @@ async function generarRondaInicialCopa(partidaId, competicion, anioInicio) {
 
     if (partidosParaInsertar.length > 0) {
         await Partido.insertMany(partidosParaInsertar);
-        
         await resolverConflictosLigaPorIntercambio(partidaId, partidosParaInsertar);
-        
-        console.log(`[${competicion.nombre}] Generados ${partidosParaInsertar.length} partidos iniciales y resueltos conflictos de calendario.`);
+        console.log(`[${competicion.nombre}] Generados ${partidosParaInsertar.length} partidos iniciales.`);
     }
 }
 
