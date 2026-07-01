@@ -83,8 +83,9 @@ async function verificarYGenerarSiguienteRonda(partidaId, fechaSimulada) {
             // --- 2. BLOQUE COPAS NACIONALES ---
             else if (tipoActual === 'ELIMINATORIA' && !nombreComp.includes('libertadores') && !nombreComp.includes('sudamericana')) {
                 
+                // CASO A: FIN DE LA RONDA PREVIA (Jornada 0)
                 if (jornadaActual === 0) {
-                    console.log(`[MOTOR - ${competicion.nombre}] Fin de Ronda Previa. Pasando a 1/16 de Final...`);
+                    console.log(`[MOTOR - ${competicion.nombre}] Fin de Ronda Previa. Calculando siguiente fase...`);
                     const ganadoresPrevios = await obtenerGanadoresGlobales(partidaId, partidosDeLaFase, false);
                     
                     const equiposQueYaJugaron = new Set(partidosDeLaFase.flatMap(p => [p.equipoLocal?.toString(), p.equipoVisitante?.toString()].filter(Boolean)));
@@ -94,23 +95,39 @@ async function verificarYGenerarSiguienteRonda(partidaId, fechaSimulada) {
                         .filter(id => !equiposQueYaJugaron.has(id));
 
                     const bolsaCompleta = [...ganadoresPrevios, ...equiposExentos];
-                    await calendarioService.generarSiguienteRondaCopa(partidaId, competicion, bolsaCompleta, '1/16 de Final', fechaSimulada, 1);
+                    const totalEquipos = bolsaCompleta.length;
+
+                    // Decidir dinámicamente la ronda según el tamaño de la bolsa
+                    let nombreSiguienteRonda = '1/16 de Final';
+                    let siguienteJornadaNum = 1;
+
+                    if (totalEquipos === 16) {
+                        nombreSiguienteRonda = 'Octavos de Final';
+                        siguienteJornadaNum = 2; // Saltamos directamente a la jornada de octavos
+                    } else if (totalEquipos === 8) {
+                        nombreSiguienteRonda = 'Cuartos de Final';
+                        siguienteJornadaNum = 3; // Saltamos directamente a cuartos
+                    }
+
+                    console.log(`[MOTOR] Bolsa con ${totalEquipos} equipos. Generando: ${nombreSiguienteRonda} (Jornada ${siguienteJornadaNum})`);
+                    await calendarioService.generarSiguienteRondaCopa(partidaId, competicion, bolsaCompleta, nombreSiguienteRonda, fechaSimulada, siguienteJornadaNum);
                 }
-                else if (jornadaActual === 1) {
-                    console.log(`[MOTOR - ${competicion.nombre}] Fin de 1/16. Generando Octavos de Final...`);
+                
+                // CASO B: RONDAS INTERMEDIAS AVANZANZANDO POR PASOS
+                else if (jornadaActual >= 1 && jornadaActual <= 3) {
                     const clasificados = await obtenerGanadoresGlobales(partidaId, partidosDeLaFase, false);
-                    await calendarioService.generarSiguienteRondaCopa(partidaId, competicion, clasificados, 'Octavos de Final', fechaSimulada, 2);
+                    const proximasRondas = {
+                        1: { nombre: 'Octavos de Final', num: 2 },
+                        2: { nombre: 'Cuartos de Final', num: 3 },
+                        3: { nombre: 'Semifinal', num: 4 }
+                    };
+
+                    const siguiente = proximasRondas[jornadaActual];
+                    console.log(`[MOTOR - ${competicion.nombre}] Avanzando a ${siguiente.nombre}...`);
+                    await calendarioService.generarSiguienteRondaCopa(partidaId, competicion, clasificados, siguiente.nombre, fechaSimulada, siguiente.num);
                 } 
-                else if (jornadaActual === 2) {
-                    console.log(`[MOTOR - ${competicion.nombre}] Fin de Octavos. Generando Cuartos de Final...`);
-                    const clasificados = await obtenerGanadoresGlobales(partidaId, partidosDeLaFase, false);
-                    await calendarioService.generarSiguienteRondaCopa(partidaId, competicion, clasificados, 'Cuartos de Final', fechaSimulada, 3);
-                } 
-                else if (jornadaActual === 3) {
-                    console.log(`[MOTOR - ${competicion.nombre}] Fin de Cuartos. Generando Semifinales...`);
-                    const clasificados = await obtenerGanadoresGlobales(partidaId, partidosDeLaFase, false);
-                    await calendarioService.generarSiguienteRondaCopa(partidaId, competicion, clasificados, 'Semifinal', fechaSimulada, 4);
-                } 
+                
+                // CASO C: SEMIFINALES Y FINALES (Mantiene tu lógica de ida/vuelta)
                 else if (jornadaActual === 4 || jornadaActual === 5) {
                     const copasConDobleSemi = ['copa del rey', 'coppa italia', 'taça de portugal', 'knvb beker', 'copa do brasil'];
                     const tieneVuelta = copasConDobleSemi.includes(nombreComp);
@@ -118,7 +135,6 @@ async function verificarYGenerarSiguienteRonda(partidaId, fechaSimulada) {
                     if (tieneVuelta) {
                         if (jornadaActual === 4) {
                             console.log(`[MOTOR - ${competicion.nombre}] Terminó Semifinal (Ida). Esperando a la Vuelta (Jornada 5)...`);
-                            // Eliminamos el 'continue' directo sustituyéndolo por un flujo controlado por llaves.
                         } else if (jornadaActual === 5) {
                             console.log(`[MOTOR - ${competicion.nombre}] Fin de Semifinales (Vuelta). Generando Gran Final...`);
                             const finalistas = await obtenerGanadoresGlobales(partidaId, partidosDeLaFase, true, 4);

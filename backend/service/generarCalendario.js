@@ -1196,10 +1196,10 @@ async function generarFaseEuropa(partidaId, competicion, anioInicio, campeonesVi
                 const partidosDB = asignarJornadas(partidosConJornada, competicion, anioInicio, partidaId);
                 if (partidosDB.length > 0) {
                     const partidosInsertados = await Partido.insertMany(partidosDB);
-                    console.log(`[${competicion.nombre}] ${partidosInsertados.length} partidos mapeados en calendario base.`);
+                    console.log(`[${competicion.nombre}] ${partidosInsertados.length} partidos.`);
 
                     await resolverConflictosLigaPorIntercambio(partidaId, partidosInsertados);
-                    console.log(`[${competicion.nombre}] Post-procesamiento completado. Conflictos de 72h resueltos mediante intercambio.`);
+                    console.log(`[${competicion.nombre}] Conflictos de 72h resueltos.`);
                 }
             }
         } catch (error) {
