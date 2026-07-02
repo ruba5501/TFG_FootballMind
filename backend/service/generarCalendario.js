@@ -1368,10 +1368,11 @@ async function generarPlayoffsSudamericana(partidaId, compSudamericanaId, nombre
     const bombosLib = [...resultadosLib].sort(() => Math.random() - 0.5);
 
     for (let i = 0; i < 8; i++) {
+        // --- CORRECCIÓN: bombosSud[i] y bombosLib[i] ya son puros IDs en string ---
         if (!bombosSud[i] || !bombosLib[i]) break;
 
-        const localId = bombosSud[i].clubId;
-        const visitanteId = bombosLib[i].clubId;
+        const localId = bombosSud[i];      // Quitamos el .clubId
+        const visitanteId = bombosLib[i];  // Quitamos el .clubId
         const llaveId = `PO_SUD_${i + 1}`;
         
         const fechaIda = obtenerFechaRealista(fechaBaseIda, 'internacional_america', nombreCompeticion, i, false, 9);
@@ -1382,9 +1383,7 @@ async function generarPlayoffsSudamericana(partidaId, compSudamericanaId, nombre
     }
     
     await Partido.insertMany(partidos);
-    
     await resolverConflictosLigaPorIntercambio(partidaId, partidos);
-    
     console.log(`[Sudamericana] Play-offs generados y ligas locales reajustadas.`);
 }
 
@@ -1395,14 +1394,13 @@ async function generarRondaEliminatoriaSudamerica(partidaId, competicion, equipo
 
     if (jornadaNombre.toUpperCase() === 'FINAL') {
         let fechaBaseFinal = new Date(semanasFechas[CALENDARIO_MAESTRO.ELIMINATORIAS_EUROPA.final.ucl]); 
-        const fechaFinal = obtenerFechaRealista(fechaBaseFinal, 'internacional_america', competicion.nombre, 0, false, 17);
+        // Cambiamos el último parámetro al numJornada recibido (17)
+        const fechaFinal = obtenerFechaRealista(fechaBaseFinal, 'internacional_america', competicion.nombre, 0, false, numJornada); 
         
         partidos.push(crearObjeto(partidaId, competicion._id, numJornada, bolsa[0], bolsa[1], fechaFinal, 'FINAL'));
         await Partido.insertMany(partidos);
-        
-        // INTEGRACIÓN: Limpieza de ligas para la final
         await resolverConflictosLigaPorIntercambio(partidaId, partidos);
-    } 
+    }
     else {
         let indexSemanaIda = CALENDARIO_MAESTRO.ELIMINATORIAS_EUROPA.octavos.ida;
         let indexSemanaVuelta = CALENDARIO_MAESTRO.ELIMINATORIAS_EUROPA.octavos.vuelta;
