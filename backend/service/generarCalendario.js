@@ -571,6 +571,7 @@ async function generarCalendario(partidaId) {
         const campeonesVigentes = await obtenerCampeonesVigentes(partidaId, anioActual, anioInicioSimulacion);
         await Partido.deleteMany({ partidaId: partidaId });
         console.log("Limpiando partidos antiguos...");
+        const semanasFechas = generarFechasSemanas(anioActual);
 
         const competiciones = await Competicion.find({});
         for (const comp of competiciones) {
