@@ -32,6 +32,12 @@ const CALENDARIO_MAESTRO = {
     },
     LIGA_SUDAMERICA: {
         copas: [7, 10, 12, 15, 17, 22]
+    },
+    SUPERCOPAS: {
+        CONTINENTAL: 0, // Supercopa Europa y Recopa Sudamericana
+        SUPERCOPA_NACIONAL: 0, // Inglaterra, Alemania, etc.
+        INTERCONTINENTAL: 19, // Copa Intercontinental 
+        SUPERCOPA_NACIONAL_FINAL_FOUR: 21 // España e Italia 
     }
 };
 
@@ -319,8 +325,6 @@ function obtenerFechaRealista(fechaBase, tipoCompeticion, nombreCompeticion = ''
                 nuevaFecha.setHours(21, 0, 0);
             } 
             else {
-                // CORREGIDO: Evitamos el "Efecto Real Madrid". Balanceamos dinámicamente usando 
-                // operadores modulares basándonos en el índice para alternar slots entre Sábado y Domingo.
                 if (indicePartido % 2 === 0) {
                     nuevaFecha.setDate(nuevaFecha.getDate() + 5); // Sábado
                     const slotsSabado = [14, 16, 18, 21];
@@ -334,7 +338,8 @@ function obtenerFechaRealista(fechaBase, tipoCompeticion, nombreCompeticion = ''
                 }
             }
         }
-    } else {
+    }
+    else {
         nuevaFecha.setHours(21, 0, 0);
     }
 
@@ -582,6 +587,22 @@ async function generarCalendario(partidaId) {
                 case 'copa':
                     await generarRondaInicialCopa(partidaId, comp, anioActual);
                     break;
+                case 'supercopa':
+                    const nombre = comp.nombre.toLowerCase();
+                    
+                    if (nombre.includes('europa') || nombre.includes('sudamericana')) {
+                        await generarSupercopasContinentales(partidaId, comp, semanasFechas);
+                    } 
+                    else if (nombre.includes('intercontinental')) {
+                        await generarCopaIntercontinental(partidaId, comp, semanasFechas);
+                    } 
+                    else if (nombre.includes('españa') || nombre.includes('italia')) {
+                        await generarSupercopasFinalFour(partidaId, comp, semanasFechas);
+                    } 
+                    else {
+                        await generarSupercopasNacionales(partidaId, comp, semanasFechas);
+                    }
+                    break;
                 default:
                     console.warn(`Tipo de competición desconocido: ${comp.tipo} en ${comp.nombre}`);
             }
@@ -703,6 +724,26 @@ async function generarLiga(partidaId, competicion, anioInicio) {
 
         partidosDeLaJornada.forEach((p, i) => {
             let fechaReal;
+            let esPartidoAplazado = false;
+            let semanaDestinoAplazado = 24;
+
+            const esLigaAfectada = competicion.nombre.toLowerCase().includes('españa') || competicion.nombre.toLowerCase().includes('italia');
+            if (esLigaAfectada && semanaBucleMaestra === 21) {
+                const localClub = equipos.find(e => e._id?.toString() === p.local.toString());
+                const visClub = equipos.find(e => e._id?.toString() === p.visitante.toString());
+
+                if (localClub?.competiciones?.length > 2 || visClub?.competiciones?.length > 2) {
+                    esPartidoAplazado = true;
+                }
+            }
+            if (esPartidoAplazado) {
+                // En lugar de usar la fecha de la semana 21, usamos la fecha base de la semana 24
+                let fechaAplazadaBase = new Date(semanasFechas[semanaDestinoAplazado]);
+                fechaReal = new Date(fechaAplazadaBase);
+                fechaReal.setDate(fechaReal.getDate() + 2);
+                fechaReal.setHours(20, 30, 0); 
+            }
+
             if (esIntersemanal) {
                 fechaReal = new Date(fechaJornadaBase);
                 fechaReal.setDate(fechaReal.getDate() + (i % 2)); 
@@ -1210,6 +1251,102 @@ async function generarFaseEuropa(partidaId, competicion, anioInicio, campeonesVi
     }
 }
 
+async function generarSupercopasContinentales(partidaId, comp, semanasFechas) {
+    if (!comp.clubes || comp.clubes.length !== 2) return;
+
+    const sem = CALENDARIO_MAESTRO.SUPERCOPAS.CONTINENTAL;
+    // Miércoles de la semana asignada (Lunes + 2 días)
+    const fechaPartido = new Date(semanasFechas[sem]);
+    fechaPartido.setDate(fechaPartido.getDate() + 2);
+    fechaPartido.setHours(21, 0, 0, 0);
+
+    const partido = crearObjeto(partidaId, comp._id, 1, comp.clubes[0], comp.clubes[1], fechaPartido, 'FINAL');
+    await Partido.create(partid);
+    console.log(`[Supercopa Continental] ${comp.nombre} generada.`);
+}
+
+async function generarSupercopasNacionales(partidaId, comp, semanasFechas) {
+    if (!comp.clubes || comp.clubes.length !== 2) return;
+
+    const sem = CALENDARIO_MAESTRO.SUPERCOPAS.SUPERCOPA_NACIONAL;
+    // Fin de semana previo a la liga (Sábado de la semana 0)
+    const fechaPartido = new Date(semanasFechas[sem]);
+    fechaPartido.setDate(fechaPartido.getDate() + 5); // Lunes + 5 = Sábado
+    fechaPartido.setHours(20, 45, 0, 0);
+
+    const partido = crearObjeto(partidaId, comp._id, 1, comp.clubes[0], comp.clubes[1], fechaPartido, 'FINAL');
+    await Partido.create(partid);
+    console.log(`[Supercopa Nacional] ${comp.nombre} generada.`);
+}
+
+async function generarCopaIntercontinental(partidaId, comp, semanasFechas) {
+    if (!comp.clubes || comp.clubes.length !== 2) return;
+
+    const sem = CALENDARIO_MAESTRO.SUPERCOPAS.INTERCONTINENTAL;
+    // Miércoles de diciembre / mitad de temporada
+    const fechaPartido = new Date(semanasFechas[sem]);
+    fechaPartido.setDate(fechaPartido.getDate() + 2); // Miércoles
+    fechaPartido.setHours(21, 0, 0, 0);
+
+    const partido = crearObjeto(partidaId, comp._id, 1, comp.clubes[0], comp.clubes[1], fechaPartido, 'FINAL');
+    await Partido.create(partid);
+    console.log(`[Intercontinental] ${comp.nombre} generada.`);
+}
+
+async function generarSupercopasFinalFour(partidaId, comp, semanasFechas) {
+    if (!comp.clubes || comp.clubes.length !== 4) return;
+
+    const sem = CALENDARIO_MAESTRO.SUPERCOPAS.SUPERCOPA_NACIONAL_FINAL_FOUR;
+    
+    // Semifinal 1: Miércoles de la semana 21
+    const fechaSemi1 = new Date(semanasFechas[sem]);
+    fechaSemi1.setDate(fechaSemi1.getDate() + 2);
+    fechaSemi1.setHours(21, 0, 0, 0);
+
+    // Semifinal 2: Jueves de la semana 21
+    const fechaSemi2 = new Date(semanasFechas[sem]);
+    fechaSemi2.setDate(fechaSemi2.getDate() + 3);
+    fechaSemi2.setHours(21, 0, 0, 0);
+
+    // Guardamos las dos semifinales. 
+    const semi1 = crearObjeto(partidaId, comp._id, 1, comp.clubes[0], comp.clubes[3], fechaSemi1, 'SEMIFINAL');
+    const semi2 = crearObjeto(partidaId, comp._id, 1, comp.clubes[1], comp.clubes[2], fechaSemi2, 'SEMIFINAL');
+
+    await Partido.insertMany([semi1, semi2]);
+    console.log(`[Supercopa Final Four] Semifinales de ${comp.nombre} generadas.`);
+}
+
+async function generarFinalSupercopa(partidaId, competicion, finalistas, fechaFinal) {
+    // Evitar duplicados
+    const partidoExistente = await Partido.countDocuments({
+        partidaId,
+        competicionId: competicion._id,
+        jornada: 2
+    });
+    if (partidoExistente > 0) return;
+
+    if (finalistas.length !== 2) {
+        console.error(`[Supercopa] Error: Se necesitan 2 finalistas, se encontraron ${finalistas.length}`);
+        return;
+    }
+
+    // El tipo de partido es 'FINAL' para que el motor sepa que ahí acaba
+    const finalPartido = crearObjeto(
+        partidaId, 
+        competicion._id, 
+        2, // Jornada 2
+        finalistas[0], 
+        finalistas[1], 
+        fechaFinal, 
+        'FINAL', 
+        `SUPERCOPA_${competicion._id}_FINAL`
+    );
+
+    await Partido.create(finalPartido);
+    console.log(`[${competicion.nombre}] ¡Gran Final generada para el ${fechaFinal.toISOString()}!`);
+}
+
+//PARA LAS RONDA ELIMINATORIAS
 async function generarDieciseisavosEuropa(partidaId, competicion, tablaPosiciones, fechaUltimaJornada) {
     const bloquesPlayoff = [
         { nombre: 'A', cabezas: [tablaPosiciones[8], tablaPosiciones[9]], rivales: [tablaPosiciones[22], tablaPosiciones[23]] },

@@ -38,10 +38,7 @@ async function verificarYGenerarSiguienteRonda(partidaId, fechaSimulada) {
                 jugado: false
             });
 
-            if (pendientes > 0) {
-                //console.log(`[MOTOR] Quedan ${pendientes} partidos pendientes en la competición ${compId} (Jornada ${jornadaActual}).`);
-                continue; 
-            }
+            if (pendientes > 0) continue; 
 
             const competicion = await Competicion.findById(compId);
             if (!competicion) {
@@ -81,7 +78,7 @@ async function verificarYGenerarSiguienteRonda(partidaId, fechaSimulada) {
             }
             
             // --- 2. BLOQUE COPAS NACIONALES ---
-            else if (tipoActual === 'ELIMINATORIA' && !nombreComp.includes('libertadores') && !nombreComp.includes('sudamericana')) {
+            else if (tipoActual === 'ELIMINATORIA' && !nombreComp.includes('libertadores') && !nombreComp.includes('sudamericana') && !nombreComp.includes('supercopa')) {
                 
                 // CASO A: FIN DE LA RONDA PREVIA (Jornada 0)
                 if (jornadaActual === 0) {
@@ -97,23 +94,22 @@ async function verificarYGenerarSiguienteRonda(partidaId, fechaSimulada) {
                     const bolsaCompleta = [...ganadoresPrevios, ...equiposExentos];
                     const totalEquipos = bolsaCompleta.length;
 
-                    // Decidir dinámicamente la ronda según el tamaño de la bolsa
                     let nombreSiguienteRonda = '1/16 de Final';
                     let siguienteJornadaNum = 1;
 
                     if (totalEquipos === 16) {
                         nombreSiguienteRonda = 'Octavos de Final';
-                        siguienteJornadaNum = 2; // Saltamos directamente a la jornada de octavos
+                        siguienteJornadaNum = 2; 
                     } else if (totalEquipos === 8) {
                         nombreSiguienteRonda = 'Cuartos de Final';
-                        siguienteJornadaNum = 3; // Saltamos directamente a cuartos
+                        siguienteJornadaNum = 3; 
                     }
 
                     console.log(`[MOTOR] Bolsa con ${totalEquipos} equipos. Generando: ${nombreSiguienteRonda} (Jornada ${siguienteJornadaNum})`);
                     await calendarioService.generarSiguienteRondaCopa(partidaId, competicion, bolsaCompleta, nombreSiguienteRonda, fechaSimulada, siguienteJornadaNum);
                 }
                 
-                // CASO B: RONDAS INTERMEDIAS AVANZANZANDO POR PASOS
+                // CASO B: RONDAS INTERMEDIAS AVANZANDO POR PASOS
                 else if (jornadaActual >= 1 && jornadaActual <= 3) {
                     const clasificados = await obtenerGanadoresGlobales(partidaId, partidosDeLaFase, false);
                     const proximasRondas = {
@@ -127,7 +123,7 @@ async function verificarYGenerarSiguienteRonda(partidaId, fechaSimulada) {
                     await calendarioService.generarSiguienteRondaCopa(partidaId, competicion, clasificados, siguiente.nombre, fechaSimulada, siguiente.num);
                 } 
                 
-                // CASO C: SEMIFINALES Y FINALES (Mantiene tu lógica de ida/vuelta)
+                // CASO C: SEMIFINALES Y FINALES
                 else if (jornadaActual === 4 || jornadaActual === 5) {
                     const copasConDobleSemi = ['copa del rey', 'coppa italia', 'taça de portugal', 'knvb beker', 'copa do brasil'];
                     const tieneVuelta = copasConDobleSemi.includes(nombreComp);
@@ -156,57 +152,53 @@ async function verificarYGenerarSiguienteRonda(partidaId, fechaSimulada) {
             // --- 3. BLOQUE SUDAMÉRICA ---
             else if (nombreComp.includes('libertadores') || nombreComp.includes('sudamericana')) {
                 
-                if (tipoActual === 'LIGA' && jornadaActual === 6) {
-                    console.log(`[MOTOR - Conmebol] Fin de Fase de Grupos para la competición actual.`);
-                    
+                if (tipoActual === 'LIGA' && jornadaActual === 6) {                    
                     const compLibertadores = await Competicion.findOne({ partidaId, nombre: /libertadores/i });
                     const compSudamericana = await Competicion.findOne({ partidaId, nombre: /sudamericana/i });
 
                     if (!compLibertadores || !compSudamericana) {
-                        console.error("[MOTOR - Conmebol] Error: No se encuentra una de las dos competiciones Conmebol en la base de datos.");
+                        console.error("[MOTOR - Conmebol] Error: No se encuentra una de las dos competiciones Conmebol.");
                         continue;
                     }
 
                     const pendLib = await Partido.countDocuments({ partidaId, competicionId: compLibertadores._id, jornada: 6, jugado: false });
                     const pendSud = await Partido.countDocuments({ partidaId, competicionId: compSudamericana._id, jornada: 6, jugado: false });
 
-                    if (pendLib > 0 || pendSud > 0) {
-                        //console.log(`[MOTOR - Conmebol] Esperando a que ambas competiciones terminen la Jornada 6 (Libertadores Pendientes: ${pendLib}, Sudamericana Pendientes: ${pendSud})`);
-                        continue;
-                    }
+                    if (pendLib > 0 || pendSud > 0) continue;
 
-                    const tablasLib = await obtenerTablasPosicionesGruposSudamerica(partidaId, compLibertadores._id);
-                    const tablasSud = await obtenerTablasPosicionesGruposSudamerica(partidaId, compSudamericana._id);
-                    
-                    let primerosLib = [], segundosLib = [], tercerosLib = [];
-                    let segundosSud = [];
+                    // CORRECCIÓN: Forzamos a que la lógica de cálculo cruzado corra SOLO una vez (elegimos cuando el bucle lee Libertadores)
+                    if (nombreComp.includes('libertadores')) {
+                        const tablasLib = await obtenerTablasPosicionesGruposSudamerica(partidaId, compLibertadores._id);
+                        const tablasSud = await obtenerTablasPosicionesGruposSudamerica(partidaId, compSudamericana._id);
+                        
+                        let primerosLib = [], segundosLib = [], tercerosLib = [];
+                        let segundosSud = [];
 
-                    Object.values(tablasLib).forEach(grupo => {
-                        if(grupo[0]) primerosLib.push(grupo[0]);
-                        if(grupo[1]) segundosLib.push(grupo[1]);
-                        if(grupo[2]) tercerosLib.push(grupo[2]); 
-                    });
+                        Object.values(tablasLib).forEach(grupo => {
+                            if(grupo[0]) primerosLib.push(grupo[0]);
+                            if(grupo[1]) segundosLib.push(grupo[1]);
+                            if(grupo[2]) tercerosLib.push(grupo[2]); 
+                        });
 
-                    Object.values(tablasSud).forEach(grupo => {
-                        if(grupo[1]) segundosSud.push(grupo[1]); 
-                    });
+                        Object.values(tablasSud).forEach(grupo => {
+                            if(grupo[1]) segundosSud.push(grupo[1]); 
+                        });
 
-                    if (nombreComp.includes('sudamericana')) {
+                        // Generar Playoffs de Sudamericana
                         await calendarioService.generarPlayoffsSudamericana(
                             partidaId, 
-                            competicion._id, 
-                            competicion.nombre, 
+                            compSudamericana._id, 
+                            compSudamericana.nombre, 
                             tercerosLib.map(e => e.clubId?.toString() || e.toString()), 
                             segundosSud.map(e => e.clubId?.toString() || e.toString()), 
                             fechaSimulada
                         );
-                    } else {
-                        //  Octavos directamente en la jornada 11 (Ida: 11, Vuelta: 12)
+
+                        // Generar Octavos de Libertadores
                         const bolsaOctavosLib = [...primerosLib, ...segundosLib].map(e => e.clubId?.toString() || e.toString());
-                        
                         await calendarioService.generarRondaEliminatoriaSudamerica(
                             partidaId,
-                            competicion,
+                            compLibertadores,
                             bolsaOctavosLib,
                             'OCTAVOS',
                             fechaSimulada,
@@ -216,7 +208,6 @@ async function verificarYGenerarSiguienteRonda(partidaId, fechaSimulada) {
                 }
                 
                 else if (tipoActual === 'ELIMINATORIA') {
-                    
                     // Fin de Play-offs de Sudamericana (jornada 10)
                     if (jornadaActual === 10 && nombreComp.includes('sudamericana')) {
                         console.log(`[MOTOR - Sudamericana] Fin de Play-offs. Generando Octavos...`);
@@ -238,7 +229,7 @@ async function verificarYGenerarSiguienteRonda(partidaId, fechaSimulada) {
                             bolsaOctavosSud,
                             'OCTAVOS',
                             fechaSimulada,
-                            11 // Sudamericana también entra a Octavos en la jornada 11 de forma unificada
+                            11 
                         );
                     }
                     
@@ -256,7 +247,7 @@ async function verificarYGenerarSiguienteRonda(partidaId, fechaSimulada) {
                             ganadoresOctavos,
                             'CUARTOS',
                             fechaSimulada,
-                            13 // Cuartos Ida: 13, Vuelta: 14
+                            13 
                         );
                     }
                     
@@ -274,7 +265,7 @@ async function verificarYGenerarSiguienteRonda(partidaId, fechaSimulada) {
                             ganadoresCuartos,
                             'SEMIFINAL',
                             fechaSimulada,
-                            15 // Semifinales Ida: 15, Vuelta: 16
+                            15 
                         );
                     }
                     
@@ -291,7 +282,7 @@ async function verificarYGenerarSiguienteRonda(partidaId, fechaSimulada) {
                             finalistas,
                             'FINAL',
                             fechaSimulada,
-                            17 // Final Única: 17
+                            17 
                         );
                     }
                     
@@ -299,6 +290,26 @@ async function verificarYGenerarSiguienteRonda(partidaId, fechaSimulada) {
                     else if (jornadaActual === 17) {
                         console.log(`[MOTOR - ${competicion.nombre}] ¡La competición Conmebol ha concluido!`);
                     }
+                }
+            }
+            else if (nombreComp.includes('supercopa') && tipoActual === 'SEMIFINAL') {
+                console.log(`[MOTOR - Supercopa] Fin de Semifinales en ${competicion.nombre}. Generando Final...`);
+                
+                const finalistas = await obtenerGanadoresGlobales(partidaId, partidosDeLaFase, false);
+
+                if (finalistas.length === 2) {
+                    const fechaFinal = new Date(fechaSimulada);
+                    fechaFinal.setDate(fechaFinal.getDate() + 3); 
+                    fechaFinal.setHours(21, 0, 0, 0);
+
+                    await calendarioService.generarFinalSupercopa(
+                        partidaId, 
+                        competicion, 
+                        finalistas, 
+                        fechaFinal
+                    );
+                } else {
+                    console.error(`[CRÍTICO] No se pudieron determinar 2 finalistas para la Supercopa. Encontrados: ${finalistas.length}`);
                 }
             }
         }
