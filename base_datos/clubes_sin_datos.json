@@ -7,7 +7,8 @@
         "competiciones": [
             "LaLiga EA Sports",
             "Copa del Rey",
-            "UEFA Champions League"
+            "UEFA Champions League",
+            "Supercopa de España"
         ],
         "esFilial": false,
         "clubMatriz": null,
@@ -52,7 +53,8 @@
         "competiciones": [
             "LaLiga EA Sports",
             "Copa del Rey",
-            "UEFA Champions League"
+            "UEFA Champions League",
+            "Supercopa de España"
         ],
         "esFilial": false,
         "clubMatriz": null,
@@ -97,7 +99,8 @@
         "competiciones": [
             "LaLiga EA Sports",
             "Copa del Rey",
-            "UEFA Champions League"
+            "UEFA Champions League",
+            "Supercopa de España"
         ],
         "esFilial": false,
         "clubMatriz": null,
@@ -142,7 +145,8 @@
         "competiciones": [
             "LaLiga EA Sports",
             "Copa del Rey",
-            "UEFA Champions League"
+            "UEFA Champions League",
+            "Supercopa de España"
         ],
         "esFilial": false,
         "clubMatriz": null,
@@ -1997,7 +2001,8 @@
         "competiciones": [
             "Premier League",
             "FA Cup",
-            "UEFA Champions League"
+            "UEFA Champions League",
+            "Community Shield"
         ],
         "esFilial": false,
         "clubMatriz": null,
@@ -2042,7 +2047,8 @@
         "competiciones": [
             "Premier League",
             "FA Cup",
-            "UEFA Champions League"
+            "UEFA Champions League",
+            "Supercopa de Europa"
         ],
         "esFilial": false,
         "clubMatriz": null,
@@ -2310,7 +2316,8 @@
         "competiciones": [
             "Premier League",
             "FA Cup",
-            "UEFA Conference League"
+            "UEFA Conference League",
+            "Community Shield"
         ],
         "esFilial": false,
         "clubMatriz": null,
@@ -3807,7 +3814,8 @@
         "competiciones": [
             "Serie A",
             "Coppa Italia",
-            "UEFA Champions League"
+            "UEFA Champions League",
+            "Supercopa de Italia"
         ],
         "esFilial": false,
         "clubMatriz": null,
@@ -3897,7 +3905,8 @@
         "competiciones": [
             "Serie A",
             "Coppa Italia",
-            "UEFA Champions League"
+            "UEFA Champions League",
+            "Supercopa de Italia"
         ],
         "esFilial": false,
         "clubMatriz": null,
@@ -3941,7 +3950,8 @@
         "estadio": "San Siro",
         "competiciones": [
             "Serie A",
-            "Coppa Italia"
+            "Coppa Italia",
+            "Supercopa de Italia"
         ],
         "esFilial": false,
         "clubMatriz": null,
@@ -4165,7 +4175,8 @@
         "competiciones": [
             "Serie A",
             "Coppa Italia",
-            "UEFA Europa League"
+            "UEFA Europa League",
+            "Supercopa de Italia"
         ],
         "esFilial": false,
         "clubMatriz": null,
@@ -5574,7 +5585,8 @@
         "competiciones": [
             "Bundesliga",
             "DFB-Pokal",
-            "UEFA Champions League"
+            "UEFA Champions League",
+            "Franz Beckenbauer Supercup"
         ],
         "esFilial": false,
         "clubMatriz": null,
@@ -5798,7 +5810,8 @@
         "competiciones": [
             "Bundesliga",
             "DFB-Pokal",
-            "UEFA Europa League"
+            "UEFA Europa League",
+            "Franz Beckenbauer Supercup"
         ],
         "esFilial": false,
         "clubMatriz": null,
@@ -7165,7 +7178,10 @@
         "competiciones": [
             "Ligue 1",
             "Coupe de France",
-            "UEFA Champions League"
+            "UEFA Champions League",
+            "Supercopa de Francia",
+            "Supercopa de Europa",
+            "Copa Intercontinental"
         ],
         "esFilial": false,
         "clubMatriz": null,
@@ -7210,7 +7226,8 @@
         "competiciones": [
             "Ligue 1",
             "Coupe de France",
-            "UEFA Champions League"
+            "UEFA Champions League",
+            "Supercopa de Francia"
         ],
         "esFilial": false,
         "clubMatriz": null,
@@ -8755,7 +8772,8 @@
         "competiciones": [
             "Eredivisie",
             "KNVB Beker",
-            "UEFA Champions League"
+            "UEFA Champions League",
+            "Supercopa de Países Bajos"
         ],
         "esFilial": false,
         "clubMatriz": null,
@@ -9155,7 +9173,8 @@
         "estadio": "De_Adelaarshorst",
         "competiciones": [
             "Eredivisie",
-            "KNVB Beker"
+            "KNVB Beker",
+            "Supercopa de Países Bajos"
         ],
         "esFilial": false,
         "clubMatriz": null,
@@ -10428,7 +10447,8 @@
         "competiciones": [
             "Primeira Liga",
             "Taça de Portugal",
-            "UEFA Champions League"
+            "UEFA Champions League",
+            "Supercopa de Portugal"
         ],
         "esFilial": false,
         "clubMatriz": null,
@@ -10518,7 +10538,8 @@
         "competiciones": [
             "Primeira Liga",
             "Taça de Portugal",
-            "UEFA Champions League"
+            "UEFA Champions League",
+            "Supercopa de Portugal"
         ],
         "esFilial": false,
         "clubMatriz": null,
@@ -12238,7 +12259,8 @@
         "competiciones": [
             "Liga Profesional Argentina",
             "Copa Argentina",
-            "Copa Libertadores"
+            "Copa Libertadores",
+            "Supercopa de Argentina"
         ],
         "esFilial": false,
         "clubMatriz": null,
@@ -12460,7 +12482,8 @@
         "competiciones": [
             "Liga Profesional Argentina",
             "Copa Argentina",
-            "Copa Sudamericana"
+            "Copa Sudamericana",
+            "Recopa sudamericana"
         ],
         "esFilial": false,
         "clubMatriz": null,
@@ -12860,7 +12883,8 @@
         "estadio": "Estadio Bautista Gargantini",
         "competiciones": [
             "Liga Profesional Argentina",
-            "Copa Argentina"
+            "Copa Argentina",
+            "Supercopa de Argentina"
         ],
         "esFilial": false,
         "clubMatriz": null,
@@ -13303,7 +13327,10 @@
         "competiciones": [
             "Brasileirão Série A",
             "Copa do Brasil",
-            "Copa Libertadores"
+            "Copa Libertadores",
+            "Supercopa do Brasil",
+            "Recopa sudamericana",
+            "Copa Intercontinental"
         ],
         "esFilial": false,
         "clubMatriz": null,
@@ -13483,7 +13510,8 @@
         "competiciones": [
             "Brasileirão Série A",
             "Copa do Brasil",
-            "Copa Sudamericana"
+            "Copa Sudamericana",
+            "Supercopa do Brasil"
         ],
         "esFilial": false,
         "clubMatriz": null,
