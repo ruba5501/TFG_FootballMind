@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         if (paisSel) {
             const filtradas = competiciones.filter(c => {
-                if (paisSel === 'Internacional') return c.tipo.includes('internacional');
+                if (paisSel === 'Internacional') return c.tipo.includes('internacional') || (c.tipo === 'supercopa' && !c.pais);
                 return c.pais === paisSel;
             });
 
@@ -58,7 +58,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!res.ok) throw new Error('Error en la respuesta');
             const htmlCompleto = await res.text();
             
-            // 🛑 SOLUCIÓN AL NAVBAR REPETIDO: Filtrar el HTML recibido
             const parser = new DOMParser();
             const docFiltrado = parser.parseFromString(htmlCompleto, 'text/html');
             
@@ -80,7 +79,6 @@ document.addEventListener('DOMContentLoaded', () => {
         window.cargarInfo();
     });
 
-    // 🛑 SOLUCIÓN AL PRIMER CLIC EN RESULTADOS FILTRADOS POR AJAX:
     // Al usar delegación de eventos en el contenedor, capturamos los clics de las pestañas inyectadas dinámicamente
     contenedor.addEventListener('click', function (event) {
         const btn = event.target.closest('#tabsCompeticion button');

@@ -69,7 +69,7 @@
                             else if (nombreComp.includes('champions')) {
                                 claseComp = 'bg-champions';
                             }
-                            else if (nombreComp.includes('europa')) {
+                            else if (nombreComp.includes('europa league')) {
                                 claseComp = 'bg-europa';
                             }
                             else if (nombreComp.includes('conference')) {
@@ -78,12 +78,22 @@
                             else if (nombreComp.includes('libertadores')) {
                                 claseComp = 'bg-libertadores';
                             }
-                            else if (nombreComp.includes('sudamericana')) {
+                            else if (nombreComp.includes('copa sudamericana')) {
                                 claseComp = 'bg-sudamericana';
                             }
                             else if (tipoComp === 'copa') {
                                 claseComp = 'bg-copa';
-                            }                       
+                            }
+                            else if (!nombreComp.includes('supercopa de europa') && (nombreComp.includes('supercopa') || nombreComp.includes('community shield') || nombreComp.includes('franz beckenbauer supercup'))) {
+                                claseComp = 'bg-supercopaNacional';
+                            }
+                            else if (nombreComp.includes('supercopa de europa') || nombreComp.includes('recopa sudamericana')) {
+                                claseComp = 'bg-supercopaInternacional';
+                            }
+                            else if (nombreComp.includes('intercontinental')) {
+                                claseComp = 'bg-intercontinental';
+                            } 
+
                             %>
                             <div class="match-tag <%= claseComp %> text-center mt-1">
                                 <div class="small fw-bold"><%= esLocal ? '(Local)' : '(Visitante)' %></div>

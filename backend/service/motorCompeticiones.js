@@ -145,7 +145,7 @@ async function verificarYGenerarSiguienteRonda(partidaId, fechaSimulada) {
                     }
                 }
                 else if (jornadaActual === 6) {
-                    console.log(`[MOTOR - ${competicion.nombre}] ¡La gran final ha concluido!`);
+                    console.log(`[MOTOR - ${competicion.nombre}] ¡La copa ha concluido!`);
                 }
             }
 

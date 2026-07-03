@@ -187,18 +187,27 @@
 .bg-ligue1 { background-color: #091c3e; }
 .bg-eredivisie { background-color: #004792; }
 .bg-primeriraliga { background-color: #e10014; }
-.bg-argentina { background-color: #3dadcf; }
+.bg-argentina { background-color: #2c92b1; }
 .bg-brasileirão { background-color: #009b3a; }
 .bg-champions { background-color: #1f02a0; }
 .bg-europa { background-color: #f47e01; }
 .bg-conference { background-color: #00ff85; }
 .bg-libertadores { 
-    background-color: #f7d002; 
+    background-color: #d4b204; 
     color: #000 !important; 
 }
 .bg-sudamericana { background-color: #0a244d; }
 .bg-copa { background-color: #3f3001; }
+.bg-supercopaNacional { 
+    background-color: #f3f706; 
+    color: #000 !important; 
+}
 
+.bg-supercopaInternacional { 
+    background-color: #04d0eb; 
+    color: #fff !important;
+}
+.bg-intercontinental { background-color: #8f2c91; }
 /*--------------------------------------*/
 /*para mostrar la formacion*/
 .pitch {
