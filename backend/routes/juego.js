@@ -141,30 +141,43 @@ function calcularNivel(jugador, posicionAValorar) {
 
 // CONVOCATORIA INTELIGENTE DE LA IA
 async function seleccionarConvocatoriaIA(clubId, rivalReputacion, competicionId, formacionPredefinida = '4-3-3') {
-    const plantillaTotal = await Jugador.find({ clubActual: clubId });
     const club = await Club.findById(clubId);
-    if (!club || plantillaTotal.length === 0) return { titulares: [], suplentes: [] };
+    if (!club) return { titulares: [], suplentes: [] };
 
-    // 1. Filtrar disponibles sanos
-    const disponibles = plantillaTotal.filter(j => {
-        if (j.estado?.lesion !== null) return false;
-        if ((j.estado?.forma ?? 100) < 40) return false; 
-        if (j.estado?.sanciones && j.estado.sanciones.length > 0) {
-            const sancionActiva = j.estado.sanciones.find(s => s.competicionId === competicionId && s.partidosRestantes > 0);
-            if (sancionActiva) return false;
-        }
-        return true;
-    });
+    // 1. Obtener los dos bloques de jugadores en paralelo para optimizar
+    const [plantillaPrimerEquipo, filial] = await Promise.all([
+        Jugador.find({ clubActual: clubId }),
+        Club.findOne({ clubMatriz: clubId }).populate('plantilla')
+    ]);
 
-    // 2. Determinar política de rotación
+    // Helper para filtrar sanos y disponibles
+    const filtrarDisponibles = (jugadores, formaMinima) => {
+        return jugadores.filter(j => {
+            if (j.estado?.lesion !== null) return false;
+            if ((j.estado?.forma ?? 100) < formaMinima) return false; 
+            if (j.estado?.sanciones && j.estado.sanciones.length > 0) {
+                const sancionActiva = j.estado.sanciones.find(s => s.competicionId === competicionId && s.partidosRestantes > 0);
+                if (sancionActiva) return false;
+            }
+            return true;
+        });
+    };
+
+    // 2. Filtrar disponibles de ambos conjuntos
+    const primerEquipoSanos = filtrarDisponibles(plantillaPrimerEquipo, 40);
+    const canteranosSanos = filial && filial.plantilla ? filtrarDisponibles(filial.plantilla, 50) : [];
+
+    // Marcamos a los canteranos para identificarlos después si entran en la lista final
+    canteranosSanos.forEach(c => c.esCanteranoPromocionado = true);
+
+    // ¡La gran fusión! Todos compiten en el mismo saco
+    let todosLosDisponibles = [...primerEquipoSanos, ...canteranosSanos];
+
+    // 3. Determinar política de rotación
     const diferenciaReputacion = club.reputacion - rivalReputacion;
     let nivelRotacion = 'NINGUNA';
-
-    if (diferenciaReputacion > 20 && diferenciaReputacion <= 30) {
-        nivelRotacion = 'MODERADA';
-    } else if (diferenciaReputacion > 30) {
-        nivelRotacion = 'INTENSA'; 
-    }
+    if (diferenciaReputacion > 20 && diferenciaReputacion <= 30) nivelRotacion = 'MODERADA';
+    else if (diferenciaReputacion > 30) nivelRotacion = 'INTENSA'; 
 
     const configuracionFormacion = FORMACIONES[club.formacion] || FORMACIONES[formacionPredefinida] || FORMACIONES['4-3-3'];
     const posicionesRequeridas = configuracionFormacion.posiciones;
@@ -172,15 +185,15 @@ async function seleccionarConvocatoriaIA(clubId, rivalReputacion, competicionId,
     const titulares = [];
     const elegidosIds = new Set();
 
-    // 3. Selección de Titulares puesto por puesto
+    // 4. Selección de Titulares puesto por puesto (Meritocracia pura)
     for (const posicion of posicionesRequeridas) {
-        
-        let candidatos = disponibles
+        let candidatos = todosLosDisponibles
             .filter(j => j.posicionPrincipal === posicion && !elegidosIds.has(j._id.toString()))
             .map(j => {
                 let pesoAlineacion = calcularNivel(j, posicion);
                 const formaJugador = j.estado?.forma ?? 100;
 
+                // Penalizaciones y bonos de rotación aplicados justamente a todos
                 if (nivelRotacion === 'MODERADA' && formaJugador < 85) {
                     pesoAlineacion -= 10; 
                 } 
@@ -189,12 +202,22 @@ async function seleccionarConvocatoriaIA(clubId, rivalReputacion, competicionId,
                     if (j.edad <= 22 && j.potencial > j.valoracion) pesoAlineacion += 8; 
                 }
 
+                if (j.esCanteranoPromocionado) {
+                    if (nivelRotacion === 'NINGUNA') {
+                        pesoAlineacion -= 10; 
+                    } 
+                    else if (nivelRotacion === 'MODERADA') {
+                        pesoAlineacion -= 5;
+                    }
+                }
+
                 return { jugador: j, peso: pesoAlineacion };
             })
             .sort((a, b) => b.peso - a.peso);
 
+        // Si no hay especialistas potentes, buscamos parches en el saco global (puede ser un canterano polivalente)
         if (candidatos.length === 0 || candidatos[0].peso < 30) {
-            const parches = disponibles
+            const parches = todosLosDisponibles
                 .filter(j => !elegidosIds.has(j._id.toString()) && 
                             (j.posicionPrincipal === posicion || (j.posicionesSecundarias || []).includes(posicion)))
                 .sort((a, b) => calcularNivel(b, posicion) - calcularNivel(a, posicion));
@@ -214,14 +237,25 @@ async function seleccionarConvocatoriaIA(clubId, rivalReputacion, competicionId,
         }
     }
 
-    // 4. Confección del banquillo reglamentario (13 suplentes)
-    let suplentes = disponibles
+    // 5. Confección del banquillo reglamentario (13 suplentes de entre los que quedan)
+    let suplentes = todosLosDisponibles
         .filter(j => !elegidosIds.has(j._id.toString()))
         .sort((a, b) => calcularNivel(b, b.posicionPrincipal) - calcularNivel(a, a.posicionPrincipal))
         .slice(0, 13);
 
     while (suplentes.length < 13) {
         suplentes.push(null);
+    }
+
+    // 6. PERSISTENCIA EN BBDD: ¿Quiénes han ganado un puesto en la convocatoria?
+    const convocadosFinales = [...titulares, ...suplentes].filter(j => j !== null);
+    
+    // Filtramos cuáles de los ganadores de la convocatoria son de la cantera
+    const canteranosQueVanConvocados = convocadosFinales.filter(j => j.esCanteranoPromocionado);
+
+    // Los registramos en el array de la plantilla del primer equipo antes del partido
+    for (const canterano of canteranosQueVanConvocados) {
+        await clubesDAO.convocarCanterano(clubId, canterano._id);
     }
 
     return { titulares, suplentes };

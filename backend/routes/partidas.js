@@ -403,7 +403,7 @@ partidaRouter.get('/avanzar-hasta-partido/:id', requireLogin, async (req, res) =
                 let fechaSimulada = new Date(fechaInicio);
                 fechaSimulada.setDate(fechaSimulada.getDate() + i);
 
-                //console.log(`\n--- ⏱️ INICIO SIMULACIÓN DÍA: ${fechaSimulada.toLocaleDateString()} ---`);
+                //console.log(`\n--- INICIO SIMULACIÓN DÍA: ${fechaSimulada.toLocaleDateString()} ---`);
 
                 //console.time(" > Tiempo en Simular Partidos");
                 await juegoRouter.simularPartidosPendientes(partidaId, fechaSimulada, clubUsuarioId);
