@@ -292,7 +292,7 @@ async function verificarYGenerarSiguienteRonda(partidaId, fechaSimulada) {
                     }
                 }
             }
-            else if (nombreComp.includes('supercopa') && tipoActual === 'SEMIFINAL') {
+            else if (nombreComp.includes('supercopa') && tipoActual === 'ELIMINATORIA') {
                 console.log(`[MOTOR - Supercopa] Fin de Semifinales en ${competicion.nombre}. Generando Final...`);
                 
                 const finalistas = await obtenerGanadoresGlobales(partidaId, partidosDeLaFase, false);
