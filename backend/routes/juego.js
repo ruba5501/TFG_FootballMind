@@ -261,8 +261,8 @@ async function seleccionarConvocatoriaIA(clubId, rivalReputacion, competicionId,
     return { titulares, suplentes };
 }
 
-// RUTA PARA JUGAR EL PARTIDO
-router.get('/jugar-partido/:idPartido', requireLogin, async (req, res) => {
+// RUTA PARA SIMULAR EL PARTIDO RAPIDO
+router.get('/jugar_rapido/:idPartido', requireLogin, async (req, res) => {
     try {
         const partidoId = req.params.idPartido;
         
@@ -463,6 +463,144 @@ router.get('/jugar-partido/:idPartido', requireLogin, async (req, res) => {
     } catch (error) {
         console.error("Error en la simulación diaria:", error);
         res.status(500).send("Error al procesar la jornada");
+    }
+});
+
+// RUTA PARA SIMULAR EL PARTIDO VIENDOLO
+router.get('/jugar_partido/:idPartido', requireLogin, async (req, res) => {
+    try {
+        const partidoId = req.params.idPartido;
+        
+        const partidoUsuario = await Partido.findById(partidoId).populate('equipoLocal equipoVisitante');
+        if (!partidoUsuario) return res.status(404).send("Partido no encontrado.");
+
+        const [partidaJuego, clubUserVerificacion] = await Promise.all([
+            Partida.findById(partidoUsuario.partidaId).populate('clubSeleccionado'),
+            Club.findById(partidoUsuario.equipoLocal._id.toString() === req.session?.clubId ? partidoUsuario.equipoLocal._id : partidoUsuario.equipoVisitante._id).populate('plantilla') 
+        ]);
+
+        const clubUsuarioId = partidaJuego.clubSeleccionado._id.toString();
+        const clubUsuarioReal = clubUserVerificacion._id.toString() === clubUsuarioId ? clubUserVerificacion : await Club.findById(clubUsuarioId).populate('plantilla');
+
+        const convocadosUsuario = clubUsuarioReal.plantilla.slice(0, 18);
+        const tieneBajasConvocadas = convocadosUsuario.some(jugador => {
+            if (!jugador) return false;
+            const lesionado = jugador.estado?.lesion !== null && jugador.estado?.lesion !== undefined;
+            let sancionado = false;
+            if (jugador.estado?.sanciones && Array.isArray(jugador.estado.sanciones)) {
+                sancionado = jugador.estado.sanciones.some(s => 
+                    s && s.competicionId === partidoUsuario.competicionId && s.partidosRestantes > 0
+                );
+            }
+            return lesionado || sancionado;
+        });
+
+        if (tieneBajasConvocadas) {
+            return res.redirect(`/tactica?errorConvocatoria=true`);
+        }
+
+        // Obtener los partidos de hoy
+        const inicioDia = new Date(partidaJuego.fechaActual); inicioDia.setHours(0, 0, 0, 0);
+        const finDia = new Date(partidaJuego.fechaActual); finDia.setHours(23, 59, 59, 999);
+
+        const partidosDeHoy = await Partido.find({
+            partidaId: partidoUsuario.partidaId, 
+            jugado: false,
+            fecha: { $gte: inicioDia, $lte: finDia }
+        }).populate('equipoLocal equipoVisitante');
+
+        let equipoLocalUsuario = null;
+        let equipoVisitanteUsuario = null;
+        let opcionesEliminatoriaUsuario = { esVuelta: false, esIda: false };
+        let partidosIADeHoy = [];
+
+        for (const partido of partidosDeHoy) {
+            let equipoLocalData = { id: partido.equipoLocal._id, nombre: partido.equipoLocal.nombre, jugadores: [], suplentes: [] };
+            let equipoVisitanteData = { id: partido.equipoVisitante._id, nombre: partido.equipoVisitante.nombre, jugadores: [], suplentes: [] };
+
+            const esLocalUsuario = partido.equipoLocal._id.toString() === clubUsuarioId;
+            const esVisitanteUsuario = partido.equipoVisitante._id.toString() === clubUsuarioId;
+
+            // Asignamos alineaciones (Para el usuario las suyas, para la IA se autoconvoca)
+            if (esLocalUsuario) {
+                equipoLocalData.jugadores = clubUsuarioReal.plantilla.slice(0, 11);
+                equipoLocalData.suplentes = clubUsuarioReal.plantilla.slice(11, 18);
+            } else {
+                const cL = await seleccionarConvocatoriaIA(partido.equipoLocal._id, partido.equipoVisitante.reputacion, partido.competicionId);
+                equipoLocalData.jugadores = cL.titulares; equipoLocalData.suplentes = cL.suplentes;
+            }
+
+            if (esVisitanteUsuario) {
+                equipoVisitanteData.jugadores = clubUsuarioReal.plantilla.slice(0, 11);
+                equipoVisitanteData.suplentes = clubUsuarioReal.plantilla.slice(11, 18);
+            } else {
+                const cV = await seleccionarConvocatoriaIA(partido.equipoVisitante._id, partido.equipoLocal.reputacion, partido.competicionId);
+                equipoVisitanteData.jugadores = cV.titulares; equipoVisitanteData.suplentes = cV.suplentes;
+            }
+
+            let opcionesEliminatoria = { esVuelta: false, esIda: false };
+            if (partido.tipo === 'ELIMINATORIA') {
+                const partidoIda = await Partido.findOne({
+                    partidaId: partido.partidaId, competicionId: partido.competicionId, llave: partido.llave,
+                    equipoLocal: partido.equipoVisitante._id, equipoVisitante: partido.equipoLocal._id, jugado: true
+                });
+                if (partidoIda) {
+                    opcionesEliminatoria = { esVuelta: true, esIda: false, golesIdaLocal: partidoIda.golesLocal, golesIdaVisitante: partidoIda.golesVisitante };
+                } else {
+                    const tieneVueltaProgramada = await Partido.findOne({
+                        partidaId: partido.partidaId, competicionId: partido.competicionId, llave: partido.llave,
+                        equipoLocal: partido.equipoVisitante._id, equipoVisitante: partido.equipoLocal._id, jugado: false
+                    });
+                    if (tieneVueltaProgramada) opcionesEliminatoria.esIda = true;
+                }
+            }
+
+            if (partido._id.toString() === partidoId) {
+                equipoLocalUsuario = equipoLocalData;
+                equipoVisitanteUsuario = equipoVisitanteData;
+                opcionesEliminatoriaUsuario = opcionesEliminatoria;
+            } else {
+                // Si es de la IA, lo simulamos del tirón para tener los marcadores listos en el carrusel en vivo
+                const resultadoIA = simularPartido(equipoLocalData, equipoVisitanteData, partido.tipo, opcionesEliminatoria);
+                
+                partido.golesLocal = resultadoIA.marcador.local;
+                partido.golesVisitante = resultadoIA.marcador.visitante;
+                partido.jugado = true;
+                await partido.save(); // Los de la IA ya se quedan guardados en BBDD
+
+                partidosIADeHoy.push({
+                    partidoId: partido._id,
+                    local: partido.equipoLocal.nombre,
+                    visitante: partido.equipoVisitante.nombre,
+                    golesFinales: resultadoIA.marcador,
+                    cronogramaGoles: resultadoIA.goles || [] 
+                });
+            }
+        }
+
+        // CONGELAMOS EL PARTIDO DEL USUARIO EN LA SESIÓN (Arranca en Minuto 0)
+        req.session.partidoEnVivo = {
+            partidoId: partidoId,
+            minutoActual: 0,
+            local: equipoLocalUsuario,
+            visitante: equipoVisitanteUsuario,
+            tipo: partidoUsuario.tipo,
+            opcionesEliminatoria: opcionesEliminatoriaUsuario,
+            estadoMarcador: { golesLocal: 0, golesVisitante: 0, eventos: [] },
+            restoJornadaIa: partidosIADeHoy 
+        };
+
+        res.render('partidoEnVivo', {
+            title: 'Partido en Directo',  
+            partida: partidaJuego,
+            local: equipoLocalUsuario,
+            visitante: equipoVisitanteUsuario,
+            partidoBBDD: partidoUsuario
+        });
+
+    } catch (error) {
+        console.error("Error al iniciar partido en vivo:", error);
+        res.status(500).send("Error al procesar el partido en vivo");
     }
 });
 
