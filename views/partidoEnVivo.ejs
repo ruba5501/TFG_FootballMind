@@ -9,7 +9,8 @@
                 <div class="d-flex align-items-center justify-content-center gap-4">
                     <div class="text-end" style="flex: 1;">
                         <h3 class="m-0 fw-bold d-inline-block align-middle me-3"><%= local.nombre %></h3>
-                        <img src="/img/escudos/<%= local.escudo %>" alt="<%= local.nombre %>" class="escudo-marcador align-middle">
+                        <% if(esLocalUser) { %><span class="badge bg-info me-2">TÚ</span><% } %>
+                        <img src="/img/escudos/<%= partidoBBDD.equipoLocal.escudo %>" alt="<%= local.nombre %>" class="escudo-marcador align-middle">
                     </div>
 
                     <div class="d-flex align-items-center gap-3 bg-dark px-4 py-2 rounded-4 border border-secondary">
@@ -22,7 +23,8 @@
                     </div>
 
                     <div class="text-start" style="flex: 1;">
-                        <img src="/img/escudos/<%= visitante.escudo %>" alt="<%= visitante.nombre %>" class="escudo-marcador align-middle me-3">
+                        <img src="/img/escudos/<%= partidoBBDD.equipoVisitante.escudo %>" alt="<%= visitante.nombre %>" class="escudo-marcador align-middle me-3">
+                        <% if(!esLocalUser) { %><span class="badge bg-info me-2">TÚ</span><% } %>
                         <h3 class="m-0 fw-bold d-inline-block align-middle"><%= visitante.nombre %></h3>
                     </div>
                 </div>
@@ -39,17 +41,17 @@
             <div class="card shadow-sm border-0 h-100">
                 <div class="card-header bg-dark text-white fw-bold d-flex align-items-center justify-content-between">
                     <span><%= local.nombre %></span>
-                    <span class="badge bg-secondary"><%= local.tactica %></span>
+                    <span class="badge <%= esLocalUser ? 'bg-info' : 'bg-secondary' %>"><%= esLocalUser ? 'Mánager' : 'IA' %></span>
                 </div>
                 <div class="list-group list-group-flush" id="listaTitularesLocal">
-                    <% local.titulares.forEach((j, index) => { %>
-                        <div class="list-group-item d-flex justify-content-between align-items-center jugador-item" data-id="<%= j._id %>">
+                    <% local.jugadores.forEach((j, index) => { %>
+                        <div class="list-group-item d-flex justify-content-between align-items-center jugador-item-Fijo" data-id="<%= j._id %>">
                             <div>
-                                <span class="text-muted small me-2"><%= index + 1 %></span>
+                                <span class="badge bg-secondary text-white me-2" style="width: 28px;"><%= j.dorsal || (index + 1) %></span>
                                 <strong class="text-dark target-nombre-jugador"><%= j.nombre %></strong>
-                                <span class="badge bg-light text-muted ms-1"><%= j.posicion %></span>
+                                <span class="badge bg-light text-dark border ms-1 target-posicion"><%= j.posicionPrincipal || j.posicion %></span>
                             </div>
-                            <span class="badge bg-success-subtle text-success border border-success-subtle"><%= j.forma %>%</span>
+                            <span class="badge bg-success-subtle text-success border border-success-subtle"><%= j.atributos?.forma ?? 100 %>%</span>
                         </div>
                     <% }) %>
                 </div>
@@ -57,10 +59,8 @@
         </div>
 
         <div class="col-12 col-lg-6 mb-4 order-last order-lg-0">
-            <div class="card shadow-sm border-0 p-4 bg-white h-100">
-                <h5 class="fw-bold mb-3 text-dark border-bottom pb-2"><i class="bi bi-sliders me-2"></i>Panel del Entrenador</h5>
-                
-                <div class="d-flex gap-3 mb-4">
+            <div class="card shadow-sm border-0 p-4 bg-white text-center h-100 d-flex flex-column justify-content-center align-items-center">                
+                <div class="d-flex gap-3 mb-3 w-100" style="max-width: 450px;">
                     <button class="btn btn-success btn-lg flex-fill fw-bold shadow-sm" id="btnPlayPause">
                         <i class="bi bi-play-fill me-1"></i> REANUDAR
                     </button>
@@ -69,78 +69,8 @@
                     </button>
                 </div>
 
-                <ul class="nav nav-pills nav-fill mb-3" id="pills-tab" role="tablist">
-                    <li class="nav-item">
-                        <button class="nav-link active fw-bold" id="tab-tactica" data-bs-toggle="pill" data-bs-target="#pills-tactica" type="button"><i class="bi bi-diagram-3 me-1"></i> Táctica</button>
-                    </li>
-                    <li class="nav-item">
-                        <button class="nav-link fw-bold" id="tab-cambios" data-bs-toggle="pill" data-bs-target="#pills-cambios" type="button"><i class="bi bi-people me-1"></i> Cambios</button>
-                    </li>
-                </ul>
-
-                <div class="tab-content bg-light p-3 rounded-3 border border-light-subtle" id="pills-tabContent">
-                    <div class="tab-pane fade show active" id="pills-tactica" role="tabpanel">
-                        <div class="mb-3">
-                            <label class="form-label fw-bold text-muted small">Estilo de Juego</label>
-                            <select class="form-select border-secondary-subtle" id="selectEstilo">
-                                <option value="ESTÁNDAR" selected>Estándar</option>
-                                <option value="TIKI-TAKA">Tiki-Taka (Posesión)</option>
-                                <option value="CONTRAATAQUE">Contraataque</option>
-                                <option value="AUTOBÚS">Autobús (Ultra Defensivo)</option>
-                                <option value="BALÓN LARGO">Balón Largo</option>
-                                <option value="PRESIÓN ALTA">Presión Alta</option>
-                                <option value="JUEGO POR BANDAS">Juego por Bandas</option>
-                                <option value="PONER CENTROS">Poner Centros</option>
-                            </select>
-                        </div>
-                        <div class="mb-2">
-                            <label class="form-label fw-bold text-muted small">Mentalidad</label>
-                            <select class="form-select border-secondary-subtle" id="selectMentalidad">
-                                <option value="MUY_DEFENSIVA">Muy Defensiva</option>
-                                <option value="DEFENSIVA">Defensiva</option>
-                                <option value="EQUILIBRADA" selected>Equilibrada</option>
-                                <option value="OFENSIVA">Ofensiva</option>
-                                <option value="ULTRA_OFENSIVA">Ultra Ofensiva</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="tab-pane fade" id="pills-cambios" role="tabpanel">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <span class="small fw-bold text-muted">Ventanas restantes: <span id="ventanasRestantes" class="text-dark fw-bold">3</span></span>
-                            <span class="small fw-bold text-muted">Sustituciones: <span id="cambiosRestantes" class="text-dark fw-bold">0</span>/5</span>
-                        </div>
-                        
-                        <div class="row g-2 mb-3">
-                            <div class="col-12 col-sm-6">
-                                <label class="form-label small fw-bold text-muted">Sale (Titular):</label>
-                                <select class="selectpicker form-control border" id="selectSaleTitular" data-live-search="true">
-                                    <option value="" selected disabled>Selecciona titular...</option>
-                                    <% local.titulares.forEach((j) => { %>
-                                        <option value="<%= j._id %>"><%= j.nombre %> (<%= j.posicion %>)</option>
-                                    <% }) %>
-                                </select>
-                            </div>
-                            <div class="col-12 col-sm-6">
-                                <label class="form-label small fw-bold text-muted">Entra (Suplente):</label>
-                                <select class="selectpicker form-control border" id="selectEntraSuplente" data-live-search="true">
-                                    <option value="" selected disabled>Selecciona suplente...</option>
-                                    <% if (local.suplentes && local.suplentes.length > 0) { %>
-                                        <% local.suplentes.forEach((j) => { %>
-                                            <option value="<%= j._id %>" data-subtext="Forma: <%= j.forma %>%"><%= j.nombre %> (<%= j.posicion %>)</option>
-                                        <% }) %>
-                                    <% } else { %>
-                                        <option disabled>No hay suplentes convocados</option>
-                                    <% } %>
-                                </select>
-                            </div>
-                        </div>
-
-                        <button class="btn btn-primary w-100 fw-bold shadow-sm py-2 disabled" id="btnConfirmarCambio">
-                            <i class="bi bi-arrow-left-right me-1"></i> Solicitar Cambio
-                        </button>
-                    </div>
-                </div>
+                <button class="btn btn-primary btn-lg w-100 fw-bold shadow-sm py-3" style="max-width: 450px;" id="btnAbrirEstrategia"> TÁCTICA Y CAMBIOS</button>
+                <small class="text-muted mt-2"><i class="bi bi-info-circle"></i> Al abrir los ajustes, el partido se pausará automáticamente.</small>
             </div>
         </div>
 
@@ -148,17 +78,17 @@
             <div class="card shadow-sm border-0 h-100">
                 <div class="card-header bg-dark text-white fw-bold d-flex align-items-center justify-content-between">
                     <span><%= visitante.nombre %></span>
-                    <span class="badge bg-secondary">IA</span>
+                    <span class="badge <%= !esLocalUser ? 'bg-info' : 'bg-secondary' %>"><%= !esLocalUser ? 'Mánager' : 'IA' %></span>
                 </div>
                 <div class="list-group list-group-flush" id="listaTitularesVisitante">
-                    <% visitante.titulares.forEach((j, index) => { %>
-                        <div class="list-group-item d-flex justify-content-between align-items-center jugador-item">
+                    <% visitante.jugadores.forEach((j, index) => { %>
+                        <div class="list-group-item d-flex justify-content-between align-items-center jugador-item-FFixed" data-id="<%= j._id %>">
                             <div>
-                                <span class="text-muted small me-2"><%= index + 1 %></span>
+                                <span class="badge bg-secondary text-white me-2" style="width: 28px;"><%= j.dorsal || (index + 1) %></span>
                                 <strong class="text-dark"><%= j.nombre %></strong>
-                                <span class="badge bg-light text-muted ms-1"><%= j.posicion %></span>
+                                <span class="badge bg-light text-dark border ms-1"><%= j.posicionPrincipal || j.posicion %></span>
                             </div>
-                            <span class="badge bg-success-subtle text-success border border-success-subtle"><%= j.forma %>%</span>
+                            <span class="badge bg-success-subtle text-success border border-success-subtle"><%= j.atributos?.forma ?? 100 %>%</span>
                         </div>
                     <% }) %>
                 </div>
@@ -167,19 +97,74 @@
     </div>
 </div>
 
-<script>
-    $(document).ready(function() {
-        $('.selectpicker').selectpicker();
+<%- include('partials/modal_cambios_en_partido')%>
+<script src="/js/bootstrap.bundle.min.js"></script>
+<script src="/js/logicaFormaciones.js"></script>
 
-        // Pequeño validador visual para activar el botón de cambio solo si se seleccionan ambos jugadores
-        $('#selectSaleTitular, #selectEntraSuplente').on('change', function() {
-            const sale = $('#selectSaleTitular').val();
-            const entra = $('#selectEntraSuplente').val();
-            if(sale && entra) {
-                $('#btnConfirmarCambio').removeClass('disabled');
-            } else {
-                $('#btnConfirmarCambio').addClass('disabled');
+<script>
+    // 1. Guardamos los datos puros de las formaciones (esto no da error en el editor)
+    const FORMACIONES_DATA = JSON.parse('<%- JSON.stringify(formaciones) %>');
+
+    $(document).ready(function() {
+        const modalInstancia = new bootstrap.Modal(document.getElementById('modalEstrategiaPartido'));
+
+        // 1. Apertura Inteligente de la Pizarra
+        $('#btnAbrirEstrategia').on('click', function() {
+            // Pausar el partido si no lo está
+            if (!$('#btnPlayPause').text().includes('REANUDAR')) {
+                $('#btnPlayPause').trigger('click'); 
             }
+            
+            // Inicializar el GestorTactico nativo usando los datos del selector de tu modal
+            const esquemaActual = $('#selector-formacion').val();
+            if (typeof GestorTactico !== 'undefined') {
+                GestorTactico.init(esquemaActual, FORMACIONES_DATA);
+            }
+            
+            modalInstancia.show();
+        });
+
+        // 2. Cambio dinámico de esquema táctico
+        $('#selector-formacion').on('change', function() {
+            const nuevoEsquema = $(this).val();
+            if (typeof GestorTactico !== 'undefined') {
+                GestorTactico.cambiarEsquema(nuevoEsquema); // Asegúrate de tener este método o usar dibujarAlineacion
+            }
+        });
+
+        // 3. Sistema de Clics para Intercambiar Posiciones (reutiliza la lógica de tu JS)
+        $(document).on('click', '.jugador-item', function() {
+            if (typeof GestorTactico !== 'undefined') {
+                // Delegamos la selección e intercambio al GestorTactico que ya maneja las clases visuales y el redibujado del campo
+                GestorTactico.seleccionarJugador(this);
+            }
+        });
+
+        // 4. Botón de Guardar Estrategia en Tiempo Real
+        $('#btnGuardarEstrategia').on('click', function() {
+            const esquemaFinal = $('#selector-formacion').val();
+            const estiloFinal = $('#selectEstilo').val();
+            const mentalidadFinal = $('#selectMentalidad').val();
+
+            // Recogemos los IDs de los titulares reales directamente desde el DOM modificado por GestorTactico
+            const titularesIds = Array.from(document.querySelectorAll('#lista-titulares .jugador-item'))
+                .map(li => {
+                    const id = li.getAttribute('data-id');
+                    return id === 'vacio' ? null : id;
+                });
+
+            const dataEstrategia = {
+                formacion: esquemaFinal,
+                estiloJuego: estiloFinal,
+                mentalidad: mentalidadFinal,
+                titulares: titularesIds
+            };
+
+            console.log("Enviando ajustes tácticos en tiempo real a la simulación:", dataEstrategia);
+            
+            // Aquí puedes hacer un socket.emit o la lógica para que el simulador del partido capte los cambios en vivo
+            
+            modalInstancia.hide();
         });
     });
 </script>

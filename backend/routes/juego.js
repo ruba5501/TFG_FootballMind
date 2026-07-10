@@ -590,12 +590,20 @@ router.get('/jugar_partido/:idPartido', requireLogin, async (req, res) => {
             restoJornadaIa: partidosIADeHoy 
         };
 
+        const esLocalUsuario = partidoUsuario.equipoLocal._id.toString() === clubUsuarioId;
+        
         res.render('partidoEnVivo', {
             title: 'Partido en Directo',  
             partida: partidaJuego,
             local: equipoLocalUsuario,
             visitante: equipoVisitanteUsuario,
-            partidoBBDD: partidoUsuario
+            partidoBBDD: partidoUsuario,
+            esLocalUser: esLocalUsuario,
+            equipoUser: esLocalUsuario ? equipoLocalUsuario : equipoVisitanteUsuario,
+            tacticaInicial: clubUsuarioReal.tactica.formacion || '4-3-3',
+            estiloInicial: clubUsuarioReal.tactica.estiloJuego || 'ESTÁNDAR',
+            mentalidadInicial: clubUsuarioReal.tactica.mentalidad || 'EQUILIBRADA',
+            formaciones: FORMACIONES
         });
 
     } catch (error) {

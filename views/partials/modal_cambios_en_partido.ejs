@@ -1,0 +1,108 @@
+<div class="modal fade" id="modalEstrategiaPartido" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-fullscreen-lg-down modal-xl modal-dialog-scrollable">
+        <div class="modal-content bg-dark text-white border-secondary">
+            <div class="modal-header border-secondary bg-black">
+                <h5 class="modal-title fw-bold" id="tituloModalEstrategia"> Panel Estratégico: <%= equipoUser.nombre %></h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            
+            <div class="modal-body bg-dark">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-12 col-xl-6 mb-4">
+                            <div class="card bg-black border-secondary p-3 mb-3">
+                                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                                    <h6 class="text-info mb-0 fw-bold"> Formación </h6>
+                                    
+                                    <div class="input-group style-select-tactica w-auto">
+                                        <span class="input-group-text bg-secondary text-white border-secondary small">Esquema</span>
+                                        <select id="selector-formacion" class="form-select bg-dark text-white border-secondary fw-bold">
+                                            <% Object.keys(formaciones).forEach(f => { %>
+                                                <option value="<%= f %>" <%= tacticaInicial === f ? 'selected' : '' %>><%= f %></option>
+                                            <% }) %>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="card-body p-0 d-flex justify-content-center">
+                                    <div id="campo-futbol" class="pitch static-pitch">
+                                        <div class="mid-line"></div>
+                                        <div class="area-top"></div>
+                                        <div class="area-bottom"></div>
+                                        <div id="capa-jugadores"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card bg-black border-secondary p-3">
+                                <div class="row g-3">
+                                    <div class="col-12 col-sm-6">
+                                        <label class="form-label text-muted small fw-bold">Estilo de Juego</label>
+                                        <select class="form-select bg-dark text-white border-secondary" id="selectEstilo">
+                                            <option value="ESTÁNDAR" <%= estiloInicial === 'ESTÁNDAR' ? 'selected' : '' %>>Estándar</option>
+                                            <option value="TIKI-TAKA" <%= estiloInicial === 'TIKI-TAKA' ? 'selected' : '' %>>Tiki-Taka (Posesión)</option>
+                                            <option value="CONTRAATAQUE" <%= estiloInicial === 'CONTRAATAQUE' ? 'selected' : '' %>>Contraataque</option>
+                                            <option value="AUTOBÚS" <%= estiloInicial === 'AUTOBÚS' ? 'selected' : '' %>>Autobús (Ultra Defensivo)</option>
+                                            <option value="BALÓN LARGO" <%= estiloInicial === 'BALÓN LARGO' ? 'selected' : '' %>>Balón Largo</option>
+                                            <option value="PRESIÓN ALTA" <%= estiloInicial === 'PRESIÓN ALTA' ? 'selected' : '' %>>Presión Alta</option>
+                                            <option value="JUEGO POR BANDAS" <%= estiloInicial === 'JUEGO POR BANDAS' ? 'selected' : '' %>>Juego por Bandas</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-12 col-sm-6">
+                                        <label class="form-label text-muted small fw-bold">Mentalidad</label>
+                                        <select class="form-select bg-dark text-white border-secondary" id="selectMentalidad">
+                                            <option value="MUY_DEFENSIVA" <%= mentalidadInicial === 'MUY_DEFENSIVA' ? 'selected' : '' %>>Muy Defensiva</option>
+                                            <option value="DEFENSIVA" <%= mentalidadInicial === 'DEFENSIVA' ? 'selected' : '' %>>Defensiva</option>
+                                            <option value="EQUILIBRADA" <%= mentalidadInicial === 'EQUILIBRADA' ? 'selected' : '' %>>Equilibrada</option>
+                                            <option value="OFENSIVA" <%= mentalidadInicial === 'OFENSIVA' ? 'selected' : '' %>>Ofensiva</option>
+                                            <option value="ULTRA_OFENSIVA" <%= mentalidadInicial === 'ULTRA_OFENSIVA' ? 'selected' : '' %>>Ultra Ofensiva</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-xl-6">
+                            <div class="card bg-black text-white border-secondary h-100">
+                                <div class="card-header bg-secondary d-flex justify-content-between align-items-center py-2">
+                                    <h6 class="mb-0 fw-bold">Gestión de Campo</h6>
+                                    <span class="small bg-dark px-2 py-1 rounded text-warning" id="txtCambiosVentanas">Sustituciones: 0/5</span>
+                                </div>
+                                
+                                <div class="p-2 bg-primary text-white small fw-bold">TITULARES (Pulsa uno para seleccionar)</div>
+                                <div class="list-group list-group-flush" id="listaModalTitulares" style="max-height: 320px; overflow-y: auto;">
+                                </div>
+
+                                <div class="p-2 bg-info text-dark small fw-bold mt-2">SUPLENTES</div>
+                                <div class="list-group list-group-flush" id="listaModalSuplentes" style="max-height: 250px; overflow-y: auto;">
+                                    <% if (equipoUser.suplentes && equipoUser.suplentes.length > 0) { %>
+                                        <% equipoUser.suplentes.forEach(j => { %>
+                                            <div class="list-group-item bg-dark text-white border-secondary d-flex justify-content-between align-items-center item-intercambio-jugador" data-id="<%= j._id %>" data-tipo="suplente">
+                                                <div>
+                                                    <span class="badge bg-secondary me-2"><%= j.dorsal || 'S' %></span>
+                                                    <strong class="target-nombre"><%= j.nombre %></strong>
+                                                    <span class="badge bg-light text-dark ms-1 small"><%= j.posicionPrincipal || j.posicion %></span>
+                                                </div>
+                                                <span class="badge bg-success-subtle text-success"><%= j.atributos?.forma ?? 100 %>%</span>
+                                            </div>
+                                        <% }) %>
+                                    <% } else { %>
+                                        <div class="list-group-item bg-dark text-muted text-center small">Sin suplentes disponibles</div>
+                                    <% } %>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-footer border-secondary bg-black d-flex justify-content-between">
+                <div id="notificacionIntercambio" class="small text-warning fw-bold"></div>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-outline-light fw-bold" data-bs-dismiss="modal"> Descartar </button>
+                    <button type="button" class="btn btn-warning text-dark fw-bold" id="btnGuardarEstrategia"> Aplicar Cambios </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
