@@ -13,32 +13,32 @@
         
         <% if (typeof partida !== 'undefined' && partida) { %>
           <li class="nav-item">
-            <a class="nav-link" href="/inicioJuego/<%= partida._id %>"><i class="bi bi-house-door me-1"></i> Inicio</a>
+            <a class="nav-link" href="/inicioJuego"><i class="bi bi-house-door me-1"></i> Inicio</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="/plantilla/<%= partida._id %>"><i class="bi bi-person-badge me-1"></i> Plantilla</a>
+            <a class="nav-link" href="/plantilla"><i class="bi bi-person-badge me-1"></i> Plantilla</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="/formacion/<%= partida._id %>"><i class="bi bi-grid-3x3-gap-fill me-1"></i> Formación</a>
+            <a class="nav-link" href="/formacion"><i class="bi bi-grid-3x3-gap-fill me-1"></i> Formación</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="/empleados/<%= partida._id %>"><i class="bi bi-person-workspace me-1"></i> Empleados</a>
+            <a class="nav-link" href="/empleados"><i class="bi bi-person-workspace me-1"></i> Empleados</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="/traspasos/<%= partida._id %>"><i class="bi bi-currency-exchange me-1"></i> Traspasos</a>
+            <a class="nav-link" href="/traspasos"><i class="bi bi-currency-exchange me-1"></i> Traspasos</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="/negociaciones/<%= partida._id %>"><i class="bi bi-file-earmark-text me-1"></i> Negociaciones</a>
+            <a class="nav-link" href="/negociaciones"><i class="bi bi-file-earmark-text me-1"></i> Negociaciones</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="/historialFichajes/<%= partida._id %>"><i class="bi bi-file-earmark-text me-1"></i> Historial Fichajes</a>
+            <a class="nav-link" href="/historialFichajes"><i class="bi bi-file-earmark-text me-1"></i> Historial Fichajes</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="/estadisticas/<%= partida._id %>"><i class="bi bi-bar-chart-line-fill me-1"></i> Estadísticas</a>
+            <a class="nav-link" href="/estadisticas"><i class="bi bi-bar-chart-line-fill me-1"></i> Estadísticas</a>
           </li>
           <% if (typeof partida.clubSeleccionado !== 'undefined' && !partida.clubSeleccionado.esFilial) { %>
             <li class="nav-item">
-              <a class="nav-link" href="/cantera/<%= partida._id %>"><i class="bi bi-mortarboard me-1"></i> Cantera</a>
+              <a class="nav-link" href="/cantera"><i class="bi bi-mortarboard me-1"></i> Cantera</a>
             </li>
           <% } %>
           <li class="nav-item dropdown">
@@ -47,22 +47,22 @@
             </a>
             <ul class="dropdown-menu dropdown-menu-dark shadow" aria-labelledby="competicionesDropdown">
               <li>
-                <a class="dropdown-item py-2" href="/mis-competiciones/<%= partida._id %>">
+                <a class="dropdown-item py-2" href="/mis-competiciones">
                   <i class="bi bi-star-fill me-2 text-warning"></i> Mis Competiciones
                 </a>
               </li>
               <li>
-                <a class="dropdown-item py-2" href="/ver-competiciones/<%= partida._id %>">
+                <a class="dropdown-item py-2" href="/ver-competiciones">
                   <i class="bi bi-search me-2 text-info"></i> Ver Competiciones
                 </a>
               </li>
             </ul>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="/calendario/<%= partida._id %>"><i class="bi bi-calendar3 me-1"></i> Calendario</a>
+            <a class="nav-link" href="/calendario"><i class="bi bi-calendar3 me-1"></i> Calendario</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link text-warning fw-bold" href="/partida/<%= partida._id %>">
+            <a class="nav-link text-warning fw-bold" href="/partida">
               <i class="bi bi-box-arrow-right me-1"></i> Salir de partida
             </a>
           </li>

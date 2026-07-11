@@ -42,9 +42,10 @@ clubRouter.get('/buscarClub/:id', async (req, res) => {
   res.json(club);
 });
 
-clubRouter.get('/formacion/:partidaId', requireLogin, async (req, res) => {
+clubRouter.get('/formacion', requireLogin, async (req, res) => {
     try {
-        const partida = await partidasDAO.obtenerPartidaPorId(req.params.partidaId);
+        const partidaId = req.session.partidaId;
+        const partida = await partidasDAO.obtenerPartidaPorId(partidaId);
         if (!partida) {
             return res.redirect('/');
         }
@@ -254,9 +255,10 @@ clubRouter.post('/cantera/despedir/:jugadorId', requireLogin, async (req, res) =
     }
 });
 
-clubRouter.get('/plantilla/:partidaId', requireLogin, async (req, res) => {
+clubRouter.get('/plantilla', requireLogin, async (req, res) => {
     try {
-        const partida = await partidasDAO.obtenerPartidaPorId(req.params.partidaId);
+        const partidaId = req.session.partidaId;
+        const partida = await partidasDAO.obtenerPartidaPorId(partidaId);
         const clubUsuario = await Club.findById(partida.clubSeleccionado).populate('plantilla');
         
         clubUsuario.plantilla.sort((a, b) => (ORDEN_POSICIONES[a.posicionPrincipal] || 99) - (ORDEN_POSICIONES[b.posicionPrincipal] || 99));
@@ -290,9 +292,10 @@ clubRouter.get('/club/dorsales-ocupados', requireLogin, async (req, res) => {
     }
 });
 
-clubRouter.get('/cantera/:partidaId', requireLogin, async (req, res) => {
+clubRouter.get('/cantera', requireLogin, async (req, res) => {
     try {
-        const partida = await partidasDAO.obtenerPartidaPorId(req.params.partidaId);
+        const partidaId = req.session.partidaId;
+        const partida = await partidasDAO.obtenerPartidaPorId(partidaId);
         
         const clubUsuario = await Club.findById(partida.clubSeleccionado)
             .populate('empleados');
@@ -327,9 +330,10 @@ clubRouter.get('/cantera/:partidaId', requireLogin, async (req, res) => {
     }
 });
 
-clubRouter.get('/traspasos/:partidaId', requireLogin, async (req, res) => {
+clubRouter.get('/traspasos', requireLogin, async (req, res) => {
     try {
-        const partida = await partidasDAO.obtenerPartidaPorId(req.params.partidaId);
+        const partidaId = req.session.partidaId;
+        const partida = await partidasDAO.obtenerPartidaPorId(partidaId);
         
         const ligas = await Competicion.find({ 
             tipo: 'liga',
@@ -381,9 +385,9 @@ clubRouter.get('/traspasos/:partidaId', requireLogin, async (req, res) => {
         res.status(500).send("Error al cargar el centro de traspasos");
     }
 });
-clubRouter.get('/negociaciones/:partidaId', requireLogin, async (req, res) => {
+clubRouter.get('/negociaciones', requireLogin, async (req, res) => {
    try {
-        const { partidaId } = req.params;
+        const partidaId = req.session.partidaId;
         const partida = await Partida.findById(partidaId).populate('clubSeleccionado').lean();
         const miClubId = partida.clubSeleccionado._id;
         const ofertasEnviadas = await Negociacion.find({ partidaId, clubEmisor: miClubId })

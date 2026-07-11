@@ -824,9 +824,9 @@ router.get('/competicion/:idCompeticion/clasificacion', requireLogin, async (req
     }
 });
 // Ruta para ver las Estadísticas del Club
-router.get('/estadisticas/:partidaId', requireLogin, async (req, res) => {
+router.get('/estadisticas', requireLogin, async (req, res) => {
     try {
-        const partidaId = req.params.partidaId;
+        const partidaId = req.session.partidaId;
         // Hacemos populate anidado para traernos a los jugadores de la plantilla
         const partida = await Partida.findById(partidaId).populate({
             path: 'clubSeleccionado',
@@ -1133,9 +1133,9 @@ router.get('/copa/:partidaId/:competicionId', requireLogin, async (req, res) => 
     }
 });
 
-router.get('/mis-competiciones/:idPartida', requireLogin, async (req, res) => {
+router.get('/mis-competiciones', requireLogin, async (req, res) => {
     try {
-        const partidaId = req.params.idPartida;
+        const partidaId = req.session.partidaId;
         const partida = await Partida.findById(partidaId).populate('clubSeleccionado');
         
         const clubUsuario = partida.clubSeleccionado;
@@ -1175,9 +1175,9 @@ router.get('/mis-competiciones/:idPartida', requireLogin, async (req, res) => {
     }
 });
 
-router.get('/ver-competiciones/:idPartida', requireLogin, async (req, res) => {
+router.get('/ver-competiciones', requireLogin, async (req, res) => {
     try {
-        const partidaId = req.params.idPartida;
+        const partidaId = req.session.partidaId;
         const partida = await Partida.findById(partidaId).populate('clubSeleccionado');
         const competiciones = await Competicion.find({ partidaId: partidaId });
 

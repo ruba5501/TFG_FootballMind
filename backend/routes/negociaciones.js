@@ -746,9 +746,9 @@ negociacionRouter.post('/fichajes/responderOfertaRecibida/:negociacionId', requi
     }
 });
 
-negociacionRouter.get('/historialFichajes/:id', requireLogin, async (req, res) => {
+negociacionRouter.get('/historialFichajes', requireLogin, async (req, res) => {
     try {
-        const partidaId = req.params.id;
+        const partidaId = req.session.partidaId;
         const partida = await Partida.findById(partidaId).populate('clubSeleccionado');
 
         const negociacionesEnCurso = await Negociacion.find({

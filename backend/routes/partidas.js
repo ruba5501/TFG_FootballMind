@@ -265,20 +265,44 @@ partidaRouter.post('/eliminarPartida/:id', requireLogin, async (req, res) => {
 partidaRouter.get('/inicioJuego/:id', requireLogin, async (req, res) => {
     try {
         const partidaId = req.params.id;
-        
-        // Obtenemos la partida y usamos populate para tener los datos completos del club seleccionado
+        const usuarioId = req.session.user._id; 
+
+        // Verificamos que la partida exista Y pertenezca al usuario por seguridad
+        const partida = await Partida.findOne({ _id: partidaId, usuarioId: usuarioId });
+        if (!partida) return res.redirect('/listarPartidas');
+
+        req.session.partidaId = partidaId;
+        req.session.clubId = partida.clubSeleccionado.toString();
+        req.session.partidoEnVivo = null; 
+
+        res.redirect('/inicioJuego');
+
+    } catch (error) {
+        console.error("Error al cargar la partida:", error);
+        res.status(500).send("Error al cargar la partida");
+    }
+});
+partidaRouter.get('/inicioJuego', requireLogin, async (req, res) => {
+    try {
+        const partidaId = req.session.partidaId;
+        const clubUsuarioId = req.session.clubId;
+
+        // Si intenta entrar aquí directamente sin haber cargado una partida antes
+        if (!partidaId || !clubUsuarioId) {
+            return res.redirect('/listarPartidas');
+        }
+
+        // Buscamos los datos usando los IDs limpios de la sesión
         const partida = await Partida.findById(partidaId).populate('clubSeleccionado');
         if (!partida) return res.redirect('/listarPartidas');
 
         const clubUsuario = partida.clubSeleccionado;
-        req.session.partidaId = partidaId;
-        req.session.clubId = clubUsuario._id.toString();
 
-        // Buscamos todos los partidos de ESTA partida donde juegue el equipo del usuario
+        // Buscamos los partidos (Toda tu lógica se queda idéntica)
         const partidos = await Partido.find({
             partidaId: partidaId,
             $or: [{ equipoLocal: clubUsuario._id }, { equipoVisitante: clubUsuario._id }]
-        }).populate('equipoLocal equipoVisitante competicionId').sort({ fecha: 1 }); // Ordenados por fecha
+        }).populate('equipoLocal equipoVisitante competicionId').sort({ fecha: 1 });
 
         const competicionIds = [...new Set(partidos.map(p => p.competicionId._id.toString()))];
         
@@ -289,17 +313,16 @@ partidaRouter.get('/inicioJuego/:id', requireLogin, async (req, res) => {
         const ordenPrioridad = { 'liga': 1, 'copa': 2, 'internacional_europa': 3 };
         misCompeticiones.sort((a, b) => (ordenPrioridad[a.tipo] || 99) - (ordenPrioridad[b.tipo] || 99));
 
-        // Filtramos para buscar el próximo partido (el primero que no se haya jugado)
         const proximosPartidos = partidos.filter(p => p.jugado === false);
         const proximoPartido = proximosPartidos.length > 0 ? proximosPartidos[0] : null;
 
-        // Calculamos quién es el rival en ese próximo partido
         let rivalId = null;
         if (proximoPartido) {
             const esLocal = proximoPartido.equipoLocal._id.toString() === clubUsuario._id.toString();
             rivalId = esLocal ? proximoPartido.equipoVisitante._id : proximoPartido.equipoLocal._id;
         }
 
+        // Renderizamos la misma plantilla de siempre
         res.render('inicioJuego', { 
             user: req.session.user, 
             partida,
@@ -311,14 +334,15 @@ partidaRouter.get('/inicioJuego/:id', requireLogin, async (req, res) => {
         });
 
     } catch (error) {
-        console.error("Error al cargar inicio de juego:", error);
+        console.error("Error al mostrar inicio de juego:", error);
         res.status(500).send("Error al cargar el inicio del juego");
     }
 });
 
-partidaRouter.get('/partida/:id', requireLogin, async (req, res) => {
+partidaRouter.get('/partida', requireLogin, async (req, res) => {
     try {
-        const partida = await partidaDAO.obtenerPartidaPorId(req.params.id);
+        const partidaId = req.session.partidaId;
+        const partida = await partidaDAO.obtenerPartidaPorId(partidaId);
         res.render('menuSalidaPartida', { partida });
     } catch (error) {
         res.redirect('/opcionPartida');

@@ -27,15 +27,6 @@ empleadoRouter.post('/empleados', async (req, res) => {
   }
 });
 
-empleadoRouter.get('/empleados', async (req, res) => {
-  try {
-    const empleados = await Empleado.find();
-    res.json(empleados);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
 empleadoRouter.get('/buscarEmpleado/:id', async (req, res) => {
   try {
     const empleado = await Empleado.findById(req.params.id);
@@ -46,14 +37,29 @@ empleadoRouter.get('/buscarEmpleado/:id', async (req, res) => {
   }
 });
 
-empleadoRouter.get('/empleados/:partidaId', requireLogin, async (req, res) => {
+empleadoRouter.get('/empleados', requireLogin, async (req, res) => {
     try {
-        const partida = await partidasDAO.obtenerPartidaPorId(req.params.partidaId);
+        const partidaId = req.session.partidaId;
+        if (!partidaId) {
+            return res.redirect('/partidas'); 
+        }
+
+        // Obtener los datos de la partida actual
+        const partida = await partidasDAO.obtenerPartidaPorId(partidaId);
+        if (!partida) {
+            return res.status(404).send("Partida no encontrada");
+        }
+
+        // Cargar ligas de la partida actual
         const ligas = await Competicion.find({ 
             tipo: 'liga',
             partidaId: partida._id,
         }).select('nombre').lean();
+
+        // Buscar posibles clubes filiales para excluirlos de la lista general
         const filial = await Club.findOne({ clubMatriz: partida.clubSeleccionado }).select('_id');
+
+        // Cargar los clubes rivales de la misma partida
         const clubes = await Club.find({
             _id: { 
                 $ne: partida.clubSeleccionado,
@@ -61,23 +67,36 @@ empleadoRouter.get('/empleados/:partidaId', requireLogin, async (req, res) => {
             },
             partidaId: partida._id,
         }).lean();
-        const clubUsuario = await Club.findById(partida.clubSeleccionado).populate('empleados').populate({
-            path: 'listaObjetivosEmpleados',
-            populate: { path: 'clubActual', select: 'nombre escudo' }
-        });
+
+        // Cargar el club del usuario con sus empleados y su lista de objetivos
+        const clubUsuario = await Club.findById(partida.clubSeleccionado)
+            .populate('empleados')
+            .populate({
+                path: 'listaObjetivosEmpleados',
+                populate: { path: 'clubActual', select: 'nombre escudo' }
+            });
+
+        if (!clubUsuario) {
+            return res.status(404).send("Club del usuario no encontrado");
+        }
+
+        // Cargar las negociaciones de empleados en curso
         const negociacionesActivas = await Negociacion.find({
             clubEmisor: partida.clubSeleccionado,
             tipoObjetivo: 'Empleado', 
             finalizada: false
         }).lean();
+
+        // Mapear la lista de objetivos inyectando si tienen una negociación activa
         const listaConEstado = clubUsuario.listaObjetivosEmpleados.map(obj => {
-            const objetivo = obj.toObject(); 
+            const objetivo = typeof obj.toObject === 'function' ? obj.toObject() : obj; 
             objetivo.negociacionActiva = negociacionesActivas.find(n => 
                 n.objetivoId.toString() === objetivo._id.toString()
             );
             return objetivo;
         });
         
+        // Construir filtros para el buscador (por defecto busca los del club del usuario)
         const filtros = {
             nombre: req.query.nombre,
             estado: req.query.estado,
@@ -85,8 +104,12 @@ empleadoRouter.get('/empleados/:partidaId', requireLogin, async (req, res) => {
             atributos: {}
         };
 
-        if (req.query.estado === 'libre') delete filtros.clubActual;
+        // Si el usuario filtra específicamente por desempleados, quitamos la restricción de su club
+        if (req.query.estado === 'libre') {
+            delete filtros.clubActual;
+        }
 
+        // Buscar empleados aplicando los filtros y mapearles su estado de negociación
         const empleados = await empleadosDAO.buscarEmpleados(filtros);
         const empleadosConEstado = empleados.map(emp => {
             const empleadoObj = typeof emp.toObject === 'function' ? emp.toObject() : emp;
@@ -96,17 +119,21 @@ empleadoRouter.get('/empleados/:partidaId', requireLogin, async (req, res) => {
             );
             return empleadoObj;
         });
-        res.render('empleados', {
+
+        res.type('html');
+        return res.render('empleados', {
             partida,
-            empleados:empleadosConEstado,
-            grupos,
+            empleados: empleadosConEstado,
+            grupos, 
             ligas: ligas,  
             clubes: clubes,
             listaObjetivos: listaConEstado,
             errorFiltros: null
         });
+
     } catch (err) {
-        res.status(500).send("Error al cargar los empleados");
+        console.error("Error crítico en GET /empleados:", err);
+        return res.status(500).send("Error al cargar los empleados");
     }
 });
 

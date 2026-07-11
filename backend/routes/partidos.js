@@ -4,9 +4,10 @@ const Partida = require('../models/partida');
 const Partido = require('../models/partido');
 const { requireLogin } = require('../middleware/autenticacion');
 
-calendarioRouter.get('/calendario/:id', requireLogin, async (req, res) => {
+calendarioRouter.get('/calendario', requireLogin, async (req, res) => {
     try {
-        const partida = await Partida.findById(req.params.id).populate('clubSeleccionado');
+        const partidaId = req.session.partidaId;
+        const partida = await Partida.findById(partidaId).populate('clubSeleccionado');
 
         const fechaReferencia = partida.fechaActual || new Date(2025, 6, 1);
         let mes = req.query.mes !== undefined ? parseInt(req.query.mes) : fechaReferencia.getMonth();
