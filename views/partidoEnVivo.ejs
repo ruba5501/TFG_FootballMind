@@ -1,99 +1,102 @@
 <%- include('partials/head', { title: 'Partido en vivo'}) %> 
 
 <div class="container-fluid py-4" style="font-family: 'Montserrat', sans-serif;">    
-    <div class="row justify-content-center mb-4">
-        <div class="col-12 col-lg-8">
-            <div class="card pantalla-partido shadow-sm border-0 p-4 text-center">
-                <div class="text-uppercase text-muted small fw-bold mb-2">En Directo</div>
-                
-                <div class="d-flex align-items-center justify-content-center gap-4">
-                    <div class="text-end" style="flex: 1;">
-                        <h3 class="m-0 fw-bold d-inline-block align-middle me-3"><%= local.nombre %></h3>
-                        <% if(esLocalUser) { %><span class="badge bg-info me-2">TÚ</span><% } %>
-                        <img src="/img/escudos/<%= partidoBBDD.equipoLocal.escudo %>" alt="<%= local.nombre %>" class="escudo-marcador align-middle">
-                    </div>
-
-                    <div class="d-flex align-items-center gap-3 bg-dark px-4 py-2 rounded-4 border border-secondary">
-                        <span id="golesLocal" class="numero-marcador text-success">0</span>
-                        <div class="d-flex flex-column align-items-center px-2">
-                            <span id="badgeMinuto" class="badge bg-danger badge-minuto shadow-sm">0'</span>
-                            <small class="text-muted mt-1 fw-bold" id="estadoPartido">PAUSADO</small>
-                        </div>
-                        <span id="golesVisitante" class="numero-marcador text-primary">0</span>
-                    </div>
-
-                    <div class="text-start" style="flex: 1;">
-                        <img src="/img/escudos/<%= partidoBBDD.equipoVisitante.escudo %>" alt="<%= visitante.nombre %>" class="escudo-marcador align-middle me-3">
-                        <% if(!esLocalUser) { %><span class="badge bg-info me-2">TÚ</span><% } %>
-                        <h3 class="m-0 fw-bold d-inline-block align-middle"><%= visitante.nombre %></h3>
-                    </div>
-                </div>
-
-                <div class="consola-eventos rounded-3 mt-4 p-3 text-start text-success" id="cajaEventos">
-                    <div class="text-muted">[0'] El árbitro hace sonar el silbato. ¡Arranca el partido!</div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="row">
-        <div class="col-12 col-md-6 col-lg-3 mb-4">
+    <div class="row justify-content-center g-3 mb-4">
+        
+        <div class="col-12 col-md-6 col-lg-3 order-2 order-lg-1">
             <div class="card shadow-sm border-0 h-100">
                 <div class="card-header bg-dark text-white fw-bold d-flex align-items-center justify-content-between">
-                    <span><%= local.nombre %></span>
-                    <span class="badge <%= esLocalUser ? 'bg-info' : 'bg-secondary' %>"><%= esLocalUser ? 'Mánager' : 'IA' %></span>
+                    <span class="text-truncate me-2"><%= local.nombre %></span>
+                    <span class="badge <%= esLocalUser ? 'bg-info' : 'bg-secondary' %> flex-shrink-0"><%= esLocalUser ? 'Mánager' : 'IA' %></span>
                 </div>
                 <div class="list-group list-group-flush" id="listaTitularesLocal">
                     <% local.jugadores.forEach((j, index) => { %>
-                        <div class="list-group-item d-flex justify-content-between align-items-center jugador-item-Fijo" data-id="<%= j._id %>">
-                            <div>
-                                <span class="badge bg-secondary text-white me-2" style="width: 28px;"><%= j.dorsal || (index + 1) %></span>
-                                <strong class="text-dark target-nombre-jugador"><%= j.nombre %></strong>
+                        <div class="list-group-item d-flex justify-content-between align-items-center jugador-item-Fijo p-2 small" data-id="<%= j._id %>">
+                            <div class="text-truncate me-2">
+                                <span class="badge bg-secondary text-white me-1 text-center" style="width: 24px;"><%= j.dorsal || (index + 1) %></span>
+                                <strong class="text-dark target-nombre-jugador text-truncate"><%= j.nombre %></strong>
                                 <span class="badge bg-light text-dark border ms-1 target-posicion"><%= j.posicionPrincipal || j.posicion %></span>
                             </div>
-                            <span class="badge bg-success-subtle text-success border border-success-subtle"><%= j.atributos?.forma ?? 100 %>%</span>
+                            <span class="badge bg-success-subtle text-success border border-success-subtle flex-shrink-0"><%= j.atributos?.forma ?? 100 %>%</span>
                         </div>
                     <% }) %>
                 </div>
             </div>
         </div>
 
-        <div class="col-12 col-lg-6 mb-4 order-last order-lg-0">
-            <div class="card shadow-sm border-0 p-4 bg-white text-center h-100 d-flex flex-column justify-content-center align-items-center">                
-                <div class="d-flex gap-3 mb-3 w-100" style="max-width: 450px;">
-                    <button class="btn btn-success btn-lg flex-fill fw-bold shadow-sm" id="btnPlayPause">
+        <div class="col-12 col-lg-6 order-1 order-lg-2">
+            <div class="card pantalla-partido shadow-sm border-0 p-3 p-sm-4 text-center">
+                <div class="text-uppercase text-white small fw-bold mb-2">En Directo</div>
+                
+                <div class="d-flex flex-column flex-sm-row align-items-center justify-content-center gap-3">
+                    
+                    <div class="text-center text-sm-end w-100 style-marcador-equipo" style="flex: 1;">
+                        <img src="/img/escudos/<%= partidoBBDD.equipoLocal.escudo %>" alt="<%= local.nombre %>" class="escudo-marcador align-middle mb-2 mb-sm-0">
+                        <div class="d-block d-sm-inline-block align-middle mx-2">
+                            <% if(esLocalUser) { %><span class="badge bg-info me-1 small">TÚ</span><% } %>
+                            <h6 class="m-0 fw-bold d-inline text-wrap"><%= local.nombre %></h6>
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-items-center gap-3 bg-dark px-3 py-2 rounded-4 border border-secondary flex-shrink-0">
+                        <span id="golesLocal" class="numero-marcador text-success fw-bold fs-3">0</span>
+                        <div class="d-flex flex-column align-items-center px-1">
+                            <span id="badgeMinuto" class="badge bg-danger badge-minuto shadow-sm">0'</span>
+                            <small class="text-muted mt-1 fw-bold style-estado-txt" id="estadoPartido" style="font-size: 0.7rem;">PAUSADO</small>
+                        </div>
+                        <span id="golesVisitante" class="numero-marcador text-primary fw-bold fs-3">0</span>
+                    </div>
+
+                    <div class="text-center text-sm-start w-100 style-marcador-equipo" style="flex: 1;">
+                        <div class="d-block d-sm-inline-block align-middle mx-2 order-2 order-sm-1">
+                            <% if(!esLocalUser) { %><span class="badge bg-info me-1 small">TÚ</span><% } %>
+                            <h6 class="m-0 fw-bold d-inline text-wrap"><%= visitante.nombre %></h6>
+                        </div>
+                        <img src="/img/escudos/<%= partidoBBDD.equipoVisitante.escudo %>" alt="<%= visitante.nombre %>" class="escudo-marcador align-middle mb-2 mb-sm-0 order-1 order-sm-2">
+                    </div>
+                </div>
+
+                <div class="consola-eventos rounded-3 mt-4 p-3 text-start text-success" id="cajaEventos" style="max-height: 200px; overflow-y: auto;">
+                    <div class="text-white">[0'] El árbitro hace sonar el silbato. ¡Arranca el partido!</div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm border-0 mt-3 p-3 bg-white text-center d-flex flex-column justify-content-center align-items-center">                
+                <div class="d-flex gap-2 mb-2 w-100" style="max-width: 450px;">
+                    <button class="btn btn-success flex-fill fw-bold shadow-sm" id="btnPlayPause">
                         <i class="bi bi-play-fill me-1"></i> REANUDAR
                     </button>
-                    <button class="btn btn-outline-secondary btn-lg fw-bold" id="btnVelocidad">
+                    <button class="btn btn-outline-secondary fw-bold" id="btnVelocidad" style="min-width: 75px;">
                         <i class="bi bi-speedometer2 me-1"></i> x1
                     </button>
                 </div>
 
-                <button class="btn btn-primary btn-lg w-100 fw-bold shadow-sm py-3" style="max-width: 450px;" id="btnAbrirEstrategia"> TÁCTICA Y CAMBIOS</button>
-                <small class="text-muted mt-2"><i class="bi bi-info-circle"></i> Al abrir los ajustes, el partido se pausará automáticamente.</small>
+                <button class="btn btn-primary w-100 fw-bold shadow-sm py-2" style="max-width: 450px;" id="btnAbrirEstrategia">TÁCTICA Y CAMBIOS</button>
+                <small class="text-muted mt-2" style="font-size: 0.75rem;"><i class="bi bi-info-circle"></i> Al abrir los ajustes, el partido se pausará.</small>
             </div>
         </div>
 
-        <div class="col-12 col-md-6 col-lg-3 mb-4">
+        <div class="col-12 col-md-6 col-lg-3 order-3">
             <div class="card shadow-sm border-0 h-100">
                 <div class="card-header bg-dark text-white fw-bold d-flex align-items-center justify-content-between">
-                    <span><%= visitante.nombre %></span>
-                    <span class="badge <%= !esLocalUser ? 'bg-info' : 'bg-secondary' %>"><%= !esLocalUser ? 'Mánager' : 'IA' %></span>
+                    <span class="text-truncate me-2"><%= visitante.nombre %></span>
+                    <span class="badge <%= !esLocalUser ? 'bg-info' : 'bg-secondary' %> flex-shrink-0"><%= !esLocalUser ? 'Mánager' : 'IA' %></span>
                 </div>
                 <div class="list-group list-group-flush" id="listaTitularesVisitante">
                     <% visitante.jugadores.forEach((j, index) => { %>
-                        <div class="list-group-item d-flex justify-content-between align-items-center jugador-item-FFixed" data-id="<%= j._id %>">
-                            <div>
-                                <span class="badge bg-secondary text-white me-2" style="width: 28px;"><%= j.dorsal || (index + 1) %></span>
-                                <strong class="text-dark"><%= j.nombre %></strong>
+                        <div class="list-group-item d-flex justify-content-between align-items-center jugador-item-FFixed p-2 small" data-id="<%= j._id %>">
+                            <div class="text-truncate me-2">
+                                <span class="badge bg-secondary text-white me-1 text-center" style="width: 24px;"><%= j.dorsal || (index + 1) %></span>
+                                <strong class="text-dark text-truncate"><%= j.nombre %></strong>
                                 <span class="badge bg-light text-dark border ms-1"><%= j.posicionPrincipal || j.posicion %></span>
                             </div>
-                            <span class="badge bg-success-subtle text-success border border-success-subtle"><%= j.atributos?.forma ?? 100 %>%</span>
+                            <span class="badge bg-success-subtle text-success border border-success-subtle flex-shrink-0"><%= j.atributos?.forma ?? 100 %>%</span>
                         </div>
                     <% }) %>
                 </div>
             </div>
         </div>
+
     </div>
 </div>
 

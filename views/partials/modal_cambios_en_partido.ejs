@@ -9,7 +9,7 @@
             <div class="modal-body bg-dark">
                 <div class="container-fluid">
                     <div class="row">
-                        <div class="col-12 col-xl-6 mb-4">
+                        <div class="col-5 mb-4">
                             <div class="card bg-black border-secondary p-3 mb-3">
                                 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
                                     <h6 class="text-info mb-0 fw-bold"> Formación </h6>
@@ -37,7 +37,7 @@
                             <div class="card bg-black border-secondary p-3">
                                 <div class="row g-3">
                                     <div class="col-12 col-sm-6">
-                                        <label class="form-label text-muted small fw-bold">Estilo de Juego</label>
+                                        <label class="form-label text-white small fw-bold">Estilo de Juego</label>
                                         <select class="form-select bg-dark text-white border-secondary" id="selectEstilo">
                                             <option value="ESTÁNDAR" <%= estiloInicial === 'ESTÁNDAR' ? 'selected' : '' %>>Estándar</option>
                                             <option value="TIKI-TAKA" <%= estiloInicial === 'TIKI-TAKA' ? 'selected' : '' %>>Tiki-Taka (Posesión)</option>
@@ -49,7 +49,7 @@
                                         </select>
                                     </div>
                                     <div class="col-12 col-sm-6">
-                                        <label class="form-label text-muted small fw-bold">Mentalidad</label>
+                                        <label class="form-label text-white small fw-bold">Mentalidad</label>
                                         <select class="form-select bg-dark text-white border-secondary" id="selectMentalidad">
                                             <option value="MUY_DEFENSIVA" <%= mentalidadInicial === 'MUY_DEFENSIVA' ? 'selected' : '' %>>Muy Defensiva</option>
                                             <option value="DEFENSIVA" <%= mentalidadInicial === 'DEFENSIVA' ? 'selected' : '' %>>Defensiva</option>
@@ -62,7 +62,7 @@
                             </div>
                         </div>
 
-                        <div class="col-12 col-xl-6">
+                        <div class="col-7">
                             <div class="card bg-black text-white border-secondary h-100">
                                 <div class="card-header bg-secondary d-flex justify-content-between align-items-center py-2">
                                     <h6 class="mb-0 fw-bold">Gestión de Campo</h6>
@@ -74,7 +74,7 @@
                                 </div>
 
                                 <div class="p-2 bg-info text-dark small fw-bold mt-2">SUPLENTES</div>
-                                <div class="list-group list-group-flush" id="listaModalSuplentes" style="max-height: 250px; overflow-y: auto;">
+                                <div class="list-group list-group-flush" id="listaModalSuplentes" style="max-height: 350px; overflow-y: auto;">
                                     <% if (equipoUser.suplentes && equipoUser.suplentes.length > 0) { %>
                                         <% equipoUser.suplentes.forEach(j => { %>
                                             <div class="list-group-item bg-dark text-white border-secondary d-flex justify-content-between align-items-center item-intercambio-jugador" data-id="<%= j._id %>" data-tipo="suplente">
