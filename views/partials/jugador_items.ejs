@@ -1,6 +1,6 @@
 <% 
 if (typeof j !== 'undefined' && j) {
-    // 🛡️ CONTROL DE HUECO VACÍO INTERNO
+    // CONTROL DE HUECO VACÍO INTERNO
     if (j._id === 'vacio' || j.esVacio) { 
 %>
         <li class="list-group-item jugador-item d-flex align-items-center justify-content-between bg-dark text-muted p-2 border-secondary style-jugador-vacio"
@@ -23,7 +23,6 @@ if (typeof j !== 'undefined' && j) {
         </li>
 <% 
     } else { 
-        // 🏃 BLOQUE ORIGINAL PARA JUGADORES REALES
         
         // 1. Verificar si es del filial
         let esCanteranoVal = false;

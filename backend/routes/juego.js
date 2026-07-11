@@ -269,18 +269,20 @@ router.get('/jugar_rapido/:idPartido', requireLogin, async (req, res) => {
         const partidoUsuario = await Partido.findById(partidoId).populate('equipoLocal equipoVisitante');
         if (!partidoUsuario) return res.status(404).send("Partido no encontrado.");
 
-        const [partidaJuego, clubUserVerificacion] = await Promise.all([
-            Partida.findById(partidoUsuario.partidaId).populate('clubSeleccionado'),
-            Club.findById(partidoUsuario.equipoLocal._id.toString() === req.session?.clubId ? partidoUsuario.equipoLocal._id : partidoUsuario.equipoVisitante._id).populate('plantilla') 
-        ]);
+        // Traemos la partida primero para tener el ID real e inapelable del club del usuario
+        const partidaJuego = await Partida.findById(partidoUsuario.partidaId).populate('clubSeleccionado');
+        if (!partidaJuego) return res.status(404).send("Partida no encontrada.");
 
         const clubUsuarioId = partidaJuego.clubSeleccionado._id.toString();
-        const clubUsuarioReal = clubUserVerificacion._id.toString() === clubUsuarioId ? clubUserVerificacion : await Club.findById(clubUsuarioId).populate('plantilla');
 
-        // --- SOLUCIÓN DINÁMICA DE CONVOCADOS ---
-        // Los titulares son los 11 primeros. Los suplentes reales son los que están en la lista "suplentes" de tu modelo Club
-        const titularesUsuario = clubUsuarioReal.plantilla.slice(0, 11);
-        const suplentesUsuario = clubUsuarioReal.suplentes || []; // Evitamos romper si viene undefined
+        // Ahora buscamos el club del usuario con sus populates tácticos usando el ID real
+        const clubUsuarioReal = await Club.findById(clubUsuarioId).populate('tactica.titulares').populate('tactica.suplentes');
+        
+        if (!clubUsuarioReal) return res.status(404).send("Club del mánager no encontrado.");
+        
+        // Extraemos los jugadores desde el objeto tactica
+        const titularesUsuario = clubUsuarioReal.tactica?.titulares || [];
+        const suplentesUsuario = clubUsuarioReal.tactica?.suplentes || [];
         const convocadosUsuario = [...titularesUsuario, ...suplentesUsuario];
         
         const tieneBajasConvocadas = convocadosUsuario.some(jugador => {
@@ -314,7 +316,8 @@ router.get('/jugar_rapido/:idPartido', requireLogin, async (req, res) => {
         let equipoLocalUsuario = null;
         let equipoVisitanteUsuario = null;
 
-        const promesasPartidos = partidosDeHoy.map(async (partido) => {
+        // EJECUCIÓN PARALELA OPTIMIZADA PARA PARTIDO RÁPIDO
+        await Promise.all(partidosDeHoy.map(async (partido) => {
             let equipoLocalData = { id: partido.equipoLocal._id, nombre: partido.equipoLocal.nombre, jugadores: [], suplentes: [] };
             let equipoVisitanteData = { id: partido.equipoVisitante._id, nombre: partido.equipoVisitante.nombre, jugadores: [], suplentes: [] };
 
@@ -323,7 +326,6 @@ router.get('/jugar_rapido/:idPartido', requireLogin, async (req, res) => {
 
             const promesasConvocatoria = [];
             
-            // Asignación usando la separación real de titulares y suplentes guardados
             if (esLocalUsuario) {
                 equipoLocalData.jugadores = titularesUsuario;
                 equipoLocalData.suplentes = suplentesUsuario;
@@ -374,9 +376,7 @@ router.get('/jugar_rapido/:idPartido', requireLogin, async (req, res) => {
                         jugado: false
                     });
 
-                    if (tieneVueltaProgramada) {
-                        opcionesEliminatoria.esIda = true;
-                    }
+                    if (tieneVueltaProgramada) opcionesEliminatoria.esIda = true;
                 }
             }
 
@@ -398,8 +398,9 @@ router.get('/jugar_rapido/:idPartido', requireLogin, async (req, res) => {
 
             partido.jugado = true;
             
+            // Guardamos el partido actual de forma paralela y limpia
+            await partido.save();
             await Promise.all([
-                partido.save(),
                 clubesDAO.limpiarConvocados(partido.equipoLocal._id),
                 clubesDAO.limpiarConvocados(partido.equipoVisitante._id)
             ]);
@@ -409,7 +410,7 @@ router.get('/jugar_rapido/:idPartido', requireLogin, async (req, res) => {
                 equipoLocalUsuario = equipoLocalData;
                 equipoVisitanteUsuario = equipoVisitanteData;
             }
-        });
+        }));
 
         await Promise.all(promesasPartidos);
 
@@ -424,12 +425,12 @@ router.get('/jugar_rapido/:idPartido', requireLogin, async (req, res) => {
                 };
 
                 const [clubLocal, clubVisitante] = await Promise.all([
-                    Club.findById(partidoYaJugado.equipoLocal._id).populate('plantilla'),
-                    Club.findById(partidoYaJugado.equipoVisitante._id).populate('plantilla')
+                    Club.findById(partidoYaJugado.equipoLocal._id).populate('tactica.titulares').populate('tactica.suplentes'),
+                    Club.findById(partidoYaJugado.equipoVisitante._id).populate('tactica.titulares').populate('tactica.suplentes')
                 ]);
 
-                equipoLocalUsuario = { nombre: partidoYaJugado.equipoLocal.nombre, jugadores: clubLocal.plantilla.slice(0, 11), suplentes: clubLocal.suplentes || [] };
-                equipoVisitanteUsuario = { nombre: partidoYaJugado.equipoVisitante.nombre, jugadores: clubVisitante.plantilla.slice(0, 11), suplentes: clubVisitante.suplentes || [] };
+                equipoLocalUsuario = { nombre: partidoYaJugado.equipoLocal.nombre, jugadores: clubLocal.tactica?.titulares || [], suplentes: clubLocal.tactica?.suplentes || [] };
+                equipoVisitanteUsuario = { nombre: partidoYaJugado.equipoVisitante.nombre, jugadores: clubVisitante.tactica?.titulares || [], suplentes: clubVisitante.tactica?.suplentes || [] };
             } else {
                 return res.status(404).send("Partido no encontrado o no disponible.");
             }
@@ -462,23 +463,57 @@ router.get('/jugar_rapido/:idPartido', requireLogin, async (req, res) => {
 router.get('/jugar_partido/:idPartido', requireLogin, async (req, res) => {
     try {
         const partidoId = req.params.idPartido;
+        const clubUsuarioId = req.session.clubId; // Este es el ID real y seguro de tu club
         
+        // 1. VERIFICACIÓN: Si el partido ya está en curso en la sesión, lo reanudamos directamente
+        if (req.session.partidoEnVivo && req.session.partidoEnVivo.partidoId === partidoId) {
+            const partidoUsuario = await Partido.findById(partidoId).populate('equipoLocal equipoVisitante');
+            const partidaJuego = await Partida.findById(partidoUsuario.partidaId).populate('clubSeleccionado');
+            const esLocalUsuario = partidoUsuario.equipoLocal._id.toString() === clubUsuarioId;
+
+            const equipoUser = esLocalUsuario ? req.session.partidoEnVivo.local : req.session.partidoEnVivo.visitante;
+
+            return res.render('partidoEnVivo', {
+                title: 'Partido en Directo - En Curso',  
+                partida: partidaJuego,
+                local: req.session.partidoEnVivo.local,
+                visitor: req.session.partidoEnVivo.visitante, // Nota: abajo guardabas restoJornadaIa con 'visitor', asegúrate de que tu vista use el nombre correcto
+                visitante: req.session.partidoEnVivo.visitante,
+                partidoBBDD: partidoUsuario,
+                esLocalUser: esLocalUsuario,
+                equipoUser: equipoUser,
+                tacticaInicial: equipoUser.formacion || '4-3-3',
+                estiloInicial: equipoUser.estiloJuego || 'ESTÁNDAR',
+                mentalidadInicial: equipoUser.mentalidad || 'EQUILIBRADA',
+                formaciones: FORMACIONES
+            });
+        }
+        
+        // 2. CONFIGURACIÓN INICIAL (Si el partido empieza desde el minuto 0)
         const partidoUsuario = await Partido.findById(partidoId).populate('equipoLocal equipoVisitante');
         if (!partidoUsuario) return res.status(404).send("Partido no encontrado.");
 
-        const [partidaJuego, clubUserVerificacion] = await Promise.all([
+        // SOLUCIÓN VELOCIDAD Y ASIGNACIÓN: Buscamos la partida y el club del USUARIO en paralelo de forma limpia
+        const [partidaJuego, clubUsuarioReal] = await Promise.all([
             Partida.findById(partidoUsuario.partidaId).populate('clubSeleccionado'),
-            Club.findById(partidoUsuario.equipoLocal._id.toString() === req.session?.clubId ? partidoUsuario.equipoLocal._id : partidoUsuario.equipoVisitante._id).populate('plantilla') 
+            Club.findById(clubUsuarioId).populate('tactica.titulares').populate('tactica.suplentes')
         ]);
 
-        const clubUsuarioId = partidaJuego.clubSeleccionado._id.toString();
-        const clubUsuarioReal = clubUserVerificacion._id.toString() === clubUsuarioId ? clubUserVerificacion : await Club.findById(clubUsuarioId).populate('plantilla');
+        if (!clubUsuarioReal) {
+            return res.status(404).send("Club del usuario no encontrado en la base de datos.");
+        }
 
-        // --- SOLUCIÓN DINÁMICA DE CONVOCADOS ---
-        const titularesUsuario = clubUsuarioReal.plantilla.slice(0, 11);
-        const suplentesUsuario = clubUsuarioReal.suplentes || [];
+        // Extraemos de forma segura los arrays tácticos usando encadenamiento opcional
+        const titularesUsuario = clubUsuarioReal.tactica?.titulares || [];
+        const suplentesUsuario = clubUsuarioReal.tactica?.suplentes || [];
         const convocadosUsuario = [...titularesUsuario, ...suplentesUsuario];
 
+        // === ¡AQUÍ ESTÁ LA CORRECCIÓN! Definimos las variables tácticas del usuario ===
+        const formacionBaseUser = clubUsuarioReal.tactica?.formacion || '4-3-3';
+        const estiloBaseUser = clubUsuarioReal.tactica?.estiloJuego || 'ESTÁNDAR';
+        const mentalidadBaseUser = clubUsuarioReal.tactica?.mentalidad || 'EQUILIBRADA';
+
+        // Control de bajas y sanciones
         const tieneBajasConvocadas = convocadosUsuario.some(jugador => {
             if (!jugador) return false;
             const lesionado = jugador.estado?.lesion !== null && jugador.estado?.lesion !== undefined;
@@ -507,31 +542,54 @@ router.get('/jugar_partido/:idPartido', requireLogin, async (req, res) => {
         let equipoLocalUsuario = null;
         let equipoVisitanteUsuario = null;
         let opcionesEliminatoriaUsuario = { esVuelta: false, esIda: false };
-        let partidosIADeHoy = [];
+        
+        const partidosIADeHoy = [];
 
-        for (const partido of partidosDeHoy) {
-            let equipoLocalData = { id: partido.equipoLocal._id, nombre: partido.equipoLocal.nombre, jugadores: [], suplentes: [] };
-            let equipoVisitanteData = { id: partido.equipoVisitante._id, nombre: partido.equipoVisitante.nombre, jugadores: [], suplentes: [] };
+        await Promise.all(partidosDeHoy.map(async (partido) => {
+            let equipoLocalData = { 
+                id: partido.equipoLocal._id, nombre: partido.equipoLocal.nombre, jugadores: [], suplentes: [],
+                formacion: '4-3-3', estiloJuego: 'ESTÁNDAR', mentalidad: 'EQUILIBRADA'
+            };
+            let equipoVisitanteData = { 
+                id: partido.equipoVisitante._id, nombre: partido.equipoVisitante.nombre, jugadores: [], suplentes: [],
+                formacion: '4-3-3', estiloJuego: 'ESTÁNDAR', mentalidad: 'EQUILIBRADA'
+            };
 
             const esLocalUsuario = partido.equipoLocal._id.toString() === clubUsuarioId;
             const esVisitanteUsuario = partido.equipoVisitante._id.toString() === clubUsuarioId;
 
+            // Procesamos convocatorias cruzadas en paralelo
+            const promesasConvocatoria = [];
+
             if (esLocalUsuario) {
                 equipoLocalData.jugadores = titularesUsuario;
                 equipoLocalData.suplentes = suplentesUsuario;
+                equipoLocalData.formacion = formacionBaseUser;
+                equipoLocalData.estiloJuego = estiloBaseUser;
+                equipoLocalData.mentalidad = mentalidadBaseUser;
             } else {
-                const cL = await seleccionarConvocatoriaIA(partido.equipoLocal._id, partido.equipoVisitante.reputacion, partido.competicionId);
-                equipoLocalData.jugadores = cL.titulares; equipoLocalData.suplentes = cL.suplentes;
+                promesasConvocatoria.push(
+                    seleccionarConvocatoriaIA(partido.equipoLocal._id, partido.equipoVisitante.reputacion, partido.competicionId)
+                    .then(cL => { equipoLocalData.jugadores = cL.titulares; equipoLocalData.suplentes = cL.suplentes; })
+                );
             }
 
             if (esVisitanteUsuario) {
                 equipoVisitanteData.jugadores = titularesUsuario;
                 equipoVisitanteData.suplentes = suplentesUsuario;
+                equipoVisitanteData.formacion = formacionBaseUser;
+                equipoVisitanteData.estiloJuego = estiloBaseUser;
+                equipoVisitanteData.mentalidad = mentalidadBaseUser;
             } else {
-                const cV = await seleccionarConvocatoriaIA(partido.equipoVisitante._id, partido.equipoLocal.reputacion, partido.competicionId);
-                equipoVisitanteData.jugadores = cV.titulares; equipoVisitanteData.suplentes = cV.suplentes;
+                promesasConvocatoria.push(
+                    seleccionarConvocatoriaIA(partido.equipoVisitante._id, partido.equipoLocal.reputacion, partido.competicionId)
+                    .then(cV => { equipoVisitanteData.jugadores = cV.titulares; equipoVisitanteData.suplentes = cV.suplentes; })
+                );
             }
 
+            await Promise.all(promesasConvocatoria);
+
+            // Verificación de ida y vuelta...
             let opcionesEliminatoria = { esVuelta: false, esIda: false };
             if (partido.tipo === 'ELIMINATORIA') {
                 const partidoIda = await Partido.findOne({
@@ -549,6 +607,7 @@ router.get('/jugar_partido/:idPartido', requireLogin, async (req, res) => {
                 }
             }
 
+            // Guardamos datos si es el partido del usuario, si no, lo simulamos ya
             if (partido._id.toString() === partidoId) {
                 equipoLocalUsuario = equipoLocalData;
                 equipoVisitanteUsuario = equipoVisitanteData;
@@ -569,7 +628,7 @@ router.get('/jugar_partido/:idPartido', requireLogin, async (req, res) => {
                     cronogramaGoles: resultadoIA.goles || [] 
                 });
             }
-        }
+        }));
 
         req.session.partidoEnVivo = {
             partidoId: partidoId,
@@ -582,7 +641,7 @@ router.get('/jugar_partido/:idPartido', requireLogin, async (req, res) => {
             restoJornadaIa: partidosIADeHoy 
         };
 
-        const esLocalUsuario = partidoUsuario.equipoLocal._id.toString() === clubUsuarioId;
+        const esLocalUsuarioFinal = partidoUsuario.equipoLocal._id.toString() === clubUsuarioId;
         
         res.render('partidoEnVivo', {
             title: 'Partido en Directo',  
@@ -590,17 +649,121 @@ router.get('/jugar_partido/:idPartido', requireLogin, async (req, res) => {
             local: equipoLocalUsuario,
             visitante: equipoVisitanteUsuario,
             partidoBBDD: partidoUsuario,
-            esLocalUser: esLocalUsuario,
-            equipoUser: esLocalUsuario ? equipoLocalUsuario : equipoVisitanteUsuario,
-            tacticaInicial: clubUsuarioReal.tactica.formacion || '4-3-3',
-            estiloInicial: clubUsuarioReal.tactica.estiloJuego || 'ESTÁNDAR',
-            mentalidadInicial: clubUsuarioReal.tactica.mentalidad || 'EQUILIBRADA',
+            esLocalUser: esLocalUsuarioFinal,
+            equipoUser: esLocalUsuarioFinal ? equipoLocalUsuario : equipoVisitanteUsuario,
+            tacticaInicial: formacionBaseUser,
+            estiloInicial: estiloBaseUser,
+            mentalidadInicial: mentalidadBaseUser,
             formaciones: FORMACIONES
         });
 
     } catch (error) {
         console.error("Error al iniciar partido en vivo:", error);
         res.status(500).send("Error al procesar el partido en vivo");
+    }
+});
+
+// RUTA PARA MOSTRAR LA VISTA TÁCTICA
+router.get('/partido/:idPartido/tactica', requireLogin, async (req, res) => {
+    try {
+        const partidoId = req.params.idPartido;
+
+        // Validar que exista el partido en la base de datos
+        const partidoUsuario = await Partido.findById(partidoId).populate('equipoLocal equipoVisitante');
+        if (!partidoUsuario) return res.status(404).send("Partido no encontrado.");
+
+        // Recuperar los datos del partido en vivo desde la sesión
+        const partidoEnVivo = req.session.partidoEnVivo;
+        if (!partidoEnVivo || partidoEnVivo.partidoId !== partidoId) {
+            // Si por alguna razón se limpia la sesión, lo mandamos de vuelta a recargar el partido
+            return res.redirect(`/jugar_partido/${partidoId}`);
+        }
+
+        // Determinar cuál es el equipo del usuario en este partido
+        const clubUsuarioId = req.session.clubId; 
+        const esLocalUsuario = partidoUsuario.equipoLocal._id.toString() === clubUsuarioId;
+
+        // ¡IMPORTANTE! Extraemos los jugadores directamente de la SESIÓN actual del partido,
+        // así si ya ha hecho cambios durante el partido, se mantienen en la pizarra.
+        const equipoUser = esLocalUsuario ? partidoEnVivo.local : partidoEnVivo.visitante;
+
+        res.render('partidoTactica', {
+            title: 'Ajustes Tácticos - ' + equipoUser.nombre,
+            partidoBBDD: partidoUsuario,
+            equipoUser: equipoUser, // Contiene { id, nombre, jugadores, suplentes } extraídos de la sesión
+            tacticaInicial: equipoUser.formacion || '4-3-3',
+            estiloInicial: equipoUser.estiloJuego || 'ESTÁNDAR',
+            mentalidadInicial: equipoUser.mentalidad || 'EQUILIBRADA',
+            formaciones: FORMACIONES // Asegúrate de que FORMACIONES esté accesible en este archivo
+        });
+
+    } catch (error) {
+        console.error("Error al cargar la vista táctica del partido:", error);
+        res.status(500).send("Error al procesar el panel táctico");
+    }
+});
+
+// RUTA PARA GUARDAR Y VOLVER AL PARTIDO
+router.post('/partido/:idPartido/tactica', requireLogin, async (req, res) => {
+    try {
+        const partidoId = req.params.idPartido;
+        const { formacion, estiloJuego, mentalidad, titulares } = req.body;
+
+        const partidoEnVivo = req.session.partidoEnVivo;
+        if (!partidoEnVivo || partidoEnVivo.partidoId !== partidoId) {
+            return res.status(400).json({ success: false, message: "No hay ninguna simulación activa para este partido." });
+        }
+
+        // Detectar si el usuario es local o visitante
+        const clubUsuarioId = req.session.clubId;
+        const esLocal = partidoEnVivo.local.id.toString() === clubUsuarioId;
+        const equipoAEditar = esLocal ? 'local' : 'visitante';
+
+        // 1. Actualizamos las opciones tácticas globales en la sesión del partido en vivo
+        partidoEnVivo[equipoAEditar].formacion = formacion;
+        partidoEnVivo[equipoAEditar].estiloJuego = estiloJuego;
+        partidoEnVivo[equipoAEditar].mentalidad = mentalidad;
+
+        // 2. Mapear y ordenar los nuevos titulares en la sesión
+        // El cliente envía un array ordenado de IDs de titulares ['id1', 'id2', null, ...]
+        const todosLosJugadoresDisponibles = [
+            ...partidoEnVivo[equipoAEditar].jugadores,
+            ...partidoEnVivo[equipoAEditar].suplentes
+        ];
+
+        let nuevosTitulares = [];
+        let nuevosSuplentes = [];
+
+        // Reconstruimos la lista de titulares basándonos en el orden de IDs que envió el GestorTactico
+        titulares.forEach(id => {
+            if (!id || id === 'vacio') {
+                nuevosTitulares.push(null); // Huecos vacíos si tu GestorTactico los maneja
+            } else {
+                const jugador = todosLosJugadoresDisponibles.find(j => j && j._id.toString() === id.toString());
+                if (jugador) nuevosTitulares.push(jugador);
+            }
+        });
+
+        // Todos los que no se hayan quedado en la lista de titulares, van al banquillo de suplentes automáticamente
+        todosLosJugadoresDisponibles.forEach(jugador => {
+            if (jugador && !titulares.includes(jugador._id.toString())) {
+                nuevosSuplentes.push(jugador);
+            }
+        });
+
+        // Guardamos las nuevas listas en la sesión del partido
+        partidoEnVivo[equipoAEditar].jugadores = nuevosTitulares;
+        partidoEnVivo[equipoAEditar].suplentes = nuevosSuplentes;
+
+        // Guardamos los cambios de forma explícita en la sesión de Express
+        req.session.partidoEnVivo = partidoEnVivo;
+
+        // Devolvemos una respuesta exitosa
+        res.json({ success: true, redirectUrl: `/jugar_partido/${partidoId}` });
+
+    } catch (error) {
+        console.error("Error al guardar la táctica en vivo:", error);
+        res.status(500).json({ success: false, message: "Error interno al aplicar los ajustes tácticos." });
     }
 });
 

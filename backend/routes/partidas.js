@@ -215,6 +215,8 @@ partidaRouter.get('/crearPartida/final', requireLogin, async (req, res) => {
     await generarCalendario(partidaId);
     req.setTimeout(0);
 
+    req.session.partidaId = partidaId.toString();
+    req.session.clubId = clubJugador._id.toString();
     req.session.crearPartida = null;
 
     res.render('crearPartidaFinal', { 
@@ -269,6 +271,8 @@ partidaRouter.get('/inicioJuego/:id', requireLogin, async (req, res) => {
         if (!partida) return res.redirect('/listarPartidas');
 
         const clubUsuario = partida.clubSeleccionado;
+        req.session.partidaId = partidaId;
+        req.session.clubId = clubUsuario._id.toString();
 
         // Buscamos todos los partidos de ESTA partida donde juegue el equipo del usuario
         const partidos = await Partido.find({

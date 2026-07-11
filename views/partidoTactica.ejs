@@ -1,0 +1,178 @@
+<%- include('partials/head', { title: 'Ajustes Tácticos - ' + equipoUser.nombre }) %> 
+
+<div class="container-fluid py-4 bg-dark min-vh-100 text-white" style="font-family: 'Montserrat', sans-serif;">
+    <div class="row">
+        <div class="col-sm-5 col-lg-4">
+            <div class="card bg-black border-secondary p-3 mb-3 shadow">
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                    <h6 class="text-info mb-0 fw-bold">Formación Seleccionada</h6>
+                    
+                    <div class="input-group style-select-tactica w-auto">
+                        <span class="input-group-text bg-secondary text-white border-secondary small">Esquema</span>
+                        <select id="selector-formacion" class="form-select bg-dark text-white border-secondary fw-bold" onchange="GestorTactico.cambiarEsquema(this.value)">
+                            <% Object.keys(formaciones).forEach(f => { %>
+                                <option value="<%= f %>" <%= tacticaInicial === f ? 'selected' : '' %>><%= f %></option>
+                            <% }) %>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="card-body p-0 d-flex justify-content-center bg-dark rounded border border-secondary py-3">
+                    <div id="campo-futbol" class="pitch static-pitch">
+                        <div class="mid-line"></div>
+                        <div class="area-top"></div>
+                        <div class="area-bottom"></div>
+                        
+                        <div id="capa-jugadores">
+                            <% if (equipoUser.jugadores && equipoUser.jugadores.length > 0) { %>
+                                <% equipoUser.jugadores.forEach((j, index) => { %>
+                                    <% if (j && j._id !== 'vacio') { %>
+                                        <div class="pitch-player" data-id="<%= j._id %>" data-index="<%= index %>" style="position: absolute;">
+                                            <div class="player-shirt bg-primary text-white text-center fw-bold rounded-circle mx-auto" style="width: 32px; height: 32px; line-height: 32px; font-size: 0.8rem;">
+                                                <%= j.dorsal || (index + 1) %>
+                                            </div>
+                                            <div class="player-name text-center text-truncate small bg-black bg-opacity-75 rounded px-1 mt-1" style="max-width: 75px; font-size: 0.7rem;">
+                                                <%= j.nombre.split(' ').pop() %>
+                                            </div>
+                                        </div>
+                                    <% } %>
+                                <% }) %>
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card bg-black border-secondary p-3 shadow">
+                <div class="row g-3">
+                    <div class="col-12 col-sm-6">
+                        <label class="form-label text-white small fw-bold">Estilo de Juego</label>
+                        <select class="form-select bg-dark text-white border-secondary" id="selectEstilo">
+                            <option value="ESTÁNDAR" <%= estiloInicial === 'ESTÁNDAR' ? 'selected' : '' %>>Estándar</option>
+                            <option value="TIKI-TAKA" <%= estiloInicial === 'TIKI-TAKA' ? 'selected' : '' %>>Tiki-Taka (Posesión)</option>
+                            <option value="CONTRAATAQUE" <%= estiloInicial === 'CONTRAATAQUE' ? 'selected' : '' %>>Contraataque</option>
+                            <option value="AUTOBÚS" <%= estiloInicial === 'AUTOBÚS' ? 'selected' : '' %>>Autobús (Ultra Defensivo)</option>
+                            <option value="BALÓN LARGO" <%= estiloInicial === 'BALÓN LARGO' ? 'selected' : '' %>>Balón Largo</option>
+                            <option value="PRESIÓN ALTA" <%= estiloInicial === 'PRESIÓN ALTA' ? 'selected' : '' %>>Presión Alta</option>
+                            <option value="JUEGO POR BANDAS" <%= estiloInicial === 'JUEGO POR BANDAS' ? 'selected' : '' %>>Juego por Bandas</option>
+                        </select>
+                    </div>
+                    <div class="col-12 col-sm-6">
+                        <label class="form-label text-white small fw-bold">Mentalidad</label>
+                        <select class="form-select bg-dark text-white border-secondary" id="selectMentalidad">
+                            <option value="MUY_DEFENSIVA" <%= mentalidadInicial === 'MUY_DEFENSIVA' ? 'selected' : '' %>>Muy Defensiva</option>
+                            <option value="DEFENSIVA" <%= mentalidadInicial === 'DEFENSIVA' ? 'selected' : '' %>>Defensiva</option>
+                            <option value="EQUILIBRADA" <%= mentalidadInicial === 'EQUILIBRADA' ? 'selected' : '' %>>Equilibrada</option>
+                            <option value="OFENSIVA" <%= mentalidadInicial === 'OFENSIVA' ? 'selected' : '' %>>Ofensiva</option>
+                            <option value="ULTRA_OFENSIVA" <%= mentalidadInicial === 'ULTRA_OFENSIVA' ? 'selected' : '' %>>Ultra Ofensiva</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-7">
+            <div class="card bg-black text-white border-secondary" style="max-height: 90vh; overflow-y: auto;">
+                <div class="card-header bg-secondary bg-opacity-50 d-flex justify-content-between align-items-center py-3">
+                    <h6 class="mb-0 fw-bold">Jugadores</h6>
+                    <span class="small bg-dark px-2 py-1 rounded text-warning fw-bold" id="txtCambiosVentanas">Sustituciones: 0/5</span>
+                </div>
+                
+                <div class="p-2 bg-primary text-white small fw-bold"> TITULARES (Pulsa uno para seleccionar e intercambiar)</div>
+                <ul class="list-group list-group-flush list-modal-tactica" id="listaTitulares">
+                    <% if (equipoUser.jugadores && equipoUser.jugadores.length > 0) { %>
+                        <% equipoUser.jugadores.forEach(j => { %>
+                            <%- include('partials/jugador_items', { j, esTitular: true, competicionActual: partidoBBDD.competicionId }) %>
+                        <% }) %>
+                    <% } else { %>
+                        <div class="list-group-item bg-dark text-muted text-center small">Sin titulares configurados</div>
+                    <% } %>
+                </ul>
+
+                <div class="p-2 bg-info text-dark small fw-bold"> BANQUILLO / SUPLENTES</div>
+                <ul class="list-group list-group-flush" id="listaSuplentes">
+                    <% if (equipoUser.suplentes && equipoUser.suplentes.length > 0) { %>
+                        <% equipoUser.suplentes.forEach(j => { %>
+                            <%- include('partials/jugador_items', { j, esTitular: false, competicionActual: partidoBBDD.competicionId }) %>
+                        <% }) %>
+                    <% } else { %>
+                        <div class="list-group-item bg-dark text-muted text-center small">Sin suplentes disponibles</div>
+                    <% } %>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card bg-black border-secondary p-3 d-flex flex-sm-row justify-content-between align-items-center gap-3 shadow">
+                <button type="button" class="btn btn-outline-light fw-bold px-4 order-2 order-sm-1" id="btnDescartarVolver">
+                    <i class="bi bi-arrow-left-short"></i> Descartar y Volver
+                </button>
+                <button type="button" class="btn btn-warning text-dark fw-bold px-5 py-2 order-1 order-sm-2 shadow" id="btnGuardarEstrategia">
+                    <i class="bi bi-check-circle-fill me-1"></i> Guardar y Aplicar Ajustes
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="/js/logicaFormaciones.js"></script>
+
+<script>
+    const FORMACIONES_DATA = JSON.parse('<%- JSON.stringify(formaciones) %>');
+    const PARTIDO_ID = '<%= partidoBBDD._id %>';
+
+    $(document).ready(function() {
+        // Inicialización instantánea: El elemento ya es visible nativamente en el DOM
+        const esquemaActual = $('#selector-formacion').val();
+        if (typeof GestorTactico !== 'undefined') {
+            GestorTactico.init(esquemaActual, FORMACIONES_DATA);
+            GestorTactico.dibujarAlineacion(esquemaActual);
+        }
+
+        $('#btnGuardarEstrategia').on('click', function() {
+            const esquemaFinal = $('#selector-formacion').val();
+            const estiloFinal = $('#selectEstilo').val();
+            const mentalidadFinal = $('#selectMentalidad').val();
+
+            const titularesIds = Array.from(document.querySelectorAll('#listaTitulares .jugador-item'))
+                .map(li => {
+                    const id = li.getAttribute('data-id');
+                    return id === 'vacio' ? null : id;
+                });
+
+            const dataEstrategia = {
+                formacion: esquemaFinal,
+                estiloJuego: estiloFinal,
+                mentalidad: mentalidadFinal,
+                titulares: titularesIds
+            };
+
+            // Enviamos los cambios al servidor mediante FETCH
+            fetch(`/partido/${PARTIDO_ID}/tactica`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dataEstrategia)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Regresamos al partido en directo (el cual mantendrá el minuto y marcador exacto por donde iba)
+                    window.location.href = data.redirectUrl;
+                } else {
+                    alert("Hubo un error al aplicar los cambios tácticos: " + data.message);
+                }
+            })
+            .catch(err => {
+                console.error("Error:", err);
+                alert("Error de conexión al guardar los ajustes.");
+            });
+        });
+
+        // Descartar cambios simplemente te devuelve al partido
+        $('#btnDescartarVolver').on('click', function() {
+            window.location.href = `/jugar_partido/${PARTIDO_ID}`;
+        });
+    });
+</script>

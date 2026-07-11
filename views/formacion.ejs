@@ -100,8 +100,6 @@
 <%- include('partials/modal_tacticas') %>
 <%- include('partials/modal_subir_cantera') %>
 
-<script src="/js/bootstrap.bundle.min.js"></script>
-<script src="/js/ui.js"></script> 
 <script src="/js/vistaAlertas.js"></script>
 <script src="/js/logicaFormaciones.js"></script>
 
@@ -119,7 +117,7 @@
             if (typeof UI !== 'undefined' && UI.notificarError) {
                 UI.notificarError(
                     "Acción Cancelada", 
-                    "No se ha podido disputar la jornada. Tienes futbolistas de baja médica o suspendidos dentro de tus 18 convocados (titulares o suplentes). Haz los cambios pertinentes antes de avanzar."
+                    "No se ha podido disputar la jornada. Tienes futbolistas de baja médica o suspendidos dentro de tus convocados (titulares o suplentes). Haz los cambios pertinentes antes de avanzar."
                 );
                 // Limpia la URL estéticamente para que no se quede el "?errorConvocatoria=true" al recargar
                 window.history.replaceState({}, document.title, window.location.pathname);

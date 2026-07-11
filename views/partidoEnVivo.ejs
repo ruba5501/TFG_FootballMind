@@ -29,7 +29,6 @@
                 <div class="text-uppercase text-white small fw-bold mb-2">En Directo</div>
                 
                 <div class="d-flex flex-column flex-sm-row align-items-center justify-content-center gap-3">
-                    
                     <div class="text-center text-sm-end w-100 style-marcador-equipo" style="flex: 1;">
                         <img src="/img/escudos/<%= partidoBBDD.equipoLocal.escudo %>" alt="<%= local.nombre %>" class="escudo-marcador align-middle mb-2 mb-sm-0">
                         <div class="d-block d-sm-inline-block align-middle mx-2">
@@ -72,7 +71,7 @@
                 </div>
 
                 <button class="btn btn-primary w-100 fw-bold shadow-sm py-2" style="max-width: 450px;" id="btnAbrirEstrategia">TÁCTICA Y CAMBIOS</button>
-                <small class="text-muted mt-2" style="font-size: 0.75rem;"><i class="bi bi-info-circle"></i> Al abrir los ajustes, el partido se pausará.</small>
+                <small class="text-muted mt-2" style="font-size: 0.75rem;"><i class="bi bi-info-circle"></i> Al abrir los ajustes, el partido se pausará automáticamente.</small>
             </div>
         </div>
 
@@ -100,74 +99,21 @@
     </div>
 </div>
 
-<%- include('partials/modal_cambios_en_partido')%>
-<script src="/js/bootstrap.bundle.min.js"></script>
-<script src="/js/logicaFormaciones.js"></script>
-
 <script>
-    // 1. Guardamos los datos puros de las formaciones (esto no da error en el editor)
-    const FORMACIONES_DATA = JSON.parse('<%- JSON.stringify(formaciones) %>');
+    const PARTIDO_ID = '<%= partidoBBDD._id %>';
 
     $(document).ready(function() {
-        const modalInstancia = new bootstrap.Modal(document.getElementById('modalEstrategiaPartido'));
-
-        // 1. Apertura Inteligente de la Pizarra
+        // Redirección Dinámica Estratégica
         $('#btnAbrirEstrategia').on('click', function() {
-            // Pausar el partido si no lo está
+            // 1. Forzar la pausa del partido en vivo si está corriendo
             if (!$('#btnPlayPause').text().includes('REANUDAR')) {
                 $('#btnPlayPause').trigger('click'); 
             }
             
-            // Inicializar el GestorTactico nativo usando los datos del selector de tu modal
-            const esquemaActual = $('#selector-formacion').val();
-            if (typeof GestorTactico !== 'undefined') {
-                GestorTactico.init(esquemaActual, FORMACIONES_DATA);
-            }
-            
-            modalInstancia.show();
-        });
+            // Opcional: Si manejas Sockets, aquí emitirías un socket.emit('pausarPartido', PARTIDO_ID);
 
-        // 2. Cambio dinámico de esquema táctico
-        $('#selector-formacion').on('change', function() {
-            const nuevoEsquema = $(this).val();
-            if (typeof GestorTactico !== 'undefined') {
-                GestorTactico.cambiarEsquema(nuevoEsquema); // Asegúrate de tener este método o usar dibujarAlineacion
-            }
-        });
-
-        // 3. Sistema de Clics para Intercambiar Posiciones (reutiliza la lógica de tu JS)
-        $(document).on('click', '.jugador-item', function() {
-            if (typeof GestorTactico !== 'undefined') {
-                // Delegamos la selección e intercambio al GestorTactico que ya maneja las clases visuales y el redibujado del campo
-                GestorTactico.seleccionarJugador(this);
-            }
-        });
-
-        // 4. Botón de Guardar Estrategia en Tiempo Real
-        $('#btnGuardarEstrategia').on('click', function() {
-            const esquemaFinal = $('#selector-formacion').val();
-            const estiloFinal = $('#selectEstilo').val();
-            const mentalidadFinal = $('#selectMentalidad').val();
-
-            // Recogemos los IDs de los titulares reales directamente desde el DOM modificado por GestorTactico
-            const titularesIds = Array.from(document.querySelectorAll('#lista-titulares .jugador-item'))
-                .map(li => {
-                    const id = li.getAttribute('data-id');
-                    return id === 'vacio' ? null : id;
-                });
-
-            const dataEstrategia = {
-                formacion: esquemaFinal,
-                estiloJuego: estiloFinal,
-                mentalidad: mentalidadFinal,
-                titulares: titularesIds
-            };
-
-            console.log("Enviando ajustes tácticos en tiempo real a la simulación:", dataEstrategia);
-            
-            // Aquí puedes hacer un socket.emit o la lógica para que el simulador del partido capte los cambios en vivo
-            
-            modalInstancia.hide();
+            // 2. Viajar a la nueva vista de gestión táctica completa
+            window.location.href = `/partido/${PARTIDO_ID}/tactica`;
         });
     });
 </script>

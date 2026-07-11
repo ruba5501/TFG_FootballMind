@@ -4,7 +4,7 @@ const GestorTactico = {
 
     init: function(formacionInicial, todasLasFormaciones) {
         this.formacionesDisponibles = todasLasFormaciones;
-        
+
         const listaJugadores = document.querySelectorAll('.jugador-item');
         listaJugadores.forEach(li => {
             li.style.cursor = 'pointer';
@@ -24,7 +24,7 @@ const GestorTactico = {
     seleccionarJugador: function(li) {
         const selectorFormacion = document.getElementById('selector-formacion');
         const formacionActual = selectorFormacion ? selectorFormacion.value : '4-3-3';
-        
+        console.log("hola");
         if (!this.jugadorSeleccionado) {
             this.jugadorSeleccionado = li;
             li.classList.add('selected', 'bg-primary'); 
