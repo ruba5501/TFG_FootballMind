@@ -12,83 +12,139 @@
     let posVisitante = (resSeguro.posesion && resSeguro.posesion.visitante !== undefined) ? resSeguro.posesion.visitante : 50;
 %>
 
-<div class="container mt-5">
-    <div class="card text-center bg-dark text-white border-secondary shadow-lg">
-        <div class="card-header bg-transparent border-secondary text-info fw-bold text-uppercase">
-            Resultado del Partido 
-            <% if (eventosSeguros.some(e => e.texto && e.texto.includes('prórroga'))) { %>
-                <span class="badge bg-danger ms-2">T.E (120 min)</span>
-            <% } %>
-        </div>
-        <div class="card-body">
-            <div class="row align-items-center py-3">
-                <div class="col-4">
-                    <h3 class="fw-bold"><%= (typeof local !== 'undefined' && local.nombre) ? local.nombre : 'Equipo Local' %></h3>
-                    <h1 class="display-3 fw-bold text-info"><%= marcadorSeguro.local %></h1>
-                    <% if (resSeguro.ganadorPenaltis && marcadorTandaSeguro.local !== null) { %>
-                        <h4 class="text-warning font-monospace">Penaltis: <%= marcadorTandaSeguro.local %></h4>
-                    <% } %>
+<div class="container-fluid py-5 px-md-4" style="font-family: 'Montserrat', sans-serif;">
+    <div class="row g-3 justify-content-center">
+        
+        <div class="col-12 col-md-6 col-lg-3 order-2 order-lg-1">
+            <div class="card shadow-lg border-secondary h-100 bg-dark text-white">
+                <div class="card-header bg-black text-white fw-bold d-flex align-items-center justify-content-between border-secondary">
+                    <span class="text-truncate me-2"><%= (typeof local !== 'undefined' && local.nombre) ? local.nombre : 'Equipo Local' %></span>
+                    <span class="badge bg-secondary flex-shrink-0">Titulares</span>
                 </div>
-                <div class="col-4">
-                    <span class="badge bg-secondary fs-6 px-3 py-2">
-                        <%= resSeguro.ganadorPenaltis ? 'Final Prórroga' : 'Minuto 90' %>
-                    </span>
-                    <p class="mt-3 mb-0 text-muted">Posesión Final:</p>
-                    <h5 class="fw-bold text-white">
-                        <%= posLocal %>% - <%= posVisitante %>%
-                    </h5>
-                    <% if (resSeguro.ganadorPenaltis) { %>
-                        <div class="mt-3 badge bg-warning text-dark fw-bold p-2 text-uppercase tracking-wider">
-                            🏆 Ganador por Penaltis
-                        </div>
-                    <% } %>
-                </div>
-                <div class="col-4">
-                    <h3 class="fw-bold"><%= (typeof visitante !== 'undefined' && visitante.nombre) ? visitante.nombre : 'Equipo Visitante' %></h3>
-                    <h1 class="display-3 fw-bold text-info"><%= marcadorSeguro.visitante %></h1>
-                    <% if (resSeguro.ganadorPenaltis && marcadorTandaSeguro.visitante !== null) { %>
-                        <h4 class="text-warning font-monospace">Penaltis: <%= marcadorTandaSeguro.visitante %></h4>
+                <div class="list-group list-group-flush" id="listaTitularesLocal">
+                    <% if (typeof local !== 'undefined' && local.jugadores) { %>
+                        <% local.jugadores.forEach((j, index) => { %>
+                            <div class="list-group-item d-flex bg-dark justify-content-between align-items-center border-secondary border-opacity-25 p-2 small">
+                                <div class="text-truncate me-2">
+                                    <span class="badge bg-secondary text-white me-1 text-center" style="width: 24px;"><%= j.dorsal || (index + 1) %></span>
+                                    <strong class="text-white text-truncate"><%= j.nombre %></strong>
+                                    <span class="badge bg-light text-dark border ms-1"><%= j.posicionPrincipal || j.posicion %></span>
+                                </div>
+                                <span class="badge bg-success-subtle text-success border border-success-subtle flex-shrink-0"><%= j.atributos?.forma ?? 100 %>%</span>
+                            </div>
+                        <% }) %>
+                    <% } else { %>
+                        <div class="list-group-item bg-dark text-muted text-center small py-3">Alineación no disponible</div>
                     <% } %>
                 </div>
             </div>
-            
-            <hr class="border-secondary">
-            
-            <h5 class="text-start text-info mb-3">Cronología del partido:</h5>
-            <ul class="list-group list-group-flush text-start rounded bg-black bg-opacity-20">
-                <% eventosSeguros.forEach(evento => { %>
-                    <% if (evento) { %>
-                        <li class="list-group-item bg-transparent text-white border-secondary border-opacity-25 py-2.5">
-                            <strong class="text-light me-2">Min <%= evento.minuto ?? '??' %>:</strong> 
-                            <% if(evento.tipo === 'GOL') { %>
-                                <span class="text-success fw-bold"><i class="bi bi-ball me-1"></i> ⚽ GOL</span>
-                            <% } else if(evento.tipo === 'PENALTI_TANDA') { %>
-                                <span class="text-info fw-bold"><i class="bi bi-circle-fill me-1"></i> 🎯 PENALTI</span>
-                            <% } else if(evento.tipo === 'INFO') { %>
-                                <span class="text-light fw-bold text-uppercase"><i class="bi bi-info-square me-1"></i> 📢 NOTA</span>
-                            <% } else { %>
-                                <span class="text-warning"> ⚠ Ocasión</span>
-                            <% } %>
-                            <span class="ms-1 text-white-50">- <%= evento.texto || '' %></span>
-                        </li>
+        </div>
+
+        <div class="col-12 col-lg-6 order-1 order-lg-2">
+            <div class="card text-center bg-dark text-white border-secondary shadow-lg h-100">
+                <div class="card-header bg-transparent border-secondary text-info fw-bold text-uppercase">
+                    Resultado del Partido 
+                    <% if (eventosSeguros.some(e => e.texto && e.texto.includes('prórroga'))) { %>
+                        <span class="badge bg-danger ms-2">T.E (120 min)</span>
                     <% } %>
-                <% }) %>
-                
-                <% if(eventosSeguros.length === 0) { %>
-                    <li class="list-group-item bg-transparent text-muted text-center py-4">Un partido muy aburrido sin ocasiones claras...</li>
-                <% } %>
-            </ul>
+                </div>
+                <div class="card-body">
+                    <div class="row align-items-center py-3">
+                        <div class="col-4">
+                            <h4 class="fw-bold text-truncate"><%= (typeof local !== 'undefined' && local.nombre) ? local.nombre : 'Equipo Local' %></h4>
+                            <h1 class="display-3 fw-bold text-info"><%= marcadorSeguro.local %></h1>
+                            <% if (resSeguro.ganadorPenaltis && marcadorTandaSeguro.local !== null) { %>
+                                <h5 class="text-warning font-monospace small">Penaltis: <%= marcadorTandaSeguro.local %></h5>
+                            <% } %>
+                        </div>
+                        <div class="col-4">
+                            <span class="badge bg-secondary fs-6 px-3 py-2">
+                                <%= resSeguro.ganadorPenaltis ? 'Final Prórroga' : 'Minuto 90' %>
+                            </span>
+                            <p class="mt-3 mb-0 text-muted small">Posesión Final:</p>
+                            <h5 class="fw-bold text-white">
+                                <%= posLocal %>% - <%= posVisitante %>%
+                            </h5>
+                            <% if (resSeguro.ganadorPenaltis) { %>
+                                <div class="mt-3 badge bg-warning text-dark fw-bold p-2 text-uppercase tracking-wider small">
+                                    🏆 Ganador por Penaltis
+                                </div>
+                            <% } %>
+                        </div>
+                        <div class="col-4">
+                            <h4 class="fw-bold text-truncate"><%= (typeof visitante !== 'undefined' && visitante.nombre) ? visitante.nombre : 'Equipo Visitante' %></h4>
+                            <h1 class="display-3 fw-bold text-info"><%= marcadorSeguro.visitante %></h1>
+                            <% if (resSeguro.ganadorPenaltis && marcadorTandaSeguro.visitante !== null) { %>
+                                <h5 class="text-warning font-monospace small">Penaltis: <%= marcadorTandaSeguro.visitante %></h5>
+                            <% } %>
+                        </div>
+                    </div>
+                    
+                    <hr class="border-secondary">
+                    
+                    <h5 class="text-start text-info mb-3"><i class="bi bi-journal-text me-1"></i> Cronología del partido:</h5>
+                    <ul class="list-group list-group-flush text-start rounded bg-black bg-opacity-20" style="max-height: 280px; overflow-y: auto;">
+                        <% eventosSeguros.forEach(evento => { %>
+                            <% if (evento) { %>
+                                <li class="list-group-item bg-transparent text-white border-secondary border-opacity-25 py-2.5">
+                                    <strong class="text-light me-2">Min <%= evento.minuto ?? '??' %>:</strong> 
+                                    <% if(evento.tipo === 'GOL') { %>
+                                        <span class="text-success fw-bold">⚽ GOL</span>
+                                    <% } else if(evento.tipo === 'PENALTI_TANDA') { %>
+                                        <span class="text-info fw-bold">🎯 PENALTI</span>
+                                    <% } else if(evento.tipo === 'INFO') { %>
+                                        <span class="text-light fw-bold text-uppercase">📢 NOTA</span>
+                                    <% } else { %>
+                                        <span class="text-warning">⚠ Ocasión</span>
+                                    <% } %>
+                                    <span class="ms-1 text-white-50">- <%= evento.texto || '' %></span>
+                                </li>
+                            <% } %>
+                        <% }) %>
+                        
+                        <% if(eventosSeguros.length === 0) { %>
+                            <li class="list-group-item bg-transparent text-muted text-center py-4">Un partido muy aburrido sin ocasiones claras...</li>
+                        <% } %>
+                    </ul>
+                </div>
+                <div class="card-footer bg-transparent border-secondary py-3">
+                    <% if (typeof partida !== 'undefined' && partida && partida._id) { %>
+                        <a href="/inicioJuego/<%= partida._id %>" class="btn btn-outline-info px-4 shadow-sm">
+                            <i class="bi bi-arrow-left me-1"></i> Volver al Menú Principal
+                        </a>
+                    <% } else { %>
+                        <a href="/" class="btn btn-outline-info px-4 shadow-sm">
+                            <i class="bi bi-arrow-left me-1"></i> Volver al Menú Principal
+                        </a>
+                    <% } %>
+                </div>
+            </div>
         </div>
-        <div class="card-footer bg-transparent border-secondary py-3">
-            <% if (typeof partida !== 'undefined' && partida && partida._id) { %>
-                <a href="/inicioJuego/<%= partida._id %>" class="btn btn-outline-info px-4 shadow-sm">
-                    <i class="bi bi-arrow-left me-1"></i> Volver al Menú Principal
-                </a>
-            <% } else { %>
-                <a href="/" class="btn btn-outline-info px-4 shadow-sm">
-                    <i class="bi bi-arrow-left me-1"></i> Volver al Menú Principal
-                </a>
-            <% } %>
+
+        <div class="col-12 col-md-6 col-lg-3 order-3">
+            <div class="card shadow-lg border-secondary h-100 bg-dark text-white">
+                <div class="card-header bg-black text-white fw-bold d-flex align-items-center justify-content-between border-secondary">
+                    <span class="text-truncate me-2"><%= (typeof visitante !== 'undefined' && visitante.nombre) ? visitante.nombre : 'Equipo Visitante' %></span>
+                    <span class="badge bg-secondary flex-shrink-0">Titulares</span>
+                </div>
+                <div class="list-group list-group-flush" id="listaTitularesVisitante">
+                    <% if (typeof visitante !== 'undefined' && visitante.jugadores) { %>
+                        <% visitante.jugadores.forEach((j, index) => { %>
+                            <div class="list-group-item d-flex bg-dark justify-content-between align-items-center border-secondary border-opacity-25 p-2 small">
+                                <div class="text-truncate me-2">
+                                    <span class="badge bg-secondary text-white me-1 text-center" style="width: 24px;"><%= j.dorsal || (index + 1) %></span>
+                                    <strong class="text-white text-truncate"><%= j.nombre %></strong>
+                                    <span class="badge bg-light text-dark border ms-1"><%= j.posicionPrincipal || j.posicion %></span>
+                                </div>
+                                <span class="badge bg-success-subtle text-success border border-success-subtle flex-shrink-0"><%= j.atributos?.forma ?? 100 %>%</span>
+                            </div>
+                        <% }) %>
+                    <% } else { %>
+                        <div class="list-group-item bg-dark text-muted text-center small py-3">Alineación no disponible</div>
+                    <% } %>
+                </div>
+            </div>
         </div>
+
     </div>
 </div>
