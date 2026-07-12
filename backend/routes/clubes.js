@@ -310,7 +310,7 @@ clubRouter.get('/cantera', requireLogin, async (req, res) => {
             .populate('empleados');
 
         const clubFilial = await Club.findOne({ 
-            partidaId: req.params.partidaId,
+            partidaId: partidaId,
             clubMatriz: clubUsuario._id,
             esFilial: true 
         }).populate('plantilla');
