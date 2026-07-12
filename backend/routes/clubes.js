@@ -142,10 +142,14 @@ clubRouter.get('/formacion', requireLogin, async (req, res) => {
     }
 });
 
-clubRouter.post('/guardarAlineacion/:clubId', requireLogin, async (req, res) => {
+// GUARDAR ALINEACIÓN
+clubRouter.post('/guardarAlineacion', requireLogin, async (req, res) => {
     try {
+        const partidaId = req.session.partidaId;
+        const partida = await partidasDAO.obtenerPartidaPorId(partidaId);
+        
+        const clubUsuarioId = partida.clubSeleccionado; 
         const { nuevaPlantilla, formacion } = req.body;
-        const clubId = req.params.clubId;
 
         const nuevosTitulares = nuevaPlantilla.slice(0, 11);
         const nuevosSuplentes = nuevaPlantilla.slice(11, 24);
@@ -153,7 +157,7 @@ clubRouter.post('/guardarAlineacion/:clubId', requireLogin, async (req, res) => 
 
         const plantillaLimpiaSinVacios = nuevaPlantilla.filter(id => id !== null && id !== 'vacio');
         
-        await Club.findByIdAndUpdate(req.params.clubId, {
+        await Club.findByIdAndUpdate(clubUsuarioId, {
             $set: {
                 plantilla: plantillaLimpiaSinVacios,
                 "tactica.formacion": formacion,
@@ -163,40 +167,45 @@ clubRouter.post('/guardarAlineacion/:clubId', requireLogin, async (req, res) => 
             }
         });
 
-        res.json({ OK: true });
+        return res.json({ OK: true });
     } catch (err) {
-        console.error("Error al guardar alineación y formación:", err);
-        res.status(500).json({ error: "No se pudo guardar la estrategia" });
+        console.error("Error al guardar alineación:", err);
+        return res.status(500).json({ error: "No se pudo guardar la estrategia" });
     }
 });
 
-clubRouter.post('/actualizarRoles/:clubId', requireLogin, async (req, res) => {
+// ACTUALIZAR ROLES
+clubRouter.post('/actualizarRoles', requireLogin, async (req, res) => {
     try {
-        await clubesDAO.actualizarRoles(req.params.clubId, req.body);
-        res.json({ success: true });
+        const partidaId = req.session.partidaId;
+        const partida = await partidasDAO.obtenerPartidaPorId(partidaId);
+
+        await clubesDAO.actualizarRoles(partida.clubSeleccionado, req.body);
+        return res.json({ success: true });
     } catch (err) {
         console.error("Error al actualizar roles:", err);
-        res.status(500).json({ error: "Error al actualizar roles" });
+        return res.status(500).json({ error: "Error al actualizar roles" });
     }
 });
 
-clubRouter.post('/guardarTactica/:clubId', requireLogin, async (req, res) => {
+// GUARDAR TÁCTICA
+clubRouter.post('/guardarTactica', requireLogin, async (req, res) => {
     try {
-        const { estiloJuego, mentalidad } = req.body;
-        const clubId = req.params.clubId;
+        const partidaId = req.session.partidaId;
 
-        // Validamos rápidamente que nos lleguen datos correctos
+        const { estiloJuego, mentalidad } = req.body;
         if (!estiloJuego || !mentalidad) {
             return res.status(400).json({ error: "Faltan datos tácticos requeridos" });
         }
 
-        // Llamamos al DAO encargado de interactuar con la base de datos
-        await clubesDAO.actualizarTactica(clubId, estiloJuego, mentalidad);
+        const partida = await partidasDAO.obtenerPartidaPorId(partidaId);
+
+        await clubesDAO.actualizarTactica(partida.clubSeleccionado, estiloJuego, mentalidad);
         
-        res.json({ success: true });
+        return res.json({ success: true });
     } catch (err) {
-        console.error("Error al guardar filosofía en la ruta:", err);
-        res.status(500).json({ error: "Error al actualizar la filosofía táctica" });
+        console.error("Error al guardar filosofía:", err);
+        return res.status(500).json({ error: "Error al actualizar la filosofía táctica" });
     }
 });
 
@@ -422,15 +431,27 @@ const esRangoValido = (valorMin, valorMax, min, max) => {
     return true;
 }
 // búsqueda manual traspasos
-clubRouter.get('/traspasos/buscar/:partidaId', requireLogin, async (req, res) => {
+clubRouter.get('/traspasos/buscar', requireLogin, async (req, res) => {
     try {
-        const partida = await partidasDAO.obtenerPartidaPorId(req.params.partidaId);
+        const partidaId = req.session.partidaId;
+        const partida = await partidasDAO.obtenerPartidaPorId(partidaId);
         const filtros = req.query;
-        const ligas = await Competicion.find({ 
-            tipo: 'liga',
-            partidaId: partida._id,
-        }).select('nombre').lean();
-        const filial = await Club.findOne({ clubMatriz: partida.clubSeleccionado }).select('_id');
+
+        // Ejecutamos las consultas iniciales en paralelo para mejorar el rendimiento
+        const [ligas, filial, clubUsuario] = await Promise.all([
+            Competicion.find({ tipo: 'liga', partidaId: partida._id }).select('nombre').lean(),
+            Club.findOne({ clubMatriz: partida.clubSeleccionado }).select('_id'),
+            Club.findById(partida.clubSeleccionado)
+                .populate('empleados')
+                .populate({
+                    path: 'listaObjetivos',
+                    populate: { path: 'clubActual', select: 'nombre escudo' }
+                })
+        ]);
+
+        if (!clubUsuario) return res.status(404).send("Club del usuario no encontrado");
+
+        // Cargar clubes (excluyendo usuario y filial)
         const clubes = await Club.find({
             _id: { 
                 $ne: partida.clubSeleccionado,
@@ -438,17 +459,25 @@ clubRouter.get('/traspasos/buscar/:partidaId', requireLogin, async (req, res) =>
             },
             partidaId: partida._id,
         }).lean();
-        const clubUsuario = await Club.findById(partida.clubSeleccionado).populate('empleados').populate({
-            path: 'listaObjetivos',
-            populate: { path: 'clubActual', select: 'nombre escudo' }
-        });
-        const ojeadores = clubUsuario.empleados.filter(emp => 
-            emp.tipo === 'ojeador' 
-        );
-        
 
+        const ojeadores = clubUsuario.empleados.filter(emp => emp.tipo === 'ojeador');
+
+        // Función auxiliar local para evitar repetir el res.render en caso de error de rango
+        const renderizarConError = (mensajeError) => {
+            return res.render('traspasos', {
+                partida,
+                clubUsuario,
+                ojeadores,
+                ligas,  
+                clubes,
+                listaObjetivos: clubUsuario.listaObjetivos,
+                errorFiltros: mensajeError
+            });
+        };
+
+        // Construcción de la Query de MongoDB
         let mongoQuery = { 
-            partidaId: req.params.partidaId,
+            partidaId: partidaId,
             clubActual: { 
                 $ne: partida.clubSeleccionado,
                 $not: { $eq: filial ? filial._id : null }
@@ -459,115 +488,59 @@ clubRouter.get('/traspasos/buscar/:partidaId', requireLogin, async (req, res) =>
         
         if (filtros.clubId && filtros.clubId !== "") {
             mongoQuery.clubActual = filtros.clubId;
-        }
-        else if (filtros.liga && filtros.liga !== "") {
+        } else if (filtros.liga && filtros.liga !== "") {
             const clubesEnLiga = await Club.find({ 
                 competiciones: filtros.liga,
-                _id: { 
-                    $ne: partida.clubSeleccionado, 
-                    $not: { $eq: filial ? filial._id : null }
-                }
+                _id: { $ne: partida.clubSeleccionado, $not: { $eq: filial ? filial._id : null } }
             }).select('_id').lean();
-            const idsClubes = clubesEnLiga.map(c => c._id);
             
-            mongoQuery.clubActual = { $in: idsClubes };
+            mongoQuery.clubActual = { $in: clubesEnLiga.map(c => c._id) };
         }
+
         if (filtros.posicion) mongoQuery.posicionPrincipal = filtros.posicion;
         if (filtros.estado) mongoQuery.estadoMercado = filtros.estado;
         
-        
+        // Validación de Edad
         if (filtros.edadMin || filtros.edadMax) {
             mongoQuery.edad = {};
             const valorMin = filtros.edadMin ? parseInt(filtros.edadMin) : 0;
             const valorMax = filtros.edadMax ? parseInt(filtros.edadMax) : 100;
-            const esValido = esRangoValido(valorMin, valorMax, 0, 100)
-            if (esValido) {
-                if (filtros.edadMin) mongoQuery.edad.$gte = valorMin;
-                if (filtros.edadMax) mongoQuery.edad.$lte = valorMax;
+            
+            if (!esRangoValido(valorMin, valorMax, 0, 100)) {
+                return renderizarConError('El valor de edad introducido está fuera del rango');
             }
-            else{
-                return res.render('traspasos', {
-                    partida,
-                    clubUsuario,
-                    ojeadores: ojeadores,
-                    ligas: ligas,  
-                    clubes: clubes,
-                    listaObjetivos: clubUsuario.listaObjetivos,
-                    errorFiltros: 'El valor introducido esta fuera del rango'
-                });   
-             }
+            if (filtros.edadMin) mongoQuery.edad.$gte = valorMin;
+            if (filtros.edadMax) mongoQuery.edad.$lte = valorMax;
         }
 
+        // Validación de Valor de Mercado
         if (filtros.valorMin || filtros.valorMax) {
             mongoQuery.valorMercado = {};
             const valorMin = filtros.valorMin ? parseInt(filtros.valorMin) : 0;
             const valorMax = filtros.valorMax ? parseInt(filtros.valorMax) : 1000000000;
-            const esValido = esRangoValido(valorMin, valorMax, 0, 1000000000)
-            if (esValido) {
-                if (filtros.valorMin) mongoQuery.valorMercado.$gte = valorMin;
-                if (filtros.valorMax) mongoQuery.valorMercado.$lte = valorMax;
+            
+            if (!esRangoValido(valorMin, valorMax, 0, 1000000000)) {
+                return renderizarConError('El valor de mercado introducido está fuera del rango');
             }
-            else{
-                return res.render('traspasos', {
-                    partida,
-                    clubUsuario,
-                    ojeadores: ojeadores,
-                    ligas: ligas,  
-                    clubes: clubes,
-                    listaObjetivos: clubUsuario.listaObjetivos,
-                    errorFiltros: 'El valor introducido esta fuera del rango'
-                });   
-             }
+            if (filtros.valorMin) mongoQuery.valorMercado.$gte = valorMin;
+            if (filtros.valorMax) mongoQuery.valorMercado.$lte = valorMax;
         }
 
+        // Mapeo dinámico de Atributos
         const mapaAtributos = [
-            // Habilidad
-            ['reg', 'atributos.habilidad.regate'],
-            ['contBal', 'atributos.habilidad.controlBalon'],
-            ['des', 'atributos.habilidad.desmarques'],
-            // Tiro
-            ['def', 'atributos.tiro.definicion'],
-            ['potTir', 'atributos.tiro.potenciaTiro'],
-            ['tirLej', 'atributos.tiro.tiroLejano'],
-            ['fal', 'atributos.tiro.lanzamientoFaltas'],
-            ['pen', 'atributos.tiro.lanzamientoPenaltis'],
-            ['remCa', 'atributos.tiro.remateCabeza'],
-            // Pase
-            ['pasCor', 'atributos.pase.paseCorto'],
-            ['pasLar', 'atributos.pase.paseLargo'],
-            ['vis', 'atributos.pase.vision'],
-            ['cen', 'atributos.pase.centros'],
-            // Defensa
-            ['mar', 'atributos.defensa.marcaje'],
-            ['ent', 'atributos.defensa.entradas'],
-            ['int', 'atributos.defensa.intercepciones'],
-            ['desp', 'atributos.defensa.despejes'],
-            ['dueAr', 'atributos.defensa.duelosAereos'],
-            ['col', 'atributos.defensa.colocacion'],
-            // Fisico
-            ['vel', 'atributos.fisico.velocidad'],
-            ['ace', 'atributos.fisico.aceleracion'],
-            ['agi', 'atributos.fisico.agilidad'],
-            ['fue', 'atributos.fisico.fuerza'],
-            ['res', 'atributos.fisico.resistencia'],
-            ['equi', 'atributos.fisico.equilibrio'],
-            ['salt', 'atributos.fisico.salto'],
-            // Mental
-            ['conc', 'atributos.mental.concentracion'],
-            ['lid', 'atributos.mental.liderazgo'],
-            ['agre', 'atributos.mental.agresividad'],
-            ['mot', 'atributos.mental.motivacion'],
-            ['compBaPre', 'atributos.mental.composturaBajoPresion'],
-            // Portero
-            ['ref', 'atributos.portero.reflejos'],
-            ['para', 'atributos.portero.paradas'],
-            ['est', 'atributos.portero.estirada'],
-            ['jueAr', 'atributos.portero.juegoAereo'],
-            ['unoVSuno', 'atributos.portero.unoContraUno'],
-            ['bloc', 'atributos.portero.blocaje'],
-            ['saq', 'atributos.portero.saque'],
-            ['comu', 'atributos.portero.comunicacion'],
-            ['penal', 'atributos.portero.penales']
+            ['reg', 'atributos.habilidad.regate'], ['contBal', 'atributos.habilidad.controlBalon'], ['des', 'atributos.habilidad.desmarques'],
+            ['def', 'atributos.tiro.definicion'], ['potTir', 'atributos.tiro.potenciaTiro'], ['tirLej', 'atributos.tiro.tiroLejano'],
+            ['fal', 'atributos.tiro.lanzamientoFaltas'], ['pen', 'atributos.tiro.lanzamientoPenaltis'], ['remCa', 'atributos.tiro.remateCabeza'],
+            ['pasCor', 'atributos.pase.paseCorto'], ['pasLar', 'atributos.pase.paseLargo'], ['vis', 'atributos.pase.vision'], ['cen', 'atributos.pase.centros'],
+            ['mar', 'atributos.defensa.marcaje'], ['ent', 'atributos.defensa.entradas'], ['int', 'atributos.defensa.intercepciones'],
+            ['desp', 'atributos.defensa.despejes'], ['dueAr', 'atributos.defensa.duelosAereos'], ['col', 'atributos.defensa.colocacion'],
+            ['vel', 'atributos.fisico.velocidad'], ['ace', 'atributos.fisico.aceleracion'], ['agi', 'atributos.fisico.agilidad'],
+            ['fue', 'atributos.fisico.fuerza'], ['res', 'atributos.fisico.resistencia'], ['equi', 'atributos.fisico.equilibrio'], ['salt', 'atributos.fisico.salto'],
+            ['conc', 'atributos.mental.concentracion'], ['lid', 'atributos.mental.liderazgo'], ['agre', 'atributos.mental.agresividad'],
+            ['mot', 'atributos.mental.motivacion'], ['compBaPre', 'atributos.mental.composturaBajoPresion'],
+            ['ref', 'atributos.portero.reflejos'], ['para', 'atributos.portero.paradas'], ['est', 'atributos.portero.estirada'],
+            ['jueAr', 'atributos.portero.juegoAereo'], ['unoVSuno', 'atributos.portero.unoContraUno'], ['bloc', 'atributos.portero.blocaje'],
+            ['saq', 'atributos.portero.saque'], ['comu', 'atributos.portero.comunicacion'], ['penal', 'atributos.portero.penales']
         ];
 
         for (const [prefijo, rutaDB] of mapaAtributos) {
@@ -576,40 +549,33 @@ clubRouter.get('/traspasos/buscar/:partidaId', requireLogin, async (req, res) =>
 
             if (minVal || maxVal) {
                 mongoQuery[rutaDB] = {};
-                const valorMin = minVal ? minVal : 0;
-                const valorMax = maxVal ? maxVal : 99;
-                const esValido = esRangoValido(valorMin, valorMax, 0, 99)
-                if (esValido) {
-                    if (minVal) mongoQuery[rutaDB].$gte = valorMin;
-                    if (maxVal) mongoQuery[rutaDB].$lte = valorMax;
+                const valorMin = minVal ? parseInt(minVal) : 0;
+                const valorMax = maxVal ? parseInt(maxVal) : 99;
+
+                if (!esRangoValido(valorMin, valorMax, 0, 99)) {
+                    return renderizarConError('El atributo introducido está fuera del rango (0-99)');
                 }
-                else{
-                    return res.render('traspasos', {
-                        partida,
-                        clubUsuario,
-                        ojeadores: ojeadores,
-                        ligas: ligas,  
-                        clubes: clubes,
-                        listaObjetivos: clubUsuario.listaObjetivos,
-                        errorFiltros: 'El valor introducido esta fuera del rango'
-                    });   
-                }
+                if (minVal) mongoQuery[rutaDB].$gte = valorMin;
+                if (maxVal) mongoQuery[rutaDB].$lte = valorMax;
             }
         }
 
-        const jugadoresEncontrados = await Jugador.find(mongoQuery)
-            .populate('clubActual');
+        // Búsqueda de jugadores
+        const jugadoresEncontrados = await Jugador.find(mongoQuery).populate('clubActual');
 
-        res.render('resultados-busqueda', {
+        res.type('html');
+        return res.render('resultados-busqueda', {
             jugadores: jugadoresEncontrados,
             partida,
-            clubUsuario: await Club.findById(partida.clubSeleccionado)
+            clubUsuario 
         });
 
     } catch (err) {
-        res.status(500).send("Error en la búsqueda");
+        console.error("Error en la búsqueda de traspasos:", err);
+        return res.status(500).send("Error en la búsqueda");
     }
 });
+
 clubRouter.post('/listaObjetivos/aniadir/:tipo/:id', async (req, res) => {
     try {
         const esEmpleado = (req.params.tipo === 'empleado') ? Empleado : Jugador;

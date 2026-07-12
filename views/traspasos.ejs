@@ -24,7 +24,7 @@
         <div class="tab-pane fade show active" id="tab-buscador">
             <div class="card shadow-sm mb-4">
                 <div class="card-body bg-dark text-white rounded">
-                    <form action="/traspasos/buscar/<%= partida._id %>" method="GET" class="row g-3" novalidate>
+                    <form action="/traspasos/buscar" method="GET" class="row g-3" novalidate>
                         <% if (typeof errorFiltros !== 'undefined' && errorFiltros) { %>
                             <small class="text-danger d-block mt-1"><%= errorFiltros %></small>
                         <% } %>
@@ -401,7 +401,7 @@
 
                         <div class="col-12 text-end">
                             <button type="submit" class="btn btn-primary btn-sm px-4">Realizar Búsqueda</button>
-                            <a href="/traspasos/<%= partida._id %>" class="btn btn-secondary">Limpiar</a>
+                            <a href="/traspasos" class="btn btn-secondary">Limpiar</a>
                         </div>
                     </form>
                 </div>

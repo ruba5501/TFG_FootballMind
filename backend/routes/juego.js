@@ -316,8 +316,8 @@ router.get('/jugar_rapido/:idPartido', requireLogin, async (req, res) => {
         let equipoLocalUsuario = null;
         let equipoVisitanteUsuario = null;
 
-        // EJECUCIÓN PARALELA OPTIMIZADA PARA PARTIDO RÁPIDO
-        await Promise.all(partidosDeHoy.map(async (partido) => {
+        // DEFINIMOS E INYECTAMOS LAS PROMESAS CORRECTAMENTE
+        const promesasPartidos = partidosDeHoy.map(async (partido) => {
             let equipoLocalData = { id: partido.equipoLocal._id, nombre: partido.equipoLocal.nombre, jugadores: [], suplentes: [] };
             let equipoVisitanteData = { id: partido.equipoVisitante._id, nombre: partido.equipoVisitante.nombre, jugadores: [], suplentes: [] };
 
@@ -398,7 +398,6 @@ router.get('/jugar_rapido/:idPartido', requireLogin, async (req, res) => {
 
             partido.jugado = true;
             
-            // Guardamos el partido actual de forma paralela y limpia
             await partido.save();
             await Promise.all([
                 clubesDAO.limpiarConvocados(partido.equipoLocal._id),
@@ -410,8 +409,9 @@ router.get('/jugar_rapido/:idPartido', requireLogin, async (req, res) => {
                 equipoLocalUsuario = equipoLocalData;
                 equipoVisitanteUsuario = equipoVisitanteData;
             }
-        }));
+        });
 
+        // ESPERAMOS A QUE TERMINEN DE SIMULARSE TODOS LOS PARTIDOS DE VERDAD 🏁
         await Promise.all(promesasPartidos);
 
         if (!resultadoUsuario) {
@@ -443,7 +443,8 @@ router.get('/jugar_rapido/:idPartido', requireLogin, async (req, res) => {
             jugado: true
         }).populate('equipoLocal equipoVisitante');
 
-        res.render('resultadoPartido', {
+        res.type('html');
+        return res.render('resultadoPartido', {
             title: 'Resultado del Partido',  
             partida: partidaJuego,
             local: equipoLocalUsuario,
@@ -455,7 +456,7 @@ router.get('/jugar_rapido/:idPartido', requireLogin, async (req, res) => {
 
     } catch (error) {
         console.error("Error en la simulación diaria:", error);
-        res.status(500).send("Error al procesar la jornada");
+        return res.status(500).send("Error al procesar la jornada");
     }
 });
 
@@ -920,13 +921,14 @@ router.get('/estadisticas', requireLogin, async (req, res) => {
         res.status(500).send("Error al cargar la página de estadísticas");
     }
 });
-router.get('/clasificacion/:partidaId/:competicionId', requireLogin, async (req, res) => {
+router.get('/clasificacion/:competicionId', requireLogin, async (req, res) => {
     try {
-        const { partidaId, competicionId } = req.params;
+        const competicionId = req.params.competicionId;
+        const partidaId = req.session.partidaId;
         
         const partida = await Partida.findById(partidaId).populate('clubSeleccionado');
         const competicion = await Competicion.findById(competicionId);
-        if (!partida || !competicion) return res.redirect('/inicioJuego/' + partidaId);
+        if (!partida || !competicion) return res.redirect('/inicioJuego');
         const clubUsuario = partida.clubSeleccionado;
 
         const todosLosPartidos = await Partido.find({
@@ -1055,14 +1057,14 @@ router.get('/clasificacion/:partidaId/:competicionId', requireLogin, async (req,
 });
 
 // Ruta para ver el Cuadro de la Copa
-// --- CONTROLADOR CORREGIDO ---
-router.get('/copa/:partidaId/:competicionId', requireLogin, async (req, res) => {
+router.get('/copa/:competicionId', requireLogin, async (req, res) => {
     try {
-        const { partidaId, competicionId } = req.params;
+        const competicionId = req.params.competicionId;
+        const partidaId = req.session.partidaId;
         
         const partida = await Partida.findById(partidaId).populate('clubSeleccionado');
         const competicion = await Competicion.findById(competicionId);
-        if (!partida || !competicion) return res.redirect('/inicioJuego/' + partidaId);
+        if (!partida || !competicion) return res.redirect('/inicioJuego');
         const clubUsuario = partida.clubSeleccionado;
 
         const partidosCopa = await Partido.find({

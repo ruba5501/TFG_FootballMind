@@ -28,11 +28,11 @@
                         %>
 
                         <% if (mostrarClasificacion) { %>
-                            <a href="/clasificacion/<%= partida._id %>/<%= comp._id %>" class="btn btn-comp-action py-3 rounded-0">
+                            <a href="/clasificacion/<%= comp._id %>" class="btn btn-comp-action py-3 rounded-0">
                                 <i class="bi bi-list-ol me-2"></i>Ver Clasificación
                             </a>
                         <% } else { %>
-                            <a href="/copa/<%= partida._id %>/<%= comp._id %>" class="btn btn-comp-action py-3 rounded-0">
+                            <a href="/copa/<%= comp._id %>" class="btn btn-comp-action py-3 rounded-0">
                                 <i class="bi bi-diagram-3 me-2"></i>Ver Cuadro de Copa
                             </a>
                         <% } %>

@@ -44,18 +44,18 @@
                             <small class="text-dark"><%= proximoPartido.competicionId?.nombre || 'Competición' %></small>
                         </div>
                     <% } else if (proximoPartido) { %>
-                        <a href="/avanzar-fecha/<%= partida._id %>" class="btn btn-dark w-100 fw-bold shadow-sm mb-2" 
+                        <a href="/avanzar-fecha" class="btn btn-dark w-100 fw-bold shadow-sm mb-2" 
                         onclick="mostrarCarga('Avanzando un día...', 'Simulando resultados y mercado...')">
                             <i class="bi bi-step-forward-fill me-1"></i> AVANZAR DÍA
                         </a>
                         
-                        <a href="/avanzar-hasta-partido/<%= partida._id %>" class="btn btn-outline-dark w-100 fw-bold shadow-sm" 
+                        <a href="/avanzar-hasta-partido" class="btn btn-outline-dark w-100 fw-bold shadow-sm" 
                         onclick="mostrarCarga('Saltando días...', 'Simulando competiciones intermedias...')">
                             <i class="bi bi-fast-forward-fill me-1"></i> IR AL PRÓXIMO PARTIDO
                         </a>
 
                     <% } else { %>
-                        <a href="/avanzar-fecha/<%= partida._id %>" class="btn btn-secondary w-100 fw-bold shadow-sm">
+                        <a href="/avanzar-fecha" class="btn btn-secondary w-100 fw-bold shadow-sm">
                             <i class="bi bi-forward-fill me-1"></i> FINALIZAR TEMPORADA
                         </a>
                     <% } %>
@@ -70,8 +70,8 @@
                         <div class="card-body text-center p-4">
                             <h5 class="card-title fw-bold text-dark mb-3">Competiciones</h5>
                             <p class="text-muted small mb-4">Revisa la clasificación de liga y el avance en copa.</p>
-                            <a href="/mis-competiciones/<%= partida._id %>" class="btn btn-outline-dark w-100 mb-2">Ver Mis Competiciones</a>
-                            <a href="/calendario/<%= partida._id %>" class="btn btn-outline-dark w-100">Ver Calendario</a>
+                            <a href="/mis-competiciones" class="btn btn-outline-dark w-100 mb-2">Ver Mis Competiciones</a>
+                            <a href="/calendario" class="btn btn-outline-dark w-100">Ver Calendario</a>
                         </div>
                     </div>
                 </div>
@@ -80,8 +80,8 @@
                         <div class="card-body text-center p-4">
                             <h5 class="card-title fw-bold text-dark mb-3">Mi Plantilla</h5>
                             <p class="text-muted small mb-4">Gestiona las tácticas y revisa los atributos de tu equipo.</p>
-                            <a href="/formacion/<%= partida._id %>"" class="btn btn-outline-primary w-100 mb-2">Alineación y Tácticas</a>
-                            <a href="/empleados/<%= partida._id %>" class="btn btn-outline-primary w-100">Empleados</a>
+                            <a href="/formacion" class="btn btn-outline-primary w-100 mb-2">Alineación y Tácticas</a>
+                            <a href="/empleados" class="btn btn-outline-primary w-100">Empleados</a>
                         </div>
                     </div>
                 </div>

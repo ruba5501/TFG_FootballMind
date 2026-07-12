@@ -54,7 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
         contenedor.innerHTML = '<div class="text-center mt-5"><div class="spinner-border text-primary"></div><p class="text-white-50 mt-2">Cargando datos...</p></div>';
 
         try {
-            const res = await fetch(`${urlBase}/${partidaId}/${id}?ajax=true`);
+            const res = await fetch(`${urlBase}/${id}?ajax=true`);
             if (!res.ok) throw new Error('Error en la respuesta');
             const htmlCompleto = await res.text();
             

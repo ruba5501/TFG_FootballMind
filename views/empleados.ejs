@@ -79,7 +79,7 @@
         <div class="tab-pane fade" id="tab-buscadorEmpleados">
             <div class="card shadow-sm mb-4">
                 <div class="card-body bg-dark text-white rounded">
-                    <form action="/empleados/buscar/<%= partida._id %>" method="GET" class="row g-3" novalidate>
+                    <form action="/empleados/buscar" method="GET" class="row g-3" novalidate>
                         <% if (typeof errorFiltros !== 'undefined' && errorFiltros) { %>
                             <small class="text-danger d-block mt-1"><%= errorFiltros %></small>
                         <% } %>
@@ -259,7 +259,7 @@
                         </div>
                         <div class="col-12 text-end">
                             <button type="submit" class="btn btn-primary btn-sm px-4">Realizar Búsqueda</button>
-                            <a href="/empleados/<%= partida._id %>" class="btn btn-secondary">Limpiar</a>
+                            <a href="/empleados" class="btn btn-secondary">Limpiar</a>
                         </div>
                     </form>
                 </div>

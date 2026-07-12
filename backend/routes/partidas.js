@@ -349,28 +349,30 @@ partidaRouter.get('/partida', requireLogin, async (req, res) => {
     }
 });
 // RUTA: SOLO GUARDAR
-partidaRouter.get('/guardar/:id', requireLogin, async (req, res) => {
+partidaRouter.get('/guardar', requireLogin, async (req, res) => {
     try {
-        await partidaDAO.actualizarPartida(req.params.id, {}); 
+        const partidaId = req.session.partidaId;
+        await partidaDAO.actualizarPartida(partidaId, {}); 
         const partida = await partidaDAO.obtenerPartidaPorId(req.params.id);
         res.render('menuSalidaPartida', { partida, mensaje: "¡Partida guardada con éxito!" });
     } catch (error) {
-        res.redirect('/inicioJuego/' + req.params.id);
+        res.redirect('/inicioJuego');
     }
 });
 // RUTA: GUARDAR Y SALIR
-partidaRouter.get('/guardar-y-salir/:id', requireLogin, async (req, res) => {
+partidaRouter.get('/guardar-y-salir', requireLogin, async (req, res) => {
     try {
-        await partidaDAO.actualizarPartida(req.params.id, {});
+        const partidaId = req.session.partidaId;
+        await partidaDAO.actualizarPartida(partidaId, {});
         res.redirect('/opcionPartida');
     } catch (error) {
         res.redirect('/opcionPartida');
     }
 });
 
-partidaRouter.get('/avanzar-fecha/:id', requireLogin, async (req, res) => {
+partidaRouter.get('/avanzar-fecha', requireLogin, async (req, res) => {
     try {
-        const partidaId = req.params.id;
+        const partidaId = req.session.partidaId;
         const partida = await partidaDAO.obtenerPartidaPorId(partidaId);
         
         if (!partida) return res.redirect('/listarPartidas');
@@ -405,9 +407,9 @@ function calcularDiferenciaDias(fechaInicio, fechaFin) {
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 }
 
-partidaRouter.get('/avanzar-hasta-partido/:id', requireLogin, async (req, res) => {
+partidaRouter.get('/avanzar-hasta-partido', requireLogin, async (req, res) => {
     try {
-        const partidaId = req.params.id;
+        const partidaId = req.session.partidaId;
         const partida = await partidaDAO.obtenerPartidaPorId(partidaId);
         if (!partida) return res.redirect('/listarPartidas');
 

@@ -105,7 +105,6 @@
 
 <script>
     const FORMACIONES_DATA = JSON.parse('<%- JSON.stringify(formaciones) %>');
-    const CLUB_ID = '<%= clubUsuario._id %>';
 
     document.addEventListener('DOMContentLoaded', () => {
         // Inicializa el campo de fútbol visual
@@ -128,7 +127,7 @@
     // Función limpia para salvar la estrategia
     function guardarTodo() {
         if (typeof GestorTactico !== 'undefined') {
-            GestorTactico.guardarCambios(CLUB_ID);
+            GestorTactico.guardarCambios();
         }
     }
 </script>

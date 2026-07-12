@@ -144,15 +144,31 @@ const esRangoValido = (valorMin, valorMax, min, max) => {
     return true;
 }
 
-empleadoRouter.get('/empleados/buscar/:partidaId', requireLogin, async (req, res) => {
+empleadoRouter.get('/empleados/buscar', requireLogin, async (req, res) => {
     try {
-        const partida = await partidasDAO.obtenerPartidaPorId(req.params.partidaId);
+        const partidaId = req.session.partidaId;
+        if (!partidaId) return res.redirect('/partidas');
+
+        const partida = await partidasDAO.obtenerPartidaPorId(partidaId);
+        if (!partida) return res.status(404).send("Partida no encontrada");
+
         const filtros = req.query;
-        const ligas = await Competicion.find({ 
-            tipo: 'liga',
-            partidaId: partida._id,
-        }).select('nombre').lean();
-        const filial = await Club.findOne({ clubMatriz: partida.clubSeleccionado }).select('_id');
+
+        // Consultas iniciales optimizadas en paralelo
+        const [ligas, filial, clubUsuario] = await Promise.all([
+            Competicion.find({ tipo: 'liga', partidaId: partida._id }).select('nombre').lean(),
+            Club.findOne({ clubMatriz: partida.clubSeleccionado }).select('_id'),
+            Club.findById(partida.clubSeleccionado)
+                .populate('empleados')
+                .populate({
+                    path: 'listaObjetivosEmpleados',
+                    populate: { path: 'clubActual', select: 'nombre escudo' }
+                })
+        ]);
+
+        if (!clubUsuario) return res.status(404).send("Club del usuario no encontrado");
+
+        // Cargar clubes (excluyendo usuario y filial)
         const clubes = await Club.find({
             _id: { 
                 $ne: partida.clubSeleccionado,
@@ -160,17 +176,25 @@ empleadoRouter.get('/empleados/buscar/:partidaId', requireLogin, async (req, res
             },
             partidaId: partida._id,
         }).lean();
-        const clubUsuario = await Club.findById(partida.clubSeleccionado).populate('empleados').populate({
-            path: 'listaObjetivosEmpleados',
-            populate: { path: 'clubActual', select: 'nombre escudo' }
-        });
-        const ojeadores = clubUsuario.empleados.filter(emp => 
-            emp.tipo === 'ojeador' 
-        );
-        
 
+        const ojeadores = clubUsuario.empleados.filter(emp => emp.tipo === 'ojeador');
+
+        // Función auxiliar local para evitar repetir el res.render en caso de error en los rangos
+        const renderizarConError = (mensajeError) => {
+            return res.render('empleados', {
+                partida,
+                clubUsuario,
+                ojeadores,
+                ligas,  
+                clubes,
+                listaObjetivos: clubUsuario.listaObjetivosEmpleados,
+                errorFiltros: mensajeError
+            });
+        };
+
+        // Construcción de la Query de MongoDB
         let mongoQuery = { 
-            partidaId: req.params.partidaId,
+            partidaId: partidaId,
             clubActual: { 
                 $ne: partida.clubSeleccionado,
                 $not: { $eq: filial ? filial._id : null }
@@ -181,45 +205,32 @@ empleadoRouter.get('/empleados/buscar/:partidaId', requireLogin, async (req, res
         
         if (filtros.clubId && filtros.clubId !== "") {
             mongoQuery.clubActual = filtros.clubId;
-        }
-        else if (filtros.liga && filtros.liga !== "") {
+        } else if (filtros.liga && filtros.liga !== "") {
             const clubesEnLiga = await Club.find({ 
                 competiciones: filtros.liga,
-                _id: { 
-                    $ne: partida.clubSeleccionado, 
-                    $not: { $eq: filial ? filial._id : null }
-                }
+                _id: { $ne: partida.clubSeleccionado, $not: { $eq: filial ? filial._id : null } }
             }).select('_id').lean();
-            const idsClubes = clubesEnLiga.map(c => c._id);
             
-            mongoQuery.clubActual = { $in: idsClubes };
+            mongoQuery.clubActual = { $in: clubesEnLiga.map(c => c._id) };
         }
+
         if (filtros.cargo) mongoQuery.tipo = filtros.cargo;
         if (filtros.estado) mongoQuery.estado = filtros.estado;
         
-        
+        // Validación de Edad
         if (filtros.edadMin || filtros.edadMax) {
             mongoQuery.edad = {};
             const valorMin = filtros.edadMin ? parseInt(filtros.edadMin) : 0;
             const valorMax = filtros.edadMax ? parseInt(filtros.edadMax) : 100;
-            const esValido = esRangoValido(valorMin, valorMax, 0, 100)
-            if (esValido) {
-                if (filtros.edadMin) mongoQuery.edad.$gte = valorMin;
-                if (filtros.edadMax) mongoQuery.edad.$lte = valorMax;
+            
+            if (!esRangoValido(valorMin, valorMax, 0, 100)) {
+                return renderizarConError('El valor de edad introducido está fuera del rango');
             }
-            else{
-                return res.render('empleados', {
-                    partida,
-                    clubUsuario,
-                    ojeadores: ojeadores,
-                    ligas: ligas,  
-                    clubes: clubes,
-                    listaObjetivos: clubUsuario.listaObjetivosEmpleados,
-                    errorFiltros: 'El valor introducido esta fuera del rango'
-                });   
-             }
+            if (filtros.edadMin) mongoQuery.edad.$gte = valorMin;
+            if (filtros.edadMax) mongoQuery.edad.$lte = valorMax;
         }
 
+        // Mapeo dinámico de Atributos de los Empleados
         const mapaAtributos = [
             ['nivFis', 'atributos.nivelFisico'],
             ['nivTec', 'atributos.nivelTecnico'],
@@ -243,40 +254,33 @@ empleadoRouter.get('/empleados/buscar/:partidaId', requireLogin, async (req, res
 
             if (minVal || maxVal) {
                 mongoQuery[rutaDB] = {};
-                const valorMin = minVal ? minVal : 0;
-                const valorMax = maxVal ? maxVal : 99;
-                const esValido = esRangoValido(valorMin, valorMax, 0, 99)
-                if (esValido) {
-                    if (minVal) mongoQuery[rutaDB].$gte = valorMin;
-                    if (maxVal) mongoQuery[rutaDB].$lte = valorMax;
+                const valorMin = minVal ? parseInt(minVal) : 0;
+                const valorMax = maxVal ? parseInt(maxVal) : 99;
+
+                if (!esRangoValido(valorMin, valorMax, 0, 99)) {
+                    return renderizarConError('El atributo introducido está fuera del rango (0-99)');
                 }
-                else{
-                    return res.render('empleados', {
-                        partida,
-                        clubUsuario,
-                        ojeadores: ojeadores,
-                        ligas: ligas,  
-                        clubes: clubes,
-                        listaObjetivos: clubUsuario.listaObjetivosEmpleados,
-                        errorFiltros: 'El valor introducido esta fuera del rango'
-                    });   
-                }
+                if (minVal) mongoQuery[rutaDB].$gte = valorMin;
+                if (maxVal) mongoQuery[rutaDB].$lte = valorMax;
             }
         }
 
-        const empleadosEncontrados = await Empleado.find(mongoQuery)
-            .populate('clubActual');
+        // Búsqueda de empleados
+        const empleadosEncontrados = await Empleado.find(mongoQuery).populate('clubActual');
 
-        res.render('resultadosBusquedaEmpleados', {
+        res.type('html');
+        return res.render('resultadosBusquedaEmpleados', {
             empleados: empleadosEncontrados,
             partida,
-            clubUsuario: await Club.findById(partida.clubSeleccionado)
+            clubUsuario
         });
 
     } catch (err) {
-        res.status(500).send("Error en la búsqueda");
+        console.error("Error en la búsqueda de empleados:", err);
+        return res.status(500).send("Error en la búsqueda");
     }
 });
+
 empleadoRouter.get('/empleado/detalle/:empleadoId', requireLogin, async (req, res) => {
     try {
         const empleado = await empleadosDAO.buscarEmpleadoPorId(req.params.empleadoId);   

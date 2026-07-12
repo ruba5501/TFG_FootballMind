@@ -194,7 +194,7 @@ const GestorTactico = {
         this.dibujarAlineacion(document.getElementById('selector-formacion').value);
     },
 
-    guardarCambios: async function(clubId) {
+    guardarCambios: async function() {
         // 1. Obtener los elementos de cada sección de forma independiente
         const titulares = Array.from(document.querySelectorAll('#lista-titulares .jugador-item'));
         const suplentes = Array.from(document.querySelectorAll('#lista-suplentes .jugador-item'));
@@ -240,7 +240,7 @@ const GestorTactico = {
         const formacion = document.getElementById('selector-formacion').value;
         
         try {
-            const response = await fetch(`/guardarAlineacion/${clubId}`, {
+            const response = await fetch(`/guardarAlineacion`, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({ nuevaPlantilla: nuevaPlantilla, formacion: formacion })
@@ -260,12 +260,12 @@ const GestorTactico = {
         }
     },
 
-    guardarRoles: async function(clubId) {
+    guardarRoles: async function() {
         const form = document.getElementById('formRoles');
         const formData = new FormData(form);
         const datos = Object.fromEntries(formData.entries());
         try {
-            const response = await fetch(`/actualizarRoles/${clubId}`, {
+            const response = await fetch(`/actualizarRoles`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(datos)
@@ -294,9 +294,9 @@ const GestorTactico = {
         }
     },
 
-    guardarEstiloMentalidad: async function(clubId, estilo, mentalidad) {
+    guardarEstiloMentalidad: async function(estilo, mentalidad) {
         try {
-            const response = await fetch(`/guardarTactica/${clubId}`, {
+            const response = await fetch(`/guardarTactica`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ estiloJuego: estilo, mentalidad: mentalidad })
