@@ -149,9 +149,11 @@ if (typeof j !== 'undefined' && j) {
                 <i class="bi bi-bar-chart-fill" style="font-size: 0.75rem;"></i>
             </button>
 
-            <button type="button" class="btn btn-sm btn-outline-danger ms-1 p-1" style="line-height:1;" title="Enviar a reservas" onclick="event.stopPropagation(); GestorTactico.desconvocarJugador(this.closest('.jugador-item'))">
-                <i class="bi bi-box-arrow-down" style="font-size: 0.75rem;"></i>
-            </button>
+            <% if (typeof partidoBBDD === 'undefined' || !partidoBBDD) { %>
+                <button type="button" class="btn btn-sm btn-outline-danger ms-1 p-1" style="line-height:1;" title="Enviar a reservas" onclick="event.stopPropagation(); GestorTactico.desconvocarJugador(this.closest('.jugador-item'))">
+                    <i class="bi bi-box-arrow-down" style="font-size: 0.75rem;"></i>
+                </button>
+            <% } %>
         </li>
 <% 
     }
