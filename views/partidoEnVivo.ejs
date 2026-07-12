@@ -5,16 +5,16 @@
         
         <div class="col-12 col-md-6 col-lg-3 order-2 order-lg-1">
             <div class="card shadow-sm border-0 h-100">
-                <div class="card-header bg-dark text-white fw-bold d-flex align-items-center justify-content-between">
+                <div class="card-header bg-black text-white fw-bold d-flex align-items-center justify-content-between">
                     <span class="text-truncate me-2"><%= local.nombre %></span>
                     <span class="badge <%= esLocalUser ? 'bg-info' : 'bg-secondary' %> flex-shrink-0"><%= esLocalUser ? 'Mánager' : 'IA' %></span>
                 </div>
                 <div class="list-group list-group-flush" id="listaTitularesLocal">
                     <% local.jugadores.forEach((j, index) => { %>
-                        <div class="list-group-item d-flex justify-content-between align-items-center jugador-item-Fijo p-2 small" data-id="<%= j._id %>">
+                        <div class="list-group-item d-flex bg-dark justify-content-between align-items-center jugador-item-Fijo p-2 small" data-id="<%= j._id %>">
                             <div class="text-truncate me-2">
                                 <span class="badge bg-secondary text-white me-1 text-center" style="width: 24px;"><%= j.dorsal || (index + 1) %></span>
-                                <strong class="text-dark target-nombre-jugador text-truncate"><%= j.nombre %></strong>
+                                <strong class="text-white target-nombre-jugador text-truncate"><%= j.nombre %></strong>
                                 <span class="badge bg-light text-dark border ms-1 target-posicion"><%= j.posicionPrincipal || j.posicion %></span>
                             </div>
                             <span class="badge bg-success-subtle text-success border border-success-subtle flex-shrink-0"><%= j.atributos?.forma ?? 100 %>%</span>
@@ -77,16 +77,16 @@
 
         <div class="col-12 col-md-6 col-lg-3 order-3">
             <div class="card shadow-sm border-0 h-100">
-                <div class="card-header bg-dark text-white fw-bold d-flex align-items-center justify-content-between">
+                <div class="card-header bg-black text-white fw-bold d-flex align-items-center justify-content-between">
                     <span class="text-truncate me-2"><%= visitante.nombre %></span>
                     <span class="badge <%= !esLocalUser ? 'bg-info' : 'bg-secondary' %> flex-shrink-0"><%= !esLocalUser ? 'Mánager' : 'IA' %></span>
                 </div>
                 <div class="list-group list-group-flush" id="listaTitularesVisitante">
                     <% visitante.jugadores.forEach((j, index) => { %>
-                        <div class="list-group-item d-flex justify-content-between align-items-center jugador-item-FFixed p-2 small" data-id="<%= j._id %>">
+                        <div class="list-group-item d-flex bg-dark justify-content-between align-items-center jugador-item-FFixed p-2 small" data-id="<%= j._id %>">
                             <div class="text-truncate me-2">
                                 <span class="badge bg-secondary text-white me-1 text-center" style="width: 24px;"><%= j.dorsal || (index + 1) %></span>
-                                <strong class="text-dark text-truncate"><%= j.nombre %></strong>
+                                <strong class="text-white text-truncate"><%= j.nombre %></strong>
                                 <span class="badge bg-light text-dark border ms-1"><%= j.posicionPrincipal || j.posicion %></span>
                             </div>
                             <span class="badge bg-success-subtle text-success border border-success-subtle flex-shrink-0"><%= j.atributos?.forma ?? 100 %>%</span>

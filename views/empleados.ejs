@@ -38,7 +38,12 @@
                                                     <h6 class="fw-bold"><%= emp.nombre %></h6>
                                                     <small class="text-muted"><%= emp.tipo %></small>
                                                     <div class="mt-2">
-                                                        <button class="btn btn-outline-info btn-sm" onclick="verAtributosEmpleado('<%= emp._id %>')">
+                                                        <button class="btn btn-outline-info btn-sm" 
+                                                            onclick="verAtributosEmpleado('<%= emp._id %>', { 
+                                                                nombre: '<%= emp.nombre %>', 
+                                                                nacionalidad: '<%= emp.nacionalidad %>',
+                                                                tipo: '<%= emp.tipo %>'
+                                                            })">
                                                             Detalles
                                                         </button>
                                                         <% if (emp.negociacionActiva) { %>

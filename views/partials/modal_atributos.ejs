@@ -1,7 +1,15 @@
 <div class="modal fade" id="modalAtributos" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg">
-        <div class="modal-content bg-dark text-white"> 
-            <div class="modal-body p-0">
+        <div class="modal-content bg-dark text-white border-secondary"> 
+            <div class="modal-header border-secondary d-flex flex-column align-items-start pb-2">
+                <div class="d-flex justify-content-between w-100 align-items-center">
+                    <h5 class="modal-title fw-bold" id="modalAtributosNombre"></h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="d-flex flex-wrap gap-2 mt-1 small text-white" id="modalAtributosSubtitulo">
+                </div>
+            </div>
+            <div class="modal-body pt-4">
                 <div id="contenidoModalJugador"></div>
             </div>
             <div class="modal-footer bg-dark">

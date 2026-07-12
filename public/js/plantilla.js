@@ -1038,9 +1038,19 @@ function verAtributos(jugadorId) {
                 contenedor.innerHTML = `<div class="p-3">${html}</div>`;
             });
 }
-function verAtributosEmpleado(empleadoId) {
+function verAtributosEmpleado(empleadoId, datos) {
     const contenedor = document.getElementById('contenidoModalJugador');
     
+    const nac = datos.nacionalidad;
+    document.getElementById('modalAtributosNombre').innerText = datos.nombre || 'Empleado';
+    document.getElementById('modalAtributosSubtitulo').innerHTML = `
+        <span class="d-inline-flex align-items-center gap-1">
+            ${nac}
+            <img src="/img/banderas/${nac}.png" alt="${nac}" class="shadow-sm" style="height: 14px; width: auto; vertical-align: middle; border-radius: 2px;">
+        </span>
+        <span class="badge bg-secondary text-uppercase">${datos.tipo}</span>
+    `;
+
     contenedor.innerHTML = `
         <div class="text-center p-5">
             <div class="spinner-border text-primary" role="status"></div>

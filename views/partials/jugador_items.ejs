@@ -145,7 +145,15 @@ if (typeof j !== 'undefined' && j) {
                 </div>  
             </div>
 
-            <button type="button" class="btn btn-sm btn-outline-info ms-2 p-1" style="line-height:1;" title="Ver atributos" onclick="event.stopPropagation(); GestorTactico.verAtributos('<%= j._id %>')">
+            <button type="button" class="btn btn-sm btn-outline-info ms-2 p-1" style="line-height:1;" title="Ver atributos" onclick="event.stopPropagation(); 
+                GestorTactico.verAtributos('<%= j._id %>', { 
+                    nombre: '<%= j.nombre %>', 
+                    nacionalidad: '<%= j.nacionalidad %>', 
+                    altura: '<%= j.altura %>', 
+                    peso: '<%= j.peso %>', 
+                    valoracion: '<%= j.valoracion %>', 
+                    potencial: '<%= j.potencial %>' 
+                })">
                 <i class="bi bi-bar-chart-fill" style="font-size: 0.75rem;"></i>
             </button>
 

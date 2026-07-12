@@ -326,8 +326,24 @@ const GestorTactico = {
         );
     },
     
-    verAtributos: function(jugadorId) {
+    verAtributos: function(jugadorId, datos) {
         const contenedor = document.getElementById('contenidoModalJugador');
+        
+        const nac = datos.nacionalidad;
+        document.getElementById('modalAtributosNombre').innerText = datos.nombre || 'Jugador';
+        document.getElementById('modalAtributosSubtitulo').innerHTML = `
+            <span class="d-inline-flex align-items-center gap-1">
+                ${nac}
+                <img src="/img/banderas/${nac}.png" alt="${nac}" class="shadow-sm" style="height: 14px; width: auto; vertical-align: middle; border-radius: 2px;">
+            </span>
+            <span class="text-secondary">|</span>
+            <span>${datos.altura || '--'} cm</span>
+            <span class="text-secondary">|</span>
+            <span>${datos.peso || '--'} kg</span>
+            <span class="ms-auto badge bg-primary fw-bold">MEDIA: ${datos.valoracion || 0}</span>
+            <span class="badge bg-info text-dark fw-bold">POT: ${datos.potencial || 0}</span>
+        `;
+
         contenedor.innerHTML = '<div class="text-center p-5"><div class="spinner-border"></div></div>';
         const bsModal = bootstrap.Modal.getOrCreateInstance(document.getElementById('modalAtributos'));
         bsModal.show();
