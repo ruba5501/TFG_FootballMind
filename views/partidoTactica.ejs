@@ -17,7 +17,7 @@
                     </div>
                 </div>
 
-                <div class="card-body p-0 d-flex justify-content-center bg-dark rounded border border-secondary py-3">
+                <div class="card-body p-0">
                     <div id="campo-futbol" class="pitch static-pitch">
                         <div class="mid-line"></div>
                         <div class="area-top"></div>
@@ -79,10 +79,27 @@
                 </div>
                 
                 <div class="p-2 bg-primary text-white small fw-bold"> TITULARES (Pulsa uno para seleccionar e intercambiar)</div>
-                <ul class="list-group list-group-flush list-modal-tactica" id="listaTitulares">
+                <ul class="list-group list-group-flush list-modal-tactica" id="lista-titulares">
                     <% if (equipoUser.jugadores && equipoUser.jugadores.length > 0) { %>
-                        <% equipoUser.jugadores.forEach(j => { %>
-                            <%- include('partials/jugador_items', { j, esTitular: true, competicionActual: partidoBBDD.competicionId }) %>
+                        <% 
+                            const esquemaPosiciones = formaciones[tacticaInicial].posiciones; 
+                        %>
+                        <% equipoUser.jugadores.forEach((j, index) => { %>
+                            <% const rolDelHueco = esquemaPosiciones[index]; %>
+                            
+                            <div class="d-flex align-items-center bg-dark border-bottom border-secondary px-2 fila-tactica-fija">
+                                
+                                <div class="col-auto text-center me-2 label-posicion-fija" data-index="<%= index %>">
+                                    <span class="badge bg-warning text-dark fw-bold badge-posicion-tactica" style="min-width: 48px; font-size: 0.8rem; display: inline-block;">
+                                        <%= rolDelHueco %>
+                                    </span>
+                                </div>
+                                
+                                <div class="flex-grow-1 style-jugador-container">
+                                    <%- include('partials/jugador_items', { j, esTitular: true, competicionActual: partidoBBDD.competicionId }) %>
+                                </div>
+                                
+                            </div>
                         <% }) %>
                     <% } else { %>
                         <div class="list-group-item bg-dark text-muted text-center small">Sin titulares configurados</div>
@@ -90,7 +107,7 @@
                 </ul>
 
                 <div class="p-2 bg-info text-dark small fw-bold"> BANQUILLO / SUPLENTES</div>
-                <ul class="list-group list-group-flush" id="listaSuplentes">
+                <ul class="list-group list-group-flush" id="lista-suplentes">
                     <% if (equipoUser.suplentes && equipoUser.suplentes.length > 0) { %>
                         <% equipoUser.suplentes.forEach(j => { %>
                             <%- include('partials/jugador_items', { j, esTitular: false, competicionActual: partidoBBDD.competicionId }) %>
@@ -127,7 +144,7 @@
         const esquemaActual = $('#selector-formacion').val();
         if (typeof GestorTactico !== 'undefined') {
             GestorTactico.init(esquemaActual, FORMACIONES_DATA);
-            GestorTactico.dibujarAlineacion(esquemaActual);
+            //GestorTactico.dibujarAlineacion(esquemaActual);
         }
 
         $('#btnGuardarEstrategia').on('click', function() {
@@ -135,7 +152,7 @@
             const estiloFinal = $('#selectEstilo').val();
             const mentalidadFinal = $('#selectMentalidad').val();
 
-            const titularesIds = Array.from(document.querySelectorAll('#listaTitulares .jugador-item'))
+            const titularesIds = Array.from(document.querySelectorAll('#lista-titulares .jugador-item'))
                 .map(li => {
                     const id = li.getAttribute('data-id');
                     return id === 'vacio' ? null : id;
