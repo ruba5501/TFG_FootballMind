@@ -676,43 +676,160 @@ router.post('/partido-en-vivo/:idPartido/tick', requireLogin, async (req, res) =
             return res.status(400).json({ success: false, message: "No hay ninguna simulación activa en sesión." });
         }
 
-        // Si ya se completó el partido en un tick anterior, devolvemos el estado final
+        // Si ya se completó el partido en un tick anterior
         if (sim.completado) {
             return res.json({ terminado: true, marcador: sim.estadoMarcador });
         }
 
-        // 1. Avanzar un minuto
-        sim.minutoActual += 1;
-
-        // 2. Determinar el límite del tiempo reglamentario según el tipo
-        let limiteMinutos = 90;
-        const requiereProrroga = sim.tipo === 'FINAL' || sim.tipo === 'ELIMINATORIA';
-        
-        if (sim.enProrroga) {
-            limiteMinutos = 120;
+        // --- INICIALIZACIÓN DE VARIABLES DE CONTROL EN LA SESIÓN (si no existen) ---
+        if (sim.tiempoAnadido === undefined) sim.tiempoAnadido = 0;
+        if (sim.minutoAdicionalActual === undefined) sim.minutoAdicionalActual = 0;
+        if (sim.estadoPausa === undefined) sim.estadoPausa = null; // 'DESCANSO', 'FIN_REGULAR', 'DESCANSO_PRORROGA', 'PENALTIS'
+        if (sim.tandaPenaltis === undefined) {
+            sim.tandaPenaltis = {
+                activo: false,
+                turnoLocal: true,
+                disparosLocal: [],     // Array de strings: 'GOL' o 'FALLO'
+                disparosVisitante: [], // Array de strings: 'GOL' o 'FALLO'
+                golesLocal: 0,
+                golesVisitante: 0,
+                finalizada: false
+            };
         }
 
-        // 3. Mapear el estado actual de la sesión al formato que espera tu "simularTramoMinutos"
+        // --- 1. MANEJO EXCLUSIVO DE LA TANDA DE PENALTIS (TIRO A TIRO) ---
+        if (sim.tandaPenaltis.activo) {
+            const tanda = sim.tandaPenaltis;
+            const anotado = Math.random() < 0.75 ? 'GOL' : 'FALLO'; // 75% probabilidad de acierto
+
+            let eventoPenalti = {
+                tipo: 'PENALTI_DISPARO',
+                esLocal: tanda.turnoLocal,
+                resultado: anotado
+            };
+
+            if (tanda.turnoLocal) {
+                tanda.disparosLocal.push(anotado);
+                if (anotado === 'GOL') tanda.golesLocal++;
+                tanda.turnoLocal = false;
+                eventoPenalti.texto = `¡Dispara ${sim.local.nombre}... y es ${anotado}!`;
+            } else {
+                tanda.disparosVisitante.push(anotado);
+                if (anotado === 'GOL') tanda.golesVisitante++;
+                tanda.turnoLocal = true;
+                eventoPenalti.texto = `¡Dispara ${sim.visitante.nombre}... y es ${anotado}!`;
+            }
+
+            // Comprobamos si la tanda ha terminado (mínimo 5 tiros o muerte súbita)
+            const nL = tanda.disparosLocal.length;
+            const nV = tanda.disparosVisitante.length;
+            const gL = tanda.golesLocal;
+            const gV = tanda.golesVisitante;
+
+            let terminado = false;
+            if (nL >= 5 && nV >= 5) {
+                if (nL === nV && gL !== gV) {
+                    terminado = true;
+                }
+            } else {
+                // Ganador matemático antes de los 5 tiros
+                if (gL > gV + (5 - nV)) terminado = true;
+                if (gV > gL + (5 - nL)) terminado = true;
+            }
+
+            if (terminado) {
+                tanda.finalizada = true;
+                sim.completado = true;
+                sim.ganadorPenaltis = gL > gV ? sim.local._id : sim.visitante._id;
+                sim.marcadorTanda = { golesLocal: gL, golesVisitante: gV };
+
+                // Guardamos en MongoDB
+                const partidoBBDD = await Partido.findById(idPartido);
+                if (partidoBBDD) {
+                    partidoBBDD.golesLocal = sim.estadoMarcador.golesLocal;
+                    partidoBBDD.golesVisitante = sim.estadoMarcador.golesVisitante;
+                    partidoBBDD.jugado = true;
+                    partidoBBDD.ganadorPenaltis = sim.ganadorPenaltis;
+                    partidoBBDD.marcadorTanda = sim.marcadorTanda;
+                    await partidoBBDD.save();
+                }
+            }
+
+            req.session.partidoEnVivo = sim; // Guardar sesión
+            return res.json({
+                success: true,
+                esPenaltis: true,
+                tanda: tanda,
+                evento: { tipo: 'INFO', texto: eventoPenalti.texto },
+                terminado: terminado
+            });
+        }
+
+        // --- 2. LOGICA DEL MINUTO DE JUEGO (REGULAR / PRÓRROGA) ---
+        let limiteMinutos = sim.enProrroga ? 120 : 90;
+        let minutoHito = sim.enProrroga ? 105 : 45;
+        const requiereProrroga = sim.tipo === 'FINAL' || sim.tipo === 'ELIMINATORIA';
+
+        // Si el usuario acaba de reanudar tras una pausa de descanso o fin de tramo
+        if (sim.estadoPausa === 'DESCANSO') {
+            sim.estadoPausa = null;
+            sim.tiempoAnadido = 0;
+            sim.minutoAdicionalActual = 0;
+            sim.minutoActual = 46; // Salto a la segunda mitad
+        } else if (sim.estadoPausa === 'FIN_REGULAR_ESPERA_PRORROGA') {
+            sim.estadoPausa = null;
+            sim.tiempoAnadido = 0;
+            sim.minutoAdicionalActual = 0;
+            sim.enProrroga = true;
+            sim.minutoActual = 91; // Empieza prórroga
+            limiteMinutos = 120;
+            minutoHito = 105;
+        } else if (sim.estadoPausa === 'DESCANSO_PRORROGA') {
+            sim.estadoPausa = null;
+            sim.tiempoAnadido = 0;
+            sim.minutoAdicionalActual = 0;
+            sim.minutoActual = 106; // Empieza segunda parte de prórroga
+        }
+
+        // Comprobamos si hay que avanzar tiempo reglamentario o tiempo añadido
+        let simulandoMinutoEfectivo = sim.minutoActual;
+        let esDescuentoActivo = false;
+
+        if (sim.minutoActual === minutoHito || sim.minutoActual === limiteMinutos) {
+            // Inicializar añadido para el tramo actual si no existe
+            if (sim.tiempoAnadido === 0) {
+                sim.tiempoAnadido = Math.floor(Math.random() * 4) + 1; // 1 a 4 minutos de descuento
+            }
+
+            if (sim.minutoAdicionalActual < sim.tiempoAnadido) {
+                sim.minutoAdicionalActual += 1;
+                esDescuentoActivo = true;
+                simulandoMinutoEfectivo = sim.minutoActual; // Se sigue simulando bajo la fatiga del minuto límite
+            }
+        } else {
+            sim.minutoActual += 1;
+            simulandoMinutoEfectivo = sim.minutoActual;
+        }
+
+        // --- 3. EJECUTAR TICK DE SIMULACIÓN EN EL MOTOR ---
         let estadoEstructuraMotor = {
             golesLocal: sim.estadoMarcador.golesLocal,
             golesVisitante: sim.estadoMarcador.golesVisitante,
             posesionLocal: sim.estadoMarcador.posesionLocal ?? 50,
             momentumLocal: sim.estadoMarcador.momentumLocal ?? 0,
             momentumVisitante: sim.estadoMarcador.momentumVisitante ?? 0,
-            eventos: [] // Aquí tu motor inyectará los eventos generados SOLO en este minuto
+            eventos: []
         };
 
-        // Importante: requerir o importar tus funciones del motor de simulación
-        // En tu caso, llamamos a simularTramoMinutos para el minuto exacto en el que estamos
         const resultadoTick = simularTramoMinutos(
             sim.local, 
             sim.visitante, 
-            sim.minutoActual, 
-            sim.minutoActual, 
+            simulandoMinutoEfectivo, 
+            simulandoMinutoEfectivo, 
             estadoEstructuraMotor
         );
 
-        // 4. Actualizamos el estado de la sesión con lo calculado por tu motor
+        // Actualizamos sesión
         sim.estadoMarcador.golesLocal = resultadoTick.golesLocal;
         sim.estadoMarcador.golesVisitante = resultadoTick.golesVisitante;
         sim.estadoMarcador.posesionLocal = resultadoTick.posesionLocal;
@@ -721,58 +838,54 @@ router.post('/partido-en-vivo/:idPartido/tick', requireLogin, async (req, res) =
 
         let eventoOcurrido = null;
         if (resultadoTick.eventos && resultadoTick.eventos.length > 0) {
-            eventoOcurrido = resultadoTick.eventos[0]; 
-            // Guardamos el evento en el historial del partido en sesión
+            eventoOcurrido = resultadoTick.eventos[0];
             sim.estadoMarcador.eventos.push(eventoOcurrido);
         }
 
+        // --- 4. GESTIÓN DE LÍMITES Y TRÁNSITOS DE ESTADO (DESCUENTOS COMPLETADOS) ---
+        let pausaDetectada = null;
         let partidoTerminado = false;
-        let eventosTandaPenaltis = null;
 
-        // 5. CONTROL DE FIN DE PARTIDO, PRÓRROGAS Y TANDA DE PENALTIS (Usando tus reglas del motor)
-        if (sim.minutoActual === limiteMinutos) {
-            
-            // Caso A: Empate al minuto 90 en torneo con eliminación directa -> Prórroga
-            if (sim.minutoActual === 90 && requiereProrroga && sim.estadoMarcador.golesLocal === sim.estadoMarcador.golesVisitante) {
-                
+        // Si ya completamos el descuento del minuto de hito (45 o 105)
+        if (sim.minutoActual === minutoHito && sim.minutoAdicionalActual === sim.tiempoAnadido) {
+            sim.estadoPausa = sim.enProrroga ? 'DESCANSO_PRORROGA' : 'DESCANSO';
+            pausaDetectada = sim.estadoPausa;
+        }
+        // Si completamos el final (90 o 120)
+        else if (sim.minutoActual === limiteMinutos && sim.minutoAdicionalActual === sim.tiempoAnadido) {
+            if (sim.minutoActual === 90) {
+                // Evaluar si requiere Prórroga por empate
                 let irAProrroga = false;
-                if (sim.opcionesEliminatoria && sim.opcionesEliminatoria.esVuelta) {
-                    const globalLocal = sim.estadoMarcador.golesLocal + (sim.opcionesEliminatoria.golesIdaVisitante || 0);
-                    const globalVisitante = sim.estadoMarcador.golesVisitante + (sim.opcionesEliminatoria.golesIdaLocal || 0);
-                    if (globalLocal === globalVisitante) irAProrroga = true;
-                } else if (!sim.opcionesEliminatoria?.esIda) {
-                    irAProrroga = true; // Partido único
+                if (requiereProrroga && sim.estadoMarcador.golesLocal === sim.estadoMarcador.golesVisitante) {
+                    if (sim.opcionesEliminatoria && sim.opcionesEliminatoria.esVuelta) {
+                        const globalLocal = sim.estadoMarcador.golesLocal + (sim.opcionesEliminatoria.golesIdaVisitante || 0);
+                        const globalVisitante = sim.estadoMarcador.golesVisitante + (sim.opcionesEliminatoria.golesIdaLocal || 0);
+                        if (globalLocal === globalVisitante) irAProrroga = true;
+                    } else if (!sim.opcionesEliminatoria?.esIda) {
+                        irAProrroga = true; // Partido único
+                    }
                 }
 
                 if (irAProrroga) {
-                    sim.enProrroga = true;
-                    eventoOcurrido = {
-                        minuto: 90,
-                        tipo: 'INFO',
-                        texto: `¡Empate global en la eliminatoria! Nos vamos a la prórroga.`
-                    };
-                    sim.estadoMarcador.eventos.push(eventoOcurrido);
+                    sim.estadoPausa = 'FIN_REGULAR_ESPERA_PRORROGA';
+                    pausaDetectada = sim.estadoPausa;
                 } else {
                     partidoTerminado = true;
                 }
-
-            // Caso B: Empate al minuto 120 (tras prórroga) -> Tanda de penaltis real del motor
-            } else if (sim.minutoActual === 120 && sim.estadoMarcador.golesLocal === sim.estadoMarcador.golesVisitante) {
-                const eventosPenaltis = [];
-                const resultadoTanda = simularTandaPenaltis(sim.local, sim.visitante, eventosPenaltis);
-                
-                sim.ganadorPenaltis = resultadoTanda.ganadorId;
-                sim.marcadorTanda = resultadoTanda.marcadorTanda;
-                sim.estadoMarcador.eventos.push(...eventosPenaltis);
-                
-                eventosTandaPenaltis = eventosPenaltis; // Se envían al front para mostrarlos de golpe
-                partidoTerminado = true;
-            } else {
-                partidoTerminado = true;
+            } 
+            else if (sim.minutoActual === 120) {
+                // Prórroga finalizada. Si hay empate -> Tanda de penaltis activa
+                if (sim.estadoMarcador.golesLocal === sim.estadoMarcador.golesVisitante) {
+                    sim.tandaPenaltis.activo = true;
+                    sim.estadoPausa = 'TANDA_PENALTIS';
+                    pausaDetectada = 'TANDA_PENALTIS';
+                } else {
+                    partidoTerminado = true;
+                }
             }
         }
 
-        // 6. Si el partido ha concluido, actualizamos el estado en la base de datos de MongoDB
+        // Guardar partido definitivo en Mongo si ha concluido
         if (partidoTerminado) {
             sim.completado = true;
             const partidoBBDD = await Partido.findById(idPartido);
@@ -780,23 +893,25 @@ router.post('/partido-en-vivo/:idPartido/tick', requireLogin, async (req, res) =
                 partidoBBDD.golesLocal = sim.estadoMarcador.golesLocal;
                 partidoBBDD.golesVisitante = sim.estadoMarcador.golesVisitante;
                 partidoBBDD.jugado = true;
-                // Si tienes guardadas las tandas de penaltis en tu esquema de BD:
-                if (sim.marcadorTanda) {
-                    partidoBBDD.marcadorTanda = sim.marcadorTanda;
-                }
                 await partidoBBDD.save();
             }
         }
 
-        // Devolvemos el estado del minuto simulado al cliente
+        req.session.partidoEnVivo = sim; // Forzar persistencia de sesión Express
+
+        // Construcción del indicador de minutos (ej. 45+2')
+        let minFormateado = esDescuentoActivo 
+            ? `${sim.minutoActual}+${sim.minutoAdicionalActual}` 
+            : `${sim.minutoActual}`;
+
         return res.json({
             success: true,
-            minuto: sim.minutoActual,
+            minuto: minFormateado,
             golesLocal: sim.estadoMarcador.golesLocal,
             golesVisitante: sim.estadoMarcador.golesVisitante,
             posesionLocal: Math.floor(Math.min(99, Math.max(1, sim.estadoMarcador.posesionLocal))),
             evento: eventoOcurrido,
-            penaltisTanda: eventosTandaPenaltis,
+            pausaEstado: pausaDetectada,
             terminado: partidoTerminado
         });
 
