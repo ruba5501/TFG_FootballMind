@@ -142,7 +142,13 @@ function calcularNivel(jugador, posicionAValorar) {
 // CONVOCATORIA INTELIGENTE DE LA IA
 async function seleccionarConvocatoriaIA(clubId, rivalReputacion, competicionId) {
     const club = await Club.findById(clubId);
-    if (!club) return { titulares: [], suplentes: [] };
+    if (!club) return { 
+        titulares: [], 
+        suplentes: [], 
+        formacion: '4-3-3', 
+        estiloJuego: 'ESTÁNDAR', 
+        mentalidad: 'EQUILIBRADA' 
+    };
 
     // 1. Obtener los dos bloques de jugadores en paralelo para optimizar
     const [plantillaPrimerEquipo, filial] = await Promise.all([
@@ -258,7 +264,13 @@ async function seleccionarConvocatoriaIA(clubId, rivalReputacion, competicionId)
         await clubesDAO.convocarCanterano(clubId, canterano._id);
     }
 
-    return { titulares, suplentes };
+    return { 
+        titulares, 
+        suplentes,
+        formacion: club.tactica?.formacion,
+        estiloJuego: club.tactica?.estiloJuego,
+        mentalidad: club.tactica?.mentalidad
+    };
 }
 
 // RUTA PARA SIMULAR EL PARTIDO RAPIDO
@@ -570,7 +582,13 @@ router.get('/jugar_partido/:idPartido', requireLogin, async (req, res) => {
             } else {
                 promesasConvocatoria.push(
                     seleccionarConvocatoriaIA(partido.equipoLocal._id, partido.equipoVisitante.reputacion, partido.competicionId)
-                    .then(cL => { equipoLocalData.jugadores = cL.titulares; equipoLocalData.suplentes = cL.suplentes; })
+                    .then(cL => { 
+                        equipoLocalData.jugadores = cL.titulares; 
+                        equipoLocalData.suplentes = cL.suplentes;
+                        equipoLocalData.formacion = cL.formacion;
+                        equipoLocalData.estiloJuego = cL.estiloJuego;
+                        equipoLocalData.mentalidad = cL.mentalidad;
+                    })
                 );
             }
 
@@ -583,7 +601,13 @@ router.get('/jugar_partido/:idPartido', requireLogin, async (req, res) => {
             } else {
                 promesasConvocatoria.push(
                     seleccionarConvocatoriaIA(partido.equipoVisitante._id, partido.equipoLocal.reputacion, partido.competicionId)
-                    .then(cV => { equipoVisitanteData.jugadores = cV.titulares; equipoVisitanteData.suplentes = cV.suplentes; })
+                    .then(cV => { 
+                        equipoVisitanteData.jugadores = cV.titulares; 
+                        equipoVisitanteData.suplentes = cV.suplentes;
+                        equipoVisitanteData.formacion = cV.formacion;
+                        equipoVisitanteData.estiloJuego = cV.estiloJuego;
+                        equipoVisitanteData.mentalidad = cV.mentalidad;
+                    })
                 );
             }
 
@@ -684,13 +708,13 @@ router.post('/partido-en-vivo/:idPartido/tick', requireLogin, async (req, res) =
         // --- INICIALIZACIÓN DE VARIABLES DE CONTROL EN LA SESIÓN (si no existen) ---
         if (sim.tiempoAnadido === undefined) sim.tiempoAnadido = 0;
         if (sim.minutoAdicionalActual === undefined) sim.minutoAdicionalActual = 0;
-        if (sim.estadoPausa === undefined) sim.estadoPausa = null; // 'DESCANSO', 'FIN_REGULAR', 'DESCANSO_PRORROGA', 'PENALTIS'
+        if (sim.estadoPausa === undefined) sim.estadoPausa = null; 
         if (sim.tandaPenaltis === undefined) {
             sim.tandaPenaltis = {
                 activo: false,
                 turnoLocal: true,
-                disparosLocal: [],     // Array de strings: 'GOL' o 'FALLO'
-                disparosVisitante: [], // Array de strings: 'GOL' o 'FALLO'
+                disparosLocal: [],     
+                disparosVisitante: [], 
                 golesLocal: 0,
                 golesVisitante: 0,
                 finalizada: false
@@ -700,7 +724,7 @@ router.post('/partido-en-vivo/:idPartido/tick', requireLogin, async (req, res) =
         // --- 1. MANEJO EXCLUSIVO DE LA TANDA DE PENALTIS (TIRO A TIRO) ---
         if (sim.tandaPenaltis.activo) {
             const tanda = sim.tandaPenaltis;
-            const anotado = Math.random() < 0.75 ? 'GOL' : 'FALLO'; // 75% probabilidad de acierto
+            const anotado = Math.random() < 0.75 ? 'GOL' : 'FALLO'; 
 
             let eventoPenalti = {
                 tipo: 'PENALTI_DISPARO',
@@ -720,7 +744,6 @@ router.post('/partido-en-vivo/:idPartido/tick', requireLogin, async (req, res) =
                 eventoPenalti.texto = `¡Dispara ${sim.visitante.nombre}... y es ${anotado}!`;
             }
 
-            // Comprobamos si la tanda ha terminado (mínimo 5 tiros o muerte súbita)
             const nL = tanda.disparosLocal.length;
             const nV = tanda.disparosVisitante.length;
             const gL = tanda.golesLocal;
@@ -732,7 +755,6 @@ router.post('/partido-en-vivo/:idPartido/tick', requireLogin, async (req, res) =
                     terminado = true;
                 }
             } else {
-                // Ganador matemático antes de los 5 tiros
                 if (gL > gV + (5 - nV)) terminado = true;
                 if (gV > gL + (5 - nL)) terminado = true;
             }
@@ -743,7 +765,6 @@ router.post('/partido-en-vivo/:idPartido/tick', requireLogin, async (req, res) =
                 sim.ganadorPenaltis = gL > gV ? sim.local._id : sim.visitante._id;
                 sim.marcadorTanda = { golesLocal: gL, golesVisitante: gV };
 
-                // Guardamos en MongoDB
                 const partidoBBDD = await Partido.findById(idPartido);
                 if (partidoBBDD) {
                     partidoBBDD.golesLocal = sim.estadoMarcador.golesLocal;
@@ -755,7 +776,7 @@ router.post('/partido-en-vivo/:idPartido/tick', requireLogin, async (req, res) =
                 }
             }
 
-            req.session.partidoEnVivo = sim; // Guardar sesión
+            req.session.partidoEnVivo = sim; 
             return res.json({
                 success: true,
                 esPenaltis: true,
@@ -770,41 +791,38 @@ router.post('/partido-en-vivo/:idPartido/tick', requireLogin, async (req, res) =
         let minutoHito = sim.enProrroga ? 105 : 45;
         const requiereProrroga = sim.tipo === 'FINAL' || sim.tipo === 'ELIMINATORIA';
 
-        // Si el usuario acaba de reanudar tras una pausa de descanso o fin de tramo
         if (sim.estadoPausa === 'DESCANSO') {
             sim.estadoPausa = null;
             sim.tiempoAnadido = 0;
             sim.minutoAdicionalActual = 0;
-            sim.minutoActual = 46; // Salto a la segunda mitad
+            sim.minutoActual = 46; 
         } else if (sim.estadoPausa === 'FIN_REGULAR_ESPERA_PRORROGA') {
             sim.estadoPausa = null;
             sim.tiempoAnadido = 0;
             sim.minutoAdicionalActual = 0;
             sim.enProrroga = true;
-            sim.minutoActual = 91; // Empieza prórroga
+            sim.minutoActual = 91; 
             limiteMinutos = 120;
             minutoHito = 105;
         } else if (sim.estadoPausa === 'DESCANSO_PRORROGA') {
             sim.estadoPausa = null;
             sim.tiempoAnadido = 0;
             sim.minutoAdicionalActual = 0;
-            sim.minutoActual = 106; // Empieza segunda parte de prórroga
+            sim.minutoActual = 106; 
         }
 
-        // Comprobamos si hay que avanzar tiempo reglamentario o tiempo añadido
         let simulandoMinutoEfectivo = sim.minutoActual;
         let esDescuentoActivo = false;
 
         if (sim.minutoActual === minutoHito || sim.minutoActual === limiteMinutos) {
-            // Inicializar añadido para el tramo actual si no existe
             if (sim.tiempoAnadido === 0) {
-                sim.tiempoAnadido = Math.floor(Math.random() * 4) + 1; // 1 a 4 minutos de descuento
+                sim.tiempoAnadido = Math.floor(Math.random() * 4) + 1; 
             }
 
             if (sim.minutoAdicionalActual < sim.tiempoAnadido) {
                 sim.minutoAdicionalActual += 1;
                 esDescuentoActivo = true;
-                simulandoMinutoEfectivo = sim.minutoActual; // Se sigue simulando bajo la fatiga del minuto límite
+                simulandoMinutoEfectivo = sim.minutoActual; 
             }
         } else {
             sim.minutoActual += 1;
@@ -821,6 +839,7 @@ router.post('/partido-en-vivo/:idPartido/tick', requireLogin, async (req, res) =
             eventos: []
         };
 
+        // Aquí el motor reduce la forma/cansancio y recalcula las notas de sim.local y sim.visitante
         const resultadoTick = simularTramoMinutos(
             sim.local, 
             sim.visitante, 
@@ -829,7 +848,6 @@ router.post('/partido-en-vivo/:idPartido/tick', requireLogin, async (req, res) =
             estadoEstructuraMotor
         );
 
-        // Actualizamos sesión
         sim.estadoMarcador.golesLocal = resultadoTick.golesLocal;
         sim.estadoMarcador.golesVisitante = resultadoTick.golesVisitante;
         sim.estadoMarcador.posesionLocal = resultadoTick.posesionLocal;
@@ -842,19 +860,16 @@ router.post('/partido-en-vivo/:idPartido/tick', requireLogin, async (req, res) =
             sim.estadoMarcador.eventos.push(eventoOcurrido);
         }
 
-        // --- 4. GESTIÓN DE LÍMITES Y TRÁNSITOS DE ESTADO (DESCUENTOS COMPLETADOS) ---
+        // --- 4. GESTIÓN DE LÍMITES Y TRÁNSITOS DE ESTADO ---
         let pausaDetectada = null;
         let partidoTerminado = false;
 
-        // Si ya completamos el descuento del minuto de hito (45 o 105)
         if (sim.minutoActual === minutoHito && sim.minutoAdicionalActual === sim.tiempoAnadido) {
             sim.estadoPausa = sim.enProrroga ? 'DESCANSO_PRORROGA' : 'DESCANSO';
             pausaDetectada = sim.estadoPausa;
         }
-        // Si completamos el final (90 o 120)
         else if (sim.minutoActual === limiteMinutos && sim.minutoAdicionalActual === sim.tiempoAnadido) {
             if (sim.minutoActual === 90) {
-                // Evaluar si requiere Prórroga por empate
                 let irAProrroga = false;
                 if (requiereProrroga && sim.estadoMarcador.golesLocal === sim.estadoMarcador.golesVisitante) {
                     if (sim.opcionesEliminatoria && sim.opcionesEliminatoria.esVuelta) {
@@ -862,7 +877,7 @@ router.post('/partido-en-vivo/:idPartido/tick', requireLogin, async (req, res) =
                         const globalVisitante = sim.estadoMarcador.golesVisitante + (sim.opcionesEliminatoria.golesIdaLocal || 0);
                         if (globalLocal === globalVisitante) irAProrroga = true;
                     } else if (!sim.opcionesEliminatoria?.esIda) {
-                        irAProrroga = true; // Partido único
+                        irAProrroga = true; 
                     }
                 }
 
@@ -874,7 +889,6 @@ router.post('/partido-en-vivo/:idPartido/tick', requireLogin, async (req, res) =
                 }
             } 
             else if (sim.minutoActual === 120) {
-                // Prórroga finalizada. Si hay empate -> Tanda de penaltis activa
                 if (sim.estadoMarcador.golesLocal === sim.estadoMarcador.golesVisitante) {
                     sim.tandaPenaltis.activo = true;
                     sim.estadoPausa = 'TANDA_PENALTIS';
@@ -885,7 +899,6 @@ router.post('/partido-en-vivo/:idPartido/tick', requireLogin, async (req, res) =
             }
         }
 
-        // Guardar partido definitivo en Mongo si ha concluido
         if (partidoTerminado) {
             sim.completado = true;
             const partidoBBDD = await Partido.findById(idPartido);
@@ -897,13 +910,30 @@ router.post('/partido-en-vivo/:idPartido/tick', requireLogin, async (req, res) =
             }
         }
 
-        req.session.partidoEnVivo = sim; // Forzar persistencia de sesión Express
+        // --- mapeo de JUGADORES CON SUS DATOS EN VIVO ACTUALIZADOS POR EL MOTOR ---
+        const jugadoresLocalActualizados = sim.local.jugadores.map(j => ({
+            _id: j._id,
+            estado: {
+                forma: j.estado?.forma ?? 100,
+                notaPartido: j.estado?.notaPartido ?? 6.0
+            }
+        }));
 
-        // Construcción del indicador de minutos (ej. 45+2')
+        const jugadoresVisitanteActualizados = sim.visitante.jugadores.map(j => ({
+            _id: j._id,
+            estado: {
+                forma: j.estado?.forma ?? 100,
+                notaPartido: j.estado?.notaPartido ?? 6.0
+            }
+        }));
+
+        req.session.partidoEnVivo = sim; // Guardar sesión de Express
+
         let minFormateado = esDescuentoActivo 
             ? `${sim.minutoActual}+${sim.minutoAdicionalActual}` 
             : `${sim.minutoActual}`;
 
+        // Devolvemos los datos del partido incluyendo los arreglos dinámicos
         return res.json({
             success: true,
             minuto: minFormateado,
@@ -912,7 +942,9 @@ router.post('/partido-en-vivo/:idPartido/tick', requireLogin, async (req, res) =
             posesionLocal: Math.floor(Math.min(99, Math.max(1, sim.estadoMarcador.posesionLocal))),
             evento: eventoOcurrido,
             pausaEstado: pausaDetectada,
-            terminado: partidoTerminado
+            terminado: partidoTerminado,
+            jugadoresLocal: jugadoresLocalActualizados,
+            jugadoresVisitante: jugadoresVisitanteActualizados
         });
 
     } catch (error) {
