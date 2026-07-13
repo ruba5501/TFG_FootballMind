@@ -140,7 +140,7 @@ function calcularNivel(jugador, posicionAValorar) {
 }
 
 // CONVOCATORIA INTELIGENTE DE LA IA
-async function seleccionarConvocatoriaIA(clubId, rivalReputacion, competicionId, formacionPredefinida = '4-3-3') {
+async function seleccionarConvocatoriaIA(clubId, rivalReputacion, competicionId) {
     const club = await Club.findById(clubId);
     if (!club) return { titulares: [], suplentes: [] };
 
@@ -179,7 +179,7 @@ async function seleccionarConvocatoriaIA(clubId, rivalReputacion, competicionId,
     if (diferenciaReputacion > 20 && diferenciaReputacion <= 30) nivelRotacion = 'MODERADA';
     else if (diferenciaReputacion > 30) nivelRotacion = 'INTENSA'; 
 
-    const configuracionFormacion = FORMACIONES[club.formacion] || FORMACIONES[formacionPredefinida] || FORMACIONES['4-3-3'];
+    const configuracionFormacion = FORMACIONES[club.tactica?.formacion] || FORMACIONES[formacionPredefinida] || FORMACIONES['4-3-3'];
     const posicionesRequeridas = configuracionFormacion.posiciones;
 
     const titulares = [];
@@ -509,7 +509,6 @@ router.get('/jugar_partido/:idPartido', requireLogin, async (req, res) => {
         const suplentesUsuario = clubUsuarioReal.tactica?.suplentes || [];
         const convocadosUsuario = [...titularesUsuario, ...suplentesUsuario];
 
-        // === ¡AQUÍ ESTÁ LA CORRECCIÓN! Definimos las variables tácticas del usuario ===
         const formacionBaseUser = clubUsuarioReal.tactica?.formacion || '4-3-3';
         const estiloBaseUser = clubUsuarioReal.tactica?.estiloJuego || 'ESTÁNDAR';
         const mentalidadBaseUser = clubUsuarioReal.tactica?.mentalidad || 'EQUILIBRADA';
