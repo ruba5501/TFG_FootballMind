@@ -13,7 +13,7 @@ const Competicion = require('../models/competicion');
 
 const { FORMACIONES } = require('../service/cargarFormaciones');
 // Motor
-const { simularPartido } = require('../engine/motorJuego');
+const { simularPartido, simularTramoMinutos } = require('../engine/motorJuego');
 const { requireLogin } = require('../middleware/autenticacion');
 
 async function simularPartidosPendientes(partidaId, fecha, clubUsuarioId) {
@@ -638,7 +638,9 @@ router.get('/jugar_partido/:idPartido', requireLogin, async (req, res) => {
             tipo: partidoUsuario.tipo,
             opcionesEliminatoria: opcionesEliminatoriaUsuario,
             estadoMarcador: { golesLocal: 0, golesVisitante: 0, eventos: [] },
-            restoJornadaIa: partidosIADeHoy 
+            restoJornadaIa: partidosIADeHoy,
+            enProrroga: false,   
+            completado: false
         };
 
         const esLocalUsuarioFinal = partidoUsuario.equipoLocal._id.toString() === clubUsuarioId;
@@ -660,6 +662,147 @@ router.get('/jugar_partido/:idPartido', requireLogin, async (req, res) => {
     } catch (error) {
         console.error("Error al iniciar partido en vivo:", error);
         res.status(500).send("Error al procesar el partido en vivo");
+    }
+});
+
+// Ruta para hacer el minuto a minuto en los partidos en vivo
+router.post('/partido-en-vivo/:idPartido/tick', requireLogin, async (req, res) => {
+    try {
+        const { idPartido } = req.params;
+        const sim = req.session.partidoEnVivo;
+
+        // Validación de seguridad
+        if (!sim || sim.partidoId !== idPartido) {
+            return res.status(400).json({ success: false, message: "No hay ninguna simulación activa en sesión." });
+        }
+
+        // Si ya se completó el partido en un tick anterior, devolvemos el estado final
+        if (sim.completado) {
+            return res.json({ terminado: true, marcador: sim.estadoMarcador });
+        }
+
+        // 1. Avanzar un minuto
+        sim.minutoActual += 1;
+
+        // 2. Determinar el límite del tiempo reglamentario según el tipo
+        let limiteMinutos = 90;
+        const requiereProrroga = sim.tipo === 'FINAL' || sim.tipo === 'ELIMINATORIA';
+        
+        if (sim.enProrroga) {
+            limiteMinutos = 120;
+        }
+
+        // 3. Mapear el estado actual de la sesión al formato que espera tu "simularTramoMinutos"
+        let estadoEstructuraMotor = {
+            golesLocal: sim.estadoMarcador.golesLocal,
+            golesVisitante: sim.estadoMarcador.golesVisitante,
+            posesionLocal: sim.estadoMarcador.posesionLocal ?? 50,
+            momentumLocal: sim.estadoMarcador.momentumLocal ?? 0,
+            momentumVisitante: sim.estadoMarcador.momentumVisitante ?? 0,
+            eventos: [] // Aquí tu motor inyectará los eventos generados SOLO en este minuto
+        };
+
+        // Importante: requerir o importar tus funciones del motor de simulación
+        // En tu caso, llamamos a simularTramoMinutos para el minuto exacto en el que estamos
+        const resultadoTick = simularTramoMinutos(
+            sim.local, 
+            sim.visitante, 
+            sim.minutoActual, 
+            sim.minutoActual, 
+            estadoEstructuraMotor
+        );
+
+        // 4. Actualizamos el estado de la sesión con lo calculado por tu motor
+        sim.estadoMarcador.golesLocal = resultadoTick.golesLocal;
+        sim.estadoMarcador.golesVisitante = resultadoTick.golesVisitante;
+        sim.estadoMarcador.posesionLocal = resultadoTick.posesionLocal;
+        sim.estadoMarcador.momentumLocal = resultadoTick.momentumLocal;
+        sim.estadoMarcador.momentumVisitante = resultadoTick.momentumVisitante;
+
+        let eventoOcurrido = null;
+        if (resultadoTick.eventos && resultadoTick.eventos.length > 0) {
+            eventoOcurrido = resultadoTick.eventos[0]; 
+            // Guardamos el evento en el historial del partido en sesión
+            sim.estadoMarcador.eventos.push(eventoOcurrido);
+        }
+
+        let partidoTerminado = false;
+        let eventosTandaPenaltis = null;
+
+        // 5. CONTROL DE FIN DE PARTIDO, PRÓRROGAS Y TANDA DE PENALTIS (Usando tus reglas del motor)
+        if (sim.minutoActual === limiteMinutos) {
+            
+            // Caso A: Empate al minuto 90 en torneo con eliminación directa -> Prórroga
+            if (sim.minutoActual === 90 && requiereProrroga && sim.estadoMarcador.golesLocal === sim.estadoMarcador.golesVisitante) {
+                
+                let irAProrroga = false;
+                if (sim.opcionesEliminatoria && sim.opcionesEliminatoria.esVuelta) {
+                    const globalLocal = sim.estadoMarcador.golesLocal + (sim.opcionesEliminatoria.golesIdaVisitante || 0);
+                    const globalVisitante = sim.estadoMarcador.golesVisitante + (sim.opcionesEliminatoria.golesIdaLocal || 0);
+                    if (globalLocal === globalVisitante) irAProrroga = true;
+                } else if (!sim.opcionesEliminatoria?.esIda) {
+                    irAProrroga = true; // Partido único
+                }
+
+                if (irAProrroga) {
+                    sim.enProrroga = true;
+                    eventoOcurrido = {
+                        minuto: 90,
+                        tipo: 'INFO',
+                        texto: `¡Empate global en la eliminatoria! Nos vamos a la prórroga.`
+                    };
+                    sim.estadoMarcador.eventos.push(eventoOcurrido);
+                } else {
+                    partidoTerminado = true;
+                }
+
+            // Caso B: Empate al minuto 120 (tras prórroga) -> Tanda de penaltis real del motor
+            } else if (sim.minutoActual === 120 && sim.estadoMarcador.golesLocal === sim.estadoMarcador.golesVisitante) {
+                const eventosPenaltis = [];
+                const resultadoTanda = simularTandaPenaltis(sim.local, sim.visitante, eventosPenaltis);
+                
+                sim.ganadorPenaltis = resultadoTanda.ganadorId;
+                sim.marcadorTanda = resultadoTanda.marcadorTanda;
+                sim.estadoMarcador.eventos.push(...eventosPenaltis);
+                
+                eventosTandaPenaltis = eventosPenaltis; // Se envían al front para mostrarlos de golpe
+                partidoTerminado = true;
+            } else {
+                partidoTerminado = true;
+            }
+        }
+
+        // 6. Si el partido ha concluido, actualizamos el estado en la base de datos de MongoDB
+        if (partidoTerminado) {
+            sim.completado = true;
+            const partidoBBDD = await Partido.findById(idPartido);
+            if (partidoBBDD) {
+                partidoBBDD.golesLocal = sim.estadoMarcador.golesLocal;
+                partidoBBDD.golesVisitante = sim.estadoMarcador.golesVisitante;
+                partidoBBDD.jugado = true;
+                // Si tienes guardadas las tandas de penaltis en tu esquema de BD:
+                if (sim.marcadorTanda) {
+                    partidoBBDD.marcadorTanda = sim.marcadorTanda;
+                }
+                await partidoBBDD.save();
+            }
+        }
+
+        // Devolvemos el estado del minuto simulado al cliente
+        return res.json({
+            success: true,
+            minuto: sim.minutoActual,
+            golesLocal: sim.estadoMarcador.golesLocal,
+            golesVisitante: sim.estadoMarcador.golesVisitante,
+            posesionLocal: Math.floor(Math.min(99, Math.max(1, sim.estadoMarcador.posesionLocal))),
+            evento: eventoOcurrido,
+            penaltisTanda: eventosTandaPenaltis,
+            terminado: partidoTerminado
+        });
+
+    } catch (error) {
+        console.error("Error al simular tick del partido:", error);
+        return res.status(500).json({ success: false, message: "Error interno del motor." });
     }
 });
 

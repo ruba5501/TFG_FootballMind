@@ -321,4 +321,4 @@ function simularPartido(local, visitante, tipoPartido = 'LIGA', opcionesEliminat
     };
 }
 
-module.exports = { simularPartido };
+module.exports = { simularPartido, simularTramoMinutos };

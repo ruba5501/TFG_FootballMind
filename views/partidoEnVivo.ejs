@@ -17,7 +17,7 @@
                                 <strong class="text-white target-nombre-jugador text-truncate"><%= j.nombre %></strong>
                                 <span class="badge bg-light text-dark border ms-1 target-posicion"><%= j.posicionPrincipal || j.posicion %></span>
                             </div>
-                            <span class="badge bg-success-subtle text-success border border-success-subtle flex-shrink-0"><%= j.atributos?.forma ?? 100 %>%</span>
+                            <span class="badge bg-success-subtle text-success border border-success-subtle flex-shrink-0"><%= j.estado?.forma ?? 100 %>%</span>
                         </div>
                     <% }) %>
                 </div>
@@ -25,19 +25,19 @@
         </div>
 
         <div class="col-12 col-lg-6 order-1 order-lg-2">
-            <div class="card pantalla-partido shadow-sm border-0 p-3 p-sm-4 text-center">
-                <div class="text-uppercase text-white small fw-bold mb-2">En Directo</div>
+            <div class="card pantalla-partido shadow-sm border-0 p-3 p-sm-4 text-center text-white bg-dark">
+                <div class="text-uppercase text-muted small fw-bold mb-2">En Directo</div>
                 
                 <div class="d-flex flex-column flex-sm-row align-items-center justify-content-center gap-3">
                     <div class="text-center text-sm-end w-100 style-marcador-equipo" style="flex: 1;">
-                        <img src="/img/escudos/<%= partidoBBDD.equipoLocal.escudo %>" alt="<%= local.nombre %>" class="escudo-marcador align-middle mb-2 mb-sm-0">
+                        <img src="/img/escudos/<%= partidoBBDD.equipoLocal.escudo %>" alt="<%= local.nombre %>" class="escudo-marcador align-middle mb-2 mb-sm-0" style="width: 40px; height: 40px;">
                         <div class="d-block d-sm-inline-block align-middle mx-2">
                             <% if(esLocalUser) { %><span class="badge bg-info me-1 small">TÚ</span><% } %>
-                            <h6 class="m-0 fw-bold d-inline text-wrap"><%= local.nombre %></h6>
+                            <h6 class="m-0 fw-bold d-inline text-wrap text-white"><%= local.nombre %></h6>
                         </div>
                     </div>
 
-                    <div class="d-flex align-items-center gap-3 bg-dark px-3 py-2 rounded-4 border border-secondary flex-shrink-0">
+                    <div class="d-flex align-items-center gap-3 bg-black px-3 py-2 rounded-4 border border-secondary flex-shrink-0">
                         <span id="golesLocal" class="numero-marcador text-success fw-bold fs-3">0</span>
                         <div class="d-flex flex-column align-items-center px-1">
                             <span id="badgeMinuto" class="badge bg-danger badge-minuto shadow-sm">0'</span>
@@ -49,28 +49,42 @@
                     <div class="text-center text-sm-start w-100 style-marcador-equipo" style="flex: 1;">
                         <div class="d-block d-sm-inline-block align-middle mx-2 order-2 order-sm-1">
                             <% if(!esLocalUser) { %><span class="badge bg-info me-1 small">TÚ</span><% } %>
-                            <h6 class="m-0 fw-bold d-inline text-wrap"><%= visitante.nombre %></h6>
+                            <h6 class="m-0 fw-bold d-inline text-wrap text-white"><%= visitante.nombre %></h6>
                         </div>
-                        <img src="/img/escudos/<%= partidoBBDD.equipoVisitante.escudo %>" alt="<%= visitante.nombre %>" class="escudo-marcador align-middle mb-2 mb-sm-0 order-1 order-sm-2">
+                        <img src="/img/escudos/<%= partidoBBDD.equipoVisitante.escudo %>" alt="<%= visitante.nombre %>" class="escudo-marcador align-middle mb-2 mb-sm-0 order-1 order-sm-2" style="width: 40px; height: 40px;">
                     </div>
                 </div>
 
-                <div class="consola-eventos rounded-3 mt-4 p-3 text-start text-success" id="cajaEventos" style="max-height: 200px; overflow-y: auto;">
-                    <div class="text-white">[0'] El árbitro hace sonar el silbato. ¡Arranca el partido!</div>
+                <div class="mt-3 px-3" id="contenedorPosesion" style="display:none;">
+                    <div class="progress" style="height: 8px;">
+                        <div id="barraPosesionLocal" class="progress-bar bg-success" role="progressbar" style="width: 50%"></div>
+                    </div>
+                    <div class="d-flex justify-content-between small text-white mt-1">
+                        <span id="textoPosesionLocal">50%</span>
+                        <span>Posesión</span>
+                        <span id="textoPosesionVisitante">50%</span>
+                    </div>
+                </div>
+
+                <div class="consola-eventos rounded-3 mt-4 p-3 text-start bg-black" id="cajaEventos" style="max-height: 250px; overflow-y: auto; font-family: monospace;">
+                    <div class="text-warning">[0'] El árbitro hace sonar el silbato. ¡Arranca el partido!</div>
                 </div>
             </div>
 
             <div class="card shadow-sm border-0 mt-3 p-3 bg-white text-center d-flex flex-column justify-content-center align-items-center">                
                 <div class="d-flex gap-2 mb-2 w-100" style="max-width: 450px;">
                     <button class="btn btn-success flex-fill fw-bold shadow-sm" id="btnPlayPause">
-                        <i class="bi bi-play-fill me-1"></i> REANUDAR
+                        <i id="iconoPlay" class="bi bi-play-fill me-1"></i> <span id="textoPlay">REANUDAR</span>
                     </button>
-                    <button class="btn btn-outline-secondary fw-bold" id="btnVelocidad" style="min-width: 75px;">
-                        <i class="bi bi-speedometer2 me-1"></i> x1
+                    <button class="btn btn-outline-secondary fw-bold" id="btnVelocidad" style="min-width: 85px;">
+                        <i class="bi bi-speedometer2 me-1"></i> <span id="textoVelocidad">x1</span>
                     </button>
                 </div>
 
-                <button class="btn btn-primary w-100 fw-bold shadow-sm py-2" style="max-width: 450px;" id="btnAbrirEstrategia">TÁCTICA Y CAMBIOS</button>
+                <div class="d-flex gap-2 w-100 justify-content-center">
+                    <button class="btn btn-primary w-100 fw-bold shadow-sm py-2" style="max-width: 450px;" id="btnAbrirEstrategia">TÁCTICA Y CAMBIOS</button>
+                    <a href="/principal" class="btn btn-danger fw-bold py-2 px-4 shadow-sm" id="btnContinuar" style="display: none; max-width: 150px;">CONTINUAR</a>
+                </div>
                 <small class="text-muted mt-2" style="font-size: 0.75rem;"><i class="bi bi-info-circle"></i> Al abrir los ajustes, el partido se pausará automáticamente.</small>
             </div>
         </div>
@@ -89,7 +103,7 @@
                                 <strong class="text-white text-truncate"><%= j.nombre %></strong>
                                 <span class="badge bg-light text-dark border ms-1"><%= j.posicionPrincipal || j.posicion %></span>
                             </div>
-                            <span class="badge bg-success-subtle text-success border border-success-subtle flex-shrink-0"><%= j.atributos?.forma ?? 100 %>%</span>
+                            <span class="badge bg-success-subtle text-success border border-success-subtle flex-shrink-0"><%= j.estado?.forma ?? 100 %>%</span>
                         </div>
                     <% }) %>
                 </div>
@@ -101,17 +115,149 @@
 
 <script>
     const PARTIDO_ID = '<%= partidoBBDD._id %>';
+    
+    let intervaloPartido = null;
+    let simulando = false;
+    let velocidadActual = 1; // 1 = 2000ms, 2 = 1000ms, 3 = 500ms
+    const velocidadesMs = { 1: 2000, 2: 1000, 3: 400 };
 
     $(document).ready(function() {
-        // Redirección Dinámica Estratégica
+        // Redirección Dinámica Estratégica a táctica
         $('#btnAbrirEstrategia').on('click', function() {
-            // 1. Forzar la pausa del partido en vivo si está corriendo
-            if (!$('#btnPlayPause').text().includes('REANUDAR')) {
-                $('#btnPlayPause').trigger('click'); 
+            if (simulando) {
+                pausarSimulacion();
             }
-            
-            // 2. Viajar a la nueva vista de gestión táctica completa
             window.location.href = `/partido/${PARTIDO_ID}/tactica`;
         });
+
+        // Trigger del botón Play/Pause
+        $('#btnPlayPause').on('click', function() {
+            if (simulando) {
+                pausarSimulacion();
+            } else {
+                arrancarSimulacion();
+            }
+        });
+
+        // Selector de velocidad dinámico
+        $('#btnVelocidad').on('click', function() {
+            if (velocidadActual === 1) {
+                velocidadActual = 2;
+            } else if (velocidadActual === 2) {
+                velocidadActual = 3;
+            } else {
+                velocidadActual = 1;
+            }
+            $('#textoVelocidad').text('x' + velocidadActual);
+            
+            // Si estaba simulando, reiniciamos el intervalo para aplicar la nueva velocidad inmediatamente
+            if (simulando) {
+                clearInterval(intervaloPartido);
+                intervaloPartido = null;
+                arrancarSimulacion();
+            }
+        });
     });
+
+    function arrancarSimulacion() {
+        if (intervaloPartido) return;
+        
+        simulando = true;
+        $('#estadoPartido').text("EN VIVO").removeClass('text-muted').addClass('text-danger');
+        $('#btnPlayPause').removeClass('btn-success').addClass('btn-warning');
+        $('#iconoPlay').removeClass('bi-play-fill').addClass('bi-pause-fill');
+        $('#textoPlay').text('PAUSAR');
+
+        const ms = velocidadesMs[velocidadActual];
+
+        intervaloPartido = setInterval(() => {
+            fetch(`/partido-en-vivo/${PARTIDO_ID}/tick`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (!data.success) {
+                    pausarSimulacion();
+                    alert("Error durante la simulación: " + (data.message || 'Desconocido'));
+                    return;
+                }
+
+                // 1. Actualizar el marcador en el HTML
+                document.getElementById('badgeMinuto').innerText = data.minuto + "'";
+                document.getElementById('golesLocal').innerText = data.golesLocal;
+                document.getElementById('golesVisitante').innerText = data.golesVisitante;
+                
+                // 2. Mostrar y actualizar barra de posesión si se reciben datos
+                if (data.posesionLocal !== undefined) {
+                    document.getElementById('contenedorPosesion').style.display = 'block';
+                    document.getElementById('barraPosesionLocal').style.width = data.posesionLocal + "%";
+                    document.getElementById('textoPosesionLocal').innerText = data.posesionLocal + "%";
+                    document.getElementById('textoPosesionVisitante').innerText = (100 - data.posesionLocal) + "%";
+                }
+
+                // 3. Imprimir el evento en la consola si ocurrió algo
+                if (data.evento) {
+                    const caja = document.getElementById('cajaEventos');
+                    let estilo = 'text-white-50'; // Color gris por defecto
+                    
+                    if (data.evento.tipo === 'GOL') {
+                        estilo = 'text-success fw-bold fs-6';
+                    } else if (data.evento.tipo === 'INFO') {
+                        estilo = 'text-warning font-italic';
+                    } else if (data.evento.tipo === 'OCASION') {
+                        estilo = 'text-info';
+                    }
+                    
+                    caja.innerHTML += `<div class="mb-1 ${estilo}">[Min. ${data.minuto}] ${data.evento.texto}</div>`;
+                    caja.scrollTop = caja.scrollHeight; // Auto-scroll
+                }
+
+                // 4. Si ocurrió una tanda de penaltis al final del partido
+                if (data.penaltisTanda && data.penaltisTanda.length > 0) {
+                    const caja = document.getElementById('cajaEventos');
+                    caja.innerHTML += `<div class="text-warning fw-bold mt-3 mb-1">--- TANDA DE PENALTIS ---</div>`;
+                    data.penaltisTanda.forEach(p => {
+                        caja.innerHTML += `<div class="text-info mb-1">${p.texto}</div>`;
+                    });
+                    caja.scrollTop = caja.scrollHeight;
+                }
+
+                // 5. Finalizar partido
+                if (data.terminado) {
+                    clearInterval(intervaloPartido);
+                    intervaloPartido = null;
+                    simulando = false;
+                    
+                    document.getElementById('estadoPartido').innerText = "FINALIZADO";
+                    document.getElementById('estadoPartido').className = "text-muted mt-1 fw-bold style-estado-txt";
+                    
+                    // Bloqueamos los botones de control
+                    $('#btnPlayPause').prop('disabled', true).removeClass('btn-warning').addClass('btn-secondary');
+                    $('#textoPlay').text('FINALIZADO');
+                    $('#iconoPlay').removeClass('bi-pause-fill').addClass('bi-check-all');
+                    $('#btnVelocidad').prop('disabled', true);
+                    
+                    // Mostramos el botón de continuar
+                    document.getElementById('btnContinuar').style.display = 'block';
+                }
+            })
+            .catch(err => {
+                console.error("Error en el tick:", err);
+                pausarSimulacion();
+            });
+        }, ms);
+    }
+
+    function pausarSimulacion() {
+        if (intervaloPartido) {
+            clearInterval(intervaloPartido);
+            intervaloPartido = null;
+        }
+        simulando = false;
+        $('#estadoPartido').text("PAUSADO").removeClass('text-danger').addClass('text-muted');
+        $('#btnPlayPause').removeClass('btn-warning').addClass('btn-success');
+        $('#iconoPlay').removeClass('bi-pause-fill').addClass('bi-play-fill');
+        $('#textoPlay').text('REANUDAR');
+    }
 </script>
