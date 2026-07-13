@@ -498,7 +498,8 @@ router.get('/jugar_partido/:idPartido', requireLogin, async (req, res) => {
                 tacticaInicial: equipoUser.formacion || '4-3-3',
                 estiloInicial: equipoUser.estiloJuego || 'ESTÁNDAR',
                 mentalidadInicial: equipoUser.mentalidad || 'EQUILIBRADA',
-                formaciones: FORMACIONES
+                formaciones: FORMACIONES,
+                partidoEnVivo: req.session.partidoEnVivo
             });
         }
         
@@ -680,7 +681,8 @@ router.get('/jugar_partido/:idPartido', requireLogin, async (req, res) => {
             tacticaInicial: formacionBaseUser,
             estiloInicial: estiloBaseUser,
             mentalidadInicial: mentalidadBaseUser,
-            formaciones: FORMACIONES
+            formaciones: FORMACIONES,
+            partidoEnVivo: req.session.partidoEnVivo
         });
 
     } catch (error) {
