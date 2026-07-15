@@ -697,94 +697,151 @@ router.post('/partido-en-vivo/:idPartido/tick', requireLogin, async (req, res) =
         const { idPartido } = req.params;
         const sim = req.session.partidoEnVivo;
 
-        // Validación de seguridad
         if (!sim || sim.partidoId !== idPartido) {
             return res.status(400).json({ success: false, message: "No hay ninguna simulación activa en sesión." });
         }
 
-        // Si ya se completó el partido en un tick anterior
         if (sim.completado) {
             return res.json({ terminado: true, marcador: sim.estadoMarcador });
         }
 
-        // --- INICIALIZACIÓN DE VARIABLES DE CONTROL EN LA SESIÓN (si no existen) ---
+        // Inicialización y persistencia de variables de control del flujo en la sesión
         if (sim.tiempoAnadido === undefined) sim.tiempoAnadido = 0;
         if (sim.minutoAdicionalActual === undefined) sim.minutoAdicionalActual = 0;
         if (sim.estadoPausa === undefined) sim.estadoPausa = null; 
+        if (sim.cambiosPendientes === undefined) sim.cambiosPendientes = [];
         if (sim.tandaPenaltis === undefined) {
             sim.tandaPenaltis = {
                 activo: false,
                 turnoLocal: true,
-                disparosLocal: [],     
-                disparosVisitante: [], 
+                disparosLocal: [],
+                disparosVisitante: [],
                 golesLocal: 0,
                 golesVisitante: 0,
-                finalizada: false
+                finalizada: false,
+                ronda: 0
             };
         }
 
         // --- 1. MANEJO EXCLUSIVO DE LA TANDA DE PENALTIS (TIRO A TIRO) ---
         if (sim.tandaPenaltis.activo) {
-            const tanda = sim.tandaPenaltis;
-            const anotado = Math.random() < 0.75 ? 'GOL' : 'FALLO'; 
-
-            let eventoPenalti = {
-                tipo: 'PENALTI_DISPARO',
-                esLocal: tanda.turnoLocal,
-                resultado: anotado
-            };
-
-            if (tanda.turnoLocal) {
-                tanda.disparosLocal.push(anotado);
-                if (anotado === 'GOL') tanda.golesLocal++;
-                tanda.turnoLocal = false;
-                eventoPenalti.texto = `¡Dispara ${sim.local.nombre}... y es ${anotado}!`;
-            } else {
-                tanda.disparosVisitante.push(anotado);
-                if (anotado === 'GOL') tanda.golesVisitante++;
-                tanda.turnoLocal = true;
-                eventoPenalti.texto = `¡Dispara ${sim.visitante.nombre}... y es ${anotado}!`;
-            }
-
-            const nL = tanda.disparosLocal.length;
-            const nV = tanda.disparosVisitante.length;
-            const gL = tanda.golesLocal;
-            const gV = tanda.golesVisitante;
-
-            let terminado = false;
-            if (nL >= 5 && nV >= 5) {
-                if (nL === nV && gL !== gV) {
-                    terminado = true;
-                }
-            } else {
-                if (gL > gV + (5 - nV)) terminado = true;
-                if (gV > gL + (5 - nL)) terminado = true;
-            }
-
-            if (terminado) {
-                tanda.finalizada = true;
+            let tp = sim.tandaPenaltis;
+            
+            // Si la tanda ya ha finalizado pero se llama de nuevo al endpoint
+            if (tp.finalizada) {
                 sim.completado = true;
-                sim.ganadorPenaltis = gL > gV ? sim.local._id : sim.visitante._id;
-                sim.marcadorTanda = { golesLocal: gL, golesVisitante: gV };
+                req.session.partidoEnVivo = sim;
+                return res.json({ terminado: true, marcador: sim.estadoMarcador, tandaPenaltis: tp });
+            }
 
+            const local = sim.local;
+            const visitante = sim.visitante;
+
+            // Ordenamos tiradores por la estadística de lanzamiento de penaltis
+            const tiradoresLocal = [...local.jugadores].sort((a,b) => (b.atributos?.tiro?.lanzamientoPenaltis ?? 50) - (a.atributos?.tiro?.lanzamientoPenaltis ?? 50));
+            const tiradoresVisitante = [...visitante.jugadores].sort((a,b) => (b.atributos?.tiro?.lanzamientoPenaltis ?? 50) - (a.atributos?.tiro?.lanzamientoPenaltis ?? 50));
+
+            const porLocal = local.jugadores.find(j => j.posicionPrincipal === 'POR') || local.jugadores[0];
+            const porVisitante = visitante.jugadores.find(j => j.posicionPrincipal === 'POR') || visitante.jugadores[0];
+
+            let eventoPenalti = null;
+
+            if (tp.turnoLocal) {
+                tp.ronda++;
+                const tLocal = tiradoresLocal[(tp.ronda - 1) % tiradoresLocal.length];
+                const golLocal = ejecutarPenaltiIndividual(tLocal, porVisitante);
+                
+                if (golLocal) {
+                    tp.golesLocal++;
+                    tp.disparosLocal.push({ gol: true, tirador: tLocal.nombre });
+                    eventoPenalti = { minuto: 120, tipo: 'PENALTI_TANDA', equipo: 'local', texto: `✅ Gol de ${tLocal.nombre} para el equipo local.` };
+                } else {
+                    tp.disparosLocal.push({ gol: false, tirador: tLocal.nombre });
+                    eventoPenalti = { minuto: 120, tipo: 'PENALTI_TANDA', equipo: 'local', texto: `❌ ${tLocal.nombre} falla su lanzamiento.` };
+                }
+                
+                sim.estadoMarcador.eventos.push(eventoPenalti);
+                tp.turnoLocal = false; // El próximo tiro le corresponde al visitante
+            } else {
+                const tVisitante = tiradoresVisitante[(tp.ronda - 1) % tiradoresVisitante.length];
+                const golVisitante = ejecutarPenaltiIndividual(tVisitante, porLocal);
+                
+                if (golVisitante) {
+                    tp.golesVisitante++;
+                    tp.disparosVisitante.push({ gol: true, tirador: tVisitante.nombre });
+                    eventoPenalti = { minuto: 120, tipo: 'PENALTI_TANDA', equipo: 'visitante', texto: `✅ Gol de ${tVisitante.nombre} para el equipo visitante.` };
+                } else {
+                    tp.disparosVisitante.push({ gol: false, tirador: tVisitante.nombre });
+                    eventoPenalti = { minuto: 120, tipo: 'PENALTI_TANDA', equipo: 'visitante', texto: `❌ ${tVisitante.nombre} falla su lanzamiento.` };
+                }
+                
+                sim.estadoMarcador.eventos.push(eventoPenalti);
+                tp.turnoLocal = true; // El próximo tiro vuelve al local
+            }
+
+            // Comprobación de condiciones matemáticas de finalización de la tanda
+            const tirosRestantesLocal = 5 - tp.disparosLocal.length;
+            const tirosRestantesVisitante = 5 - tp.disparosVisitante.length;
+
+            let ganadorEstablecido = false;
+
+            // Fase inicial de 5 penaltis por bando
+            if (tp.disparosLocal.length <= 5 && tp.disparosVisitante.length <= 5) {
+                if (tp.golesLocal > tp.golesVisitante + tirosRestantesVisitante) {
+                    tp.finalizada = true;
+                    ganadorEstablecido = true;
+                } else if (tp.golesVisitante > tp.golesLocal + tirosRestantesLocal) {
+                    tp.finalizada = true;
+                    ganadorEstablecido = true;
+                } else if (tp.disparosLocal.length === 5 && tp.disparosVisitante.length === 5 && tp.golesLocal === tp.golesVisitante) {
+                    // Muerte súbita habilitada: Empate a 5 tiros, la tanda continúa
+                } else if (tp.disparosLocal.length === 5 && tp.disparosVisitante.length === 5 && tp.golesLocal !== tp.golesVisitante) {
+                    tp.finalizada = true;
+                    ganadorEstablecido = true;
+                }
+            } 
+            // Fase de muerte súbita (ronda > 5)
+            else if (tp.disparosLocal.length === tp.disparosVisitante.length) {
+                if (tp.golesLocal !== tp.golesVisitante) {
+                    tp.finalizada = true;
+                    ganadorEstablecido = true;
+                }
+            }
+
+            if (ganadorEstablecido) {
+                sim.completado = true;
+                const ganadorId = tp.golesLocal > tp.golesVisitante ? local.id : visitante.id;
+                sim.ganadorPenaltis = ganadorId;
+                sim.marcadorTanda = { local: tp.golesLocal, visitante: tp.golesVisitante };
+
+                sim.estadoMarcador.eventos.push({
+                    minuto: 120,
+                    tipo: 'INFO',
+                    texto: `🏆 ¡Tanda de penaltis terminada! Ganador: ${tp.golesLocal > tp.golesVisitante ? local.nombre : visitante.nombre}.`
+                });
+
+                // Guardado final del partido en BBDD
                 const partidoBBDD = await Partido.findById(idPartido);
                 if (partidoBBDD) {
                     partidoBBDD.golesLocal = sim.estadoMarcador.golesLocal;
                     partidoBBDD.golesVisitante = sim.estadoMarcador.golesVisitante;
                     partidoBBDD.jugado = true;
-                    partidoBBDD.ganadorPenaltis = sim.ganadorPenaltis;
-                    partidoBBDD.marcadorTanda = sim.marcadorTanda;
                     await partidoBBDD.save();
                 }
             }
 
-            req.session.partidoEnVivo = sim; 
+            req.session.partidoEnVivo = sim;
+
             return res.json({
                 success: true,
-                esPenaltis: true,
-                tanda: tanda,
-                evento: { tipo: 'INFO', texto: eventoPenalti.texto },
-                terminado: terminado
+                minuto: "Penaltis",
+                golesLocal: sim.estadoMarcador.golesLocal,
+                golesVisitante: sim.estadoMarcador.golesVisitante,
+                posesionLocal: 50,
+                evento: eventoPenalti,
+                pausaEstado: ganadorEstablecido ? null : 'TANDA_PENALTIS',
+                terminado: tp.finalizada,
+                tandaPenaltis: tp
             });
         }
 
@@ -793,6 +850,7 @@ router.post('/partido-en-vivo/:idPartido/tick', requireLogin, async (req, res) =
         let minutoHito = sim.enProrroga ? 105 : 45;
         const requiereProrroga = sim.tipo === 'FINAL' || sim.tipo === 'ELIMINATORIA';
 
+        // Gestión de las reanudaciones tras pausas de tiempos (Descansos)
         if (sim.estadoPausa === 'DESCANSO') {
             sim.estadoPausa = null;
             sim.tiempoAnadido = 0;
@@ -816,6 +874,7 @@ router.post('/partido-en-vivo/:idPartido/tick', requireLogin, async (req, res) =
         let simulandoMinutoEfectivo = sim.minutoActual;
         let esDescuentoActivo = false;
 
+        // Cálculos para determinar si estamos en tiempo de descuento
         if (sim.minutoActual === minutoHito || sim.minutoActual === limiteMinutos) {
             if (sim.tiempoAnadido === 0) {
                 sim.tiempoAnadido = Math.floor(Math.random() * 4) + 1; 
@@ -841,7 +900,6 @@ router.post('/partido-en-vivo/:idPartido/tick', requireLogin, async (req, res) =
             eventos: []
         };
 
-        // Aquí el motor reduce la forma/cansancio y recalcula las notas de sim.local y sim.visitante
         const resultadoTick = simularTramoMinutos(
             sim.local, 
             sim.visitante, 
@@ -860,6 +918,54 @@ router.post('/partido-en-vivo/:idPartido/tick', requireLogin, async (req, res) =
         if (resultadoTick.eventos && resultadoTick.eventos.length > 0) {
             eventoOcurrido = resultadoTick.eventos[0];
             sim.estadoMarcador.eventos.push(eventoOcurrido);
+        }
+
+        // --- 3.5 LÓGICA DE SUSTITUCIONES EN DIFERIDO (BALÓN PARADO) ---
+        // El balón se considera detenido si ocurre una jugada ('GOL' u 'OCASION') o si finaliza un tiempo
+        const esFinDeTiempo = (sim.minutoActual === minutoHito || sim.minutoActual === limiteMinutos) && (sim.minutoAdicionalActual === sim.tiempoAnadido);
+        const juegoInterrumpido = (eventoOcurrido !== null) || esFinDeTiempo;
+
+        if (juegoInterrumpido && sim.cambiosPendientes && sim.cambiosPendientes.length > 0) {
+            // Recorremos los cambios pendientes de la sesión y los ejecutamos
+            sim.cambiosPendientes.forEach(cambio => {
+                const equipo = sim[cambio.equipo]; // 'local' o 'visitante'
+
+                const idxSale = equipo.jugadores.findIndex(j => j && j._id.toString() === cambio.saleId);
+                const idxEntra = equipo.suplentes.findIndex(j => j && j._id.toString() === cambio.entraId);
+
+                if (idxSale !== -1 && idxEntra !== -1) {
+                    const jugadorSale = equipo.jugadores[idxSale];
+                    const jugadorEntra = equipo.suplentes[idxEntra];
+
+                    // Ejecución real: Intercambiamos al jugador en el array titular con el suplente
+                    equipo.jugadores[idxSale] = jugadorEntra;
+                    equipo.suplentes[idxEntra] = jugadorSale;
+
+                    // Ajustar el formato visual del minuto para reflejar si es tiempo de descuento
+                    let minFormateado = esDescuentoActivo 
+                        ? `${sim.minutoActual}+${sim.minutoAdicionalActual}` 
+                        : `${sim.minutoActual}`;
+
+                    const textoSustitucion = `🔄 Cambio en el ${equipo.nombre}: Entra ${jugadorEntra.nombre} sustituyendo a ${jugadorSale.nombre}.`;
+                    
+                    const nuevoEventoCambio = {
+                        minuto: minFormateado,
+                        tipo: 'SUSTITUCION',
+                        equipo: cambio.equipo,
+                        texto: textoSustitucion
+                    };
+
+                    sim.estadoMarcador.eventos.push(nuevoEventoCambio);
+                    
+                    // Si en este tick no había jugadas, le damos prioridad al cambio para que sea visible
+                    if (!eventoOcurrido) {
+                        eventoOcurrido = nuevoEventoCambio;
+                    }
+                }
+            });
+
+            // Vaciamos el búfer de cambios procesados
+            sim.cambiosPendientes = [];
         }
 
         // --- 4. GESTIÓN DE LÍMITES Y TRÁNSITOS DE ESTADO ---
@@ -912,30 +1018,33 @@ router.post('/partido-en-vivo/:idPartido/tick', requireLogin, async (req, res) =
             }
         }
 
-        // --- mapeo de JUGADORES CON SUS DATOS EN VIVO ACTUALIZADOS POR EL MOTOR ---
+        // Mapeo estructurado del estado de los jugadores con sus atributos físicos degradados
         const jugadoresLocalActualizados = sim.local.jugadores.map(j => ({
-            _id: j._id,
+            _id: j ? j._id : null,
+            nombre: j ? j.nombre : '',
+            posicionPrincipal: j ? j.posicionPrincipal : '',
             estado: {
-                forma: j.estado?.forma ?? 100,
-                notaPartido: j.estado?.notaPartido ?? 6.0
+                forma: j?.estado?.forma ?? 100,
+                notaPartido: j?.estado?.notaPartido ?? 6.0
             }
         }));
 
         const jugadoresVisitanteActualizados = sim.visitante.jugadores.map(j => ({
-            _id: j._id,
+            _id: j ? j._id : null,
+            nombre: j ? j.nombre : '',
+            posicionPrincipal: j ? j.posicionPrincipal : '',
             estado: {
-                forma: j.estado?.forma ?? 100,
-                notaPartido: j.estado?.notaPartido ?? 6.0
+                forma: j?.estado?.forma ?? 100,
+                notaPartido: j?.estado?.notaPartido ?? 6.0
             }
         }));
 
-        req.session.partidoEnVivo = sim; // Guardar sesión de Express
+        req.session.partidoEnVivo = sim; // Guardamos el estado en sesión
 
         let minFormateado = esDescuentoActivo 
             ? `${sim.minutoActual}+${sim.minutoAdicionalActual}` 
             : `${sim.minutoActual}`;
 
-        // Devolvemos los datos del partido incluyendo los arreglos dinámicos
         return res.json({
             success: true,
             minuto: minFormateado,
@@ -999,58 +1108,99 @@ router.get('/partido/:idPartido/tactica', requireLogin, async (req, res) => {
 router.post('/partido/:idPartido/tactica', requireLogin, async (req, res) => {
     try {
         const partidoId = req.params.idPartido;
-        const { formacion, estiloJuego, mentalidad, titulares } = req.body;
+        const { formacion, estiloJuego, mentalidad, titulares } = req.body; // 'titulares' es un array de 11 IDs en orden
 
         const partidoEnVivo = req.session.partidoEnVivo;
         if (!partidoEnVivo || partidoEnVivo.partidoId !== partidoId) {
             return res.status(400).json({ success: false, message: "No hay ninguna simulación activa para este partido." });
         }
 
-        // Detectar si el usuario es local o visitante
         const clubUsuarioId = req.session.clubId;
         const esLocal = partidoEnVivo.local.id.toString() === clubUsuarioId;
         const equipoAEditar = esLocal ? 'local' : 'visitante';
 
-        // 1. Actualizamos las opciones tácticas globales en la sesión del partido en vivo
+        // 1. Aplicar tácticas colectivas inmediatas
         partidoEnVivo[equipoAEditar].formacion = formacion;
         partidoEnVivo[equipoAEditar].estiloJuego = estiloJuego;
         partidoEnVivo[equipoAEditar].mentalidad = mentalidad;
 
-        // 2. Mapear y ordenar los nuevos titulares en la sesión
-        // El cliente envía un array ordenado de IDs de titulares ['id1', 'id2', null, ...]
+        // Todos los jugadores para buscar por ID
         const todosLosJugadoresDisponibles = [
             ...partidoEnVivo[equipoAEditar].jugadores,
             ...partidoEnVivo[equipoAEditar].suplentes
         ];
 
-        let nuevosTitulares = [];
-        let nuevosSuplentes = [];
+        if (!partidoEnVivo.cambiosPendientes) {
+            partidoEnVivo.cambiosPendientes = [];
+        }
 
-        // Reconstruimos la lista de titulares basándonos en el orden de IDs que envió el GestorTactico
-        titulares.forEach(id => {
-            if (!id || id === 'vacio') {
-                nuevosTitulares.push(null); // Huecos vacíos si tu GestorTactico los maneja
-            } else {
-                const jugador = todosLosJugadoresDisponibles.find(j => j && j._id.toString() === id.toString());
-                if (jugador) nuevosTitulares.push(jugador);
+        // Recuperamos los IDs actuales de los que ya están en el campo
+        const titularesActualesIds = partidoEnVivo[equipoAEditar].jugadores.map(j => j ? j._id.toString() : null);
+
+        // Creamos un nuevo array provisional para reordenar el once inicial de forma inmediata
+        // Lo inicializamos con el tamaño del array que nos manda el cliente
+        let nuevoOnceInicial = new Array(titulares.length).fill(null);
+
+        // --- FASE 1: PROCESAR INTERCAMBIOS POSICIONALES (Entre jugadores que ya juegan) ---
+        titulares.forEach((nuevoId, index) => {
+            if (!nuevoId || nuevoId === 'vacio') return;
+            
+            // ¿Este jugador ya estaba jugando en el campo antes de abrir la pantalla de táctica?
+            const yaEstabaEnElCampo = titularesActualesIds.includes(nuevoId.toString());
+
+            if (yaEstabaEnElCampo) {
+                // Buscamos el objeto completo del jugador que ya estaba en el campo
+                const jugadorObjeto = partidoEnVivo[equipoAEditar].jugadores.find(j => j && j._id.toString() === nuevoId.toString());
+                // Lo posicionamos inmediatamente en su nuevo puesto táctico en el campo
+                nuevoOnceInicial[index] = jugadorObjeto;
             }
         });
 
-        // Todos los que no se hayan quedado en la lista de titulares, van al banquillo de suplentes automáticamente
-        todosLosJugadoresDisponibles.forEach(jugador => {
-            if (jugador && !titulares.includes(jugador._id.toString())) {
-                nuevosSuplentes.push(jugador);
+        // --- FASE 2: PROCESAR SUSTITUCIONES REALES (Jugador que entra del banquillo) ---
+        titulares.forEach((nuevoId, index) => {
+            if (!nuevoId || nuevoId === 'vacio') return;
+
+            // Si esta posición del nuevo Once ya fue ocupada en la FASE 1 por un intercambio interno, pasamos de largo
+            if (nuevoOnceInicial[index] !== null) return;
+
+            // Si llegamos aquí, significa que en esta posición ('index') el usuario puso un ID que viene del banquillo.
+            // Averiguamos quién estaba jugando originalmente en esa posición exacta
+            const idActualEnEsePuesto = titularesActualesIds[index];
+            
+            const jugadorQueSale = todosLosJugadoresDisponibles.find(j => j && j._id.toString() === idActualEnEsePuesto);
+            const jugadorQueEntra = todosLosJugadoresDisponibles.find(j => j && j._id.toString() === nuevoId.toString());
+
+            if (jugadorQueSale && jugadorQueEntra) {
+                // Evitamos duplicar la petición si ya estaba en cola
+                const yaExiste = partidoEnVivo.cambiosPendientes.some(c => 
+                    c.equipo === equipoAEditar && 
+                    c.saleId === jugadorQueSale._id.toString() && 
+                    c.entraId === jugadorQueEntra._id.toString()
+                );
+
+                if (!yaExiste) {
+                    partidoEnVivo.cambiosPendientes.push({
+                        equipo: equipoAEditar,
+                        saleId: jugadorQueSale._id.toString(),
+                        saleNombre: jugadorQueSale.nombre,
+                        entraId: jugadorQueEntra._id.toString(),
+                        entraNombre: jugadorQueEntra.nombre,
+                        puestoIndex: index // Guardamos el índice donde debe meterse cuando el motor procese el tick
+                    });
+                }
+
+                // Mientras se procesa la sustitución en el siguiente minuto del motor de juego,
+                // mantenemos al jugador actual en el campo para que el partido no se quede con un hueco vacío
+                nuevoOnceInicial[index] = jugadorQueSale;
             }
         });
 
-        // Guardamos las nuevas listas en la sesión del partido
-        partidoEnVivo[equipoAEditar].jugadores = nuevosTitulares;
-        partidoEnVivo[equipoAEditar].suplentes = nuevosSuplentes;
+        // 3. Sobrescribimos el array de jugadores en el campo reflejando los cambios posicionales instantáneos
+        partidoEnVivo[equipoAEditar].jugadores = nuevoOnceInicial;
 
-        // Guardamos los cambios de forma explícita en la sesión de Express
+        // Guardamos todo el estado actualizado en la sesión del servidor
         req.session.partidoEnVivo = partidoEnVivo;
 
-        // Devolvemos una respuesta exitosa
         res.json({ success: true, redirectUrl: `/jugar_partido/${partidoId}` });
 
     } catch (error) {

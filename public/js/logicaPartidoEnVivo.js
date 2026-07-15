@@ -100,23 +100,24 @@ function arrancarSimulacion() {
 
             const caja = document.getElementById('cajaEventos');
 
-            // --- ESCENARIO A: TANDA DE PENALTIS ---
-            if (data.esPenaltis) {
+            // --- ESCENARIO A: TANDA DE PENALTIS (Sincronizado con variables del backend) ---
+            if (data.tandaPenaltis && data.tandaPenaltis.activo) {
                 pausarSimulacion();
                 pausaFaseInterna = 'TANDA_PENALTIS';
                 $('#textoPlay').text('LANZAR SIGUIENTE');
                 $('#contenedorPenaltis').slideDown();
 
-                document.getElementById('penaltisGolesLocal').innerText = data.tanda.golesLocal;
-                document.getElementById('penaltisGolesVisitante').innerText = data.tanda.golesVisitante;
+                document.getElementById('penaltisGolesLocal').innerText = data.tandaPenaltis.golesLocal;
+                document.getElementById('penaltisGolesVisitante').innerText = data.tandaPenaltis.golesVisitante;
 
-                let circulosLocal = data.tanda.disparosLocal.slice(-5).map(r => 
-                    r === 'GOL' ? '<i class="bi bi-circle-fill text-success fs-5"></i>' : '<i class="bi bi-x-circle-fill text-danger fs-5"></i>'
+                // Corregido: El backend envía { gol: true/false, tirador: "..." }
+                let circulosLocal = data.tandaPenaltis.disparosLocal.slice(-5).map(r => 
+                    r.gol ? '<i class="bi bi-circle-fill text-success fs-5"></i>' : '<i class="bi bi-x-circle-fill text-danger fs-5"></i>'
                 ).join(' ');
                 document.getElementById('circulosLocal').innerHTML = circulosLocal;
 
-                let circulosVisitante = data.tanda.disparosVisitante.slice(-5).map(r => 
-                    r === 'GOL' ? '<i class="bi bi-circle-fill text-success fs-5"></i>' : '<i class="bi bi-x-circle-fill text-danger fs-5"></i>'
+                let circulosVisitante = data.tandaPenaltis.disparosVisitante.slice(-5).map(r => 
+                    r.gol ? '<i class="bi bi-circle-fill text-success fs-5"></i>' : '<i class="bi bi-x-circle-fill text-danger fs-5"></i>'
                 ).join(' ');
                 document.getElementById('circulosVisitante').innerHTML = circulosVisitante;
 
@@ -141,20 +142,92 @@ function arrancarSimulacion() {
                 document.getElementById('textoPosesionVisitante').innerText = (100 - data.posesionLocal) + "%";
             }
 
-            // --- ACTUALIZACIÓN EN VIVO DE JUGADORES (CANSANCIO Y NOTAS) ---
+            // --- ACTUALIZACIÓN EN VIVO DE JUGADORES + MANEJO DINÁMICO DE CAMBIOS ---
+            // LOCALES
             if (data.jugadoresLocal && data.jugadoresLocal.length > 0) {
-                data.jugadoresLocal.forEach(j => {
-                    let fila = $(`#listaTitularesLocal [data-id="${j._id}"]`);
-                    if(fila.length) {
+                const filasDOM = $('#listaTitularesLocal .jugador-item-Fijo');
+                data.jugadoresLocal.forEach((j, index) => {
+                    let fila = $(filasDOM[index]);
+                    if (fila.length && j) {
+                        const idAnterior = fila.attr('data-id');
+                        
+                        // ¡Detectamos una sustitución real en esta posición!
+                        if (idAnterior !== j._id) {
+                            const nombreAnterior = fila.find('.target-nombre-jugador').text();
+                            const posAnterior = fila.find('.target-posicion').text();
+                            
+                            // 1. Mandamos al jugador que sale a la lista de sustituidos abajo
+                            if (idAnterior && nombreAnterior) {
+                                $('#listaSustituidosLocal').append(`
+                                    <div class="list-group-item d-flex bg-dark text-white-50 justify-content-between align-items-center p-1" style="font-size: 0.75rem; opacity: 0.6;">
+                                        <div class="text-truncate">
+                                            <i class="bi bi-arrow-down-circle-fill text-danger me-1"></i>
+                                            <del>${nombreAnterior}</del> <span class="badge bg-secondary text-white-50 p-1" style="font-size:0.6rem;">${posAnterior}</span>
+                                        </div>
+                                        <small class="text-muted">${data.minuto}'</small>
+                                    </div>
+                                `);
+                            }
+
+                            // 2. Actualizamos la fila principal con los datos del nuevo jugador que entra
+                            fila.attr('data-id', j._id);
+                            fila.find('.target-nombre-jugador').html(`<i class="bi bi-arrow-up-circle-fill text-success me-1"></i> ${j.nombre}`);
+                            if (j.posicionPrincipal) fila.find('.target-posicion').text(j.posicionPrincipal);
+                            
+                            // Efecto visual de flash para advertir al usuario del cambio en la pantalla
+                            fila.addClass('bg-secondary').delay(1000).queue(function(next){
+                                $(this).removeClass('bg-secondary');
+                                next();
+                            });
+                        }
+
+                        // Actualizar datos del jugador en tiempo real
                         fila.find('.jugador-forma').text(Math.round(j.estado?.forma ?? 100) + '%');
                         fila.find('.jugador-nota').text((j.estado?.notaPartido ?? 6.0).toFixed(1));
                     }
                 });
             }
+
+            // VISITANTES
             if (data.jugadoresVisitante && data.jugadoresVisitante.length > 0) {
-                data.jugadoresVisitante.forEach(j => {
-                    let fila = $(`#listaTitularesVisitante [data-id="${j._id}"]`);
-                    if(fila.length) {
+                const filasDOM = $('#listaTitularesVisitante .jugador-item-Fijo');
+                data.jugadoresVisitante.forEach((j, index) => {
+                    let fila = $(filasDOM[index]);
+                    if (fila.length && j) {
+                        const idAnterior = fila.attr('data-id');
+
+                        if (idAnterior !== j._id) {
+                            const nombreAnterior = fila.find('.target-nombre-jugador').text() || fila.find('strong').text();
+                            const posAnterior = fila.find('.target-posicion').text();
+
+                            if (idAnterior && nombreAnterior) {
+                                $('#listaSustituidosVisitante').append(`
+                                    <div class="list-group-item d-flex bg-dark text-white-50 justify-content-between align-items-center p-1" style="font-size: 0.75rem; opacity: 0.6;">
+                                        <div class="text-truncate">
+                                            <i class="bi bi-arrow-down-circle-fill text-danger me-1"></i>
+                                            <del>${nombreAnterior}</del> <span class="badge bg-secondary text-white-50 p-1" style="font-size:0.6rem;">${posAnterior}</span>
+                                        </div>
+                                        <small class="text-muted">${data.minuto}'</small>
+                                    </div>
+                                `);
+                            }
+
+                            fila.attr('data-id', j._id);
+                            // Si la estructura visitante usa directamente <strong> en lugar de la clase:
+                            let targetNombre = fila.find('.target-nombre-jugador');
+                            if (targetNombre.length) {
+                                targetNombre.html(`<i class="bi bi-arrow-up-circle-fill text-success me-1"></i> ${j.nombre}`);
+                            } else {
+                                fila.find('strong').html(`<i class="bi bi-arrow-up-circle-fill text-success me-1"></i> ${j.nombre}`);
+                            }
+                            if (j.posicionPrincipal) fila.find('.target-posicion').text(j.posicionPrincipal);
+
+                            fila.addClass('bg-secondary').delay(1000).queue(function(next){
+                                $(this).removeClass('bg-secondary');
+                                next();
+                            });
+                        }
+
                         fila.find('.jugador-forma').text(Math.round(j.estado?.forma ?? 100) + '%');
                         fila.find('.jugador-nota').text((j.estado?.notaPartido ?? 6.0).toFixed(1));
                     }
@@ -166,6 +239,7 @@ function arrancarSimulacion() {
                 if (data.evento.tipo === 'GOL') estilo = 'text-success fw-bold fs-6';
                 else if (data.evento.tipo === 'INFO') estilo = 'text-warning font-italic';
                 else if (data.evento.tipo === 'OCASION') estilo = 'text-info';
+                else if (data.evento.tipo === 'SUSTITUCION') estilo = 'text-warning fw-bold'; // Color dorado para los cambios
                 
                 caja.innerHTML += `<div class="mb-1 ${estilo}">[Min. ${data.minuto}] ${data.evento.texto}</div>`;
                 caja.scrollTop = caja.scrollHeight;

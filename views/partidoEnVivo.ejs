@@ -10,29 +10,34 @@
                     <span class="text-truncate me-2"><%= local.nombre %></span>
                     <span class="badge <%= esLocalUser ? 'bg-info' : 'bg-secondary' %> flex-shrink-0"><%= esLocalUser ? 'Mánager' : 'IA' %></span>
                 </div>
+                
                 <div class="list-group list-group-flush" id="listaTitularesLocal">
                     <% local.jugadores.forEach((j, index) => { %>
-                        <div class="list-group-item d-flex bg-dark justify-content-between align-items-center jugador-item-Fijo p-2 small" data-id="<%= j._id %>">
+                        <div class="list-group-item d-flex bg-dark justify-content-between align-items-center jugador-item-Fijo p-2 small" data-id="<%= j._id %>" data-index="<%= index %>">
                             <div class="text-truncate me-2">
                                 <span class="badge bg-secondary text-white me-1 text-center" style="width: 24px;"><%= j.dorsal || (index + 1) %></span>
+                                <span class="icono-cambio me-1" style="display: none;"><i class="bi bi-arrow-down-circle-fill text-danger"></i></span>
                                 <strong class="text-white target-nombre-jugador text-truncate"><%= j.nombre %></strong>
                                 <span class="badge bg-light text-dark border ms-1 target-posicion"><%= j.posicionPrincipal || j.posicion %></span>
                             </div>
                             <div class="d-flex align-items-center gap-1 flex-shrink-0">
-                                <!-- Nota del partido (Dinámica) -->
                                 <span class="badge bg-warning text-dark border border-warning-subtle jugador-nota">6.0</span>
-                                <!-- Energía / Forma (Dinámica) -->
                                 <span class="badge bg-success-subtle text-success border border-success-subtle jugador-forma"><%= Math.round(j.estado?.forma ?? 100) %>%</span>
                             </div>
                         </div>
                     <% }) %>
                 </div>
-                <!-- Bloque Táctico Local -->
+
+                <div class="bg-black p-2 border-top border-secondary">
+                    <small class="text-white d-block mb-1 fw-bold" style="font-size: 0.65rem;">JUGADORES SUSTITUIDOS</small>
+                    <div class="list-group list-group-flush" id="listaSustituidosLocal">
+                        </div>
+                </div>
+
                 <div class="card-footer bg-dark text-white-50 border-top border-secondary p-2 small">
-                    <div class="d-flex justify-content-between">
-                        <span>Estilo: <strong class="text-white"><%= local.estiloJuego %></strong></span>
-                        <span>Mentalidad: <strong class="text-white"><%= local.mentalidad %></strong></span>
-                    </div>
+                    <div><span>Formación: <strong class="text-white"><%= local.formacion %></strong></span></div>
+                    <div><span>Estilo: <strong class="text-white"><%= local.estiloJuego %></strong></span></div>
+                    <div><span>Mentalidad: <strong class="text-white"><%= local.mentalidad %></strong></span></div>
                 </div>
             </div>
         </div>
@@ -131,29 +136,34 @@
                     <span class="text-truncate me-2"><%= visitante.nombre %></span>
                     <span class="badge <%= !esLocalUser ? 'bg-info' : 'bg-secondary' %> flex-shrink-0"><%= !esLocalUser ? 'Mánager' : 'IA' %></span>
                 </div>
+                
                 <div class="list-group list-group-flush" id="listaTitularesVisitante">
                     <% visitante.jugadores.forEach((j, index) => { %>
-                        <div class="list-group-item d-flex bg-dark justify-content-between align-items-center jugador-item-FFixed p-2 small" data-id="<%= j._id %>">
+                        <div class="list-group-item d-flex bg-dark justify-content-between align-items-center jugador-item-Fijo p-2 small" data-id="<%= j._id %>" data-index="<%= index %>">
                             <div class="text-truncate me-2">
                                 <span class="badge bg-secondary text-white me-1 text-center" style="width: 24px;"><%= j.dorsal || (index + 1) %></span>
-                                <strong class="text-white text-truncate"><%= j.nombre %></strong>
-                                <span class="badge bg-light text-dark border ms-1"><%= j.posicionPrincipal || j.posicion %></span>
+                                <span class="icono-cambio me-1" style="display: none;"><i class="bi bi-arrow-down-circle-fill text-danger"></i></span>
+                                <strong class="text-white target-nombre-jugador text-truncate"><%= j.nombre %></strong>
+                                <span class="badge bg-light text-dark border ms-1 target-posicion"><%= j.posicionPrincipal || j.posicion %></span>
                             </div>
                             <div class="d-flex align-items-center gap-1 flex-shrink-0">
-                                <!-- Nota del partido (Dinámica) -->
                                 <span class="badge bg-warning text-dark border border-warning-subtle jugador-nota">6.0</span>
-                                <!-- Energía / Forma (Dinámica) -->
                                 <span class="badge bg-success-subtle text-success border border-success-subtle jugador-forma"><%= Math.round(j.estado?.forma ?? 100) %>%</span>
                             </div>
                         </div>
                     <% }) %>
                 </div>
-                <!-- Bloque Táctico Visitante -->
+
+                <div class="bg-black p-2 border-top border-secondary">
+                    <small class="text-white d-block mb-1 fw-bold" style="font-size: 0.65rem;">JUGADORES SUSTITUIDOS</small>
+                    <div class="list-group list-group-flush" id="listaSustituidosVisitante">
+                        </div>
+                </div>
+
                 <div class="card-footer bg-dark text-white-50 border-top border-secondary p-2 small">
-                    <div class="d-flex justify-content-between">
-                        <span>Estilo: <strong class="text-white"><%= visitante.estiloJuego %></strong></span>
-                        <span>Mentalidad: <strong class="text-white"><%= visitante.mentalidad %></strong></span>
-                    </div>
+                    <div><span>Formación: <strong class="text-white"><%= visitante.formacion %></strong></span></div>
+                    <div><span>Estilo: <strong class="text-white"><%= visitante.estiloJuego %></strong></span></div>
+                    <div><span>Mentalidad: <strong class="text-white"><%= visitante.mentalidad %></strong></span></div>
                 </div>
             </div>
         </div>
